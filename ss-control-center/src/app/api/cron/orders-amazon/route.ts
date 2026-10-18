@@ -13,7 +13,7 @@
  * press never land in the DB, so today's revenue card permanently reads
  * $0 unless Vladimir manually refreshes (which itself may time out).
  *
- * Schedule (vercel.json): every 6 hours. 3-day overlap window means each
+ * Schedule (vercel.json): every 2 hours. 3-day overlap window means each
  * order is re-pulled ~12 times before it ages out — the upsert handles
  * the duplication and picks up status changes for free.
  *
@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncOrders } from "@/lib/sync/orders-sync";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+import { prisma } from "@/lib/prisma";
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -63,6 +64,25 @@ export async function GET(request: NextRequest) {
     }
     await sleep(500);
   }
+
+  // One SyncLog row per run → the Dashboard "Synced Xh ago" chip reads the
+  // Amazon orders feed itself. "done" if at least one store synced; per-
+  // store failures (e.g. SP-API 403) are kept in `error`.
+  const failed = results.filter((r) => !r.success);
+  const synced = results.reduce((n, r) => n + (r.synced ?? 0), 0);
+  await prisma.syncLog
+    .create({
+      data: {
+        jobName: "orders-amazon",
+        status: results.some((r) => r.success) ? "done" : "error",
+        completedAt: new Date(),
+        itemsSynced: synced,
+        error: failed.length
+          ? failed.map((f) => `store${f.storeIndex}: ${f.error}`).join(" | ").slice(0, 1000)
+          : null,
+      },
+    })
+    .catch(() => undefined);
 
   return NextResponse.json({
     ok: true,

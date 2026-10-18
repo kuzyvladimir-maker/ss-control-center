@@ -204,6 +204,23 @@ export default function SalesOverviewPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [preset, setPreset] = useState<Preset | "custom">("last30");
+  // Deep link from the Dashboard sales cards: /analytics?period=today etc.
+  // Read once on mount (useSearchParams would force a Suspense boundary).
+  // "forecast" has no own preset — month-to-date is the data behind it.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("period");
+    const map: Record<string, Preset> = {
+      today: "today",
+      yesterday: "yesterday",
+      mtd: "mtd",
+      forecast: "mtd",
+      lastMonth: "lastMonth",
+      last7: "last7",
+      last30: "last30",
+      last90: "last90",
+    };
+    if (p && map[p]) setPreset(map[p]);
+  }, []);
   const [customFrom, setCustomFrom] = useState<string>(addDays(todayET(), -29));
   const [customTo, setCustomTo] = useState<string>(todayET());
   // Channel filter — MULTI-select. Empty array = "All channels". Otherwise

@@ -77,6 +77,11 @@ export default function MessagesTab() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Deep link from the Dashboard customer queue: /customer-hub?message=<id>
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("message");
+    if (id) setSelectedId(id);
+  }, []);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
 
   const fetchMessages = async (status: StatusFilter) => {

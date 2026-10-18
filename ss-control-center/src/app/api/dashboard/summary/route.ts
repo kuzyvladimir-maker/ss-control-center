@@ -5,6 +5,13 @@ import {
   VEEQO_KEY_REJECTED_MESSAGE,
 } from "@/lib/veeqo/client";
 import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
+import { todayNY } from "@/lib/shipping/dates";
+import { BOARD_STORE_IDS } from "@/lib/adjustments/dispute-board";
+import {
+  activeClaimsWhere,
+  liveChannels as getLiveChannels,
+  unreadMessagesWhere,
+} from "@/lib/customer-hub/live-counts";
 
 // Resolve a CSV `storeIds` param into the native filter keys used by
 // AmazonOrder / WalmartOrder / etc. Returns `null` for "no filter — show all"
@@ -97,17 +104,13 @@ export async function GET(request: NextRequest) {
     const filter = await resolveStoreFilter(request.nextUrl.searchParams);
     const now = new Date();
     const todayStart = startOfTodayET(now);
-    const todayYmd = todayStart
-      .toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    const todayYmd = todayNY();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000);
 
     // Walmart is only "live" when the Store row is active. While it's off,
     // its 300+ August messages must not inflate the customer counts.
-    const walmartLive =
-      (await prisma.store.count({ where: { channel: "Walmart", active: true } })) > 0;
-    const liveChannels = walmartLive ? ["Amazon", "Walmart"] : ["Amazon"];
+    const liveChannels = await getLiveChannels();
 
     // When the caller explicitly selected zero stores, short-circuit with
     // zeroed-out values rather than running every aggregation.
@@ -172,48 +175,54 @@ export async function GET(request: NextRequest) {
           ...amazonStoreFilter,
         },
       }),
-      // "Cases open" = customer threads still waiting on us, from the last
-      // 30 days, on live channels: open CsCase rows + Customer Hub messages
-      // not yet answered. Was all-time open CsCase only → 3 April Walmart
-      // cases shown forever.
-      Promise.all([
-        prisma.csCase.count({
-          where: {
-            status: "open",
-            createdAt: { gte: thirtyDaysAgo },
-            channel: { in: liveChannels },
-          },
-        }),
-        prisma.buyerMessage.count({
-          where: {
-            status: { in: ["NEW", "ANALYZED"] },
-            createdAt: { gte: thirtyDaysAgo },
-            channel: { in: liveChannels },
-          },
-        }),
-      ]).then(([a, b]) => a + b),
-      // Active A-to-Z = in-flight AND opened in the last 60 days. Amazon
-      // decides a claim within weeks; the 15 rows parked in
-      // EVIDENCE_GATHERED since 2026-04-12 are abandoned workflow state,
-      // not live claims.
+      // "Cases open" = the Customer Hub's own "Unread messages" card, same
+      // definition (src/lib/customer-hub/live-counts.ts) so the tile, the
+      // sidebar badge and the hub always agree.
+      prisma.buyerMessage.count({ where: unreadMessagesWhere(liveChannels) }),
+      // Active A-to-Z — same definition as the hub's "Active A-to-Z" card.
       prisma.atozzClaim.count({
-        where: {
-          createdAt: { gte: sixtyDaysAgo },
-          status: {
-            in: ["NEW", "EVIDENCE_GATHERED", "RESPONSE_READY", "SUBMITTED"],
-          },
-          ...(filter.amazonStoreIndexes !== null
-            ? filter.amazonStoreIndexes.length > 0
+        where: activeClaimsWhere(
+          "A_TO_Z",
+          filter.amazonStoreIndexes !== null
+            ? {
+                storeIndex: {
+                  in: filter.amazonStoreIndexes.length > 0 ? filter.amazonStoreIndexes : [-1],
+                },
+              }
+            : {}
+        ),
+      }),
+      // Latest snapshot per selected active Amazon store — exactly what the
+      // /account-health hero reads (any syncStatus, no take:10 cut-off).
+      prisma.store
+        .findMany({
+          where: {
+            channel: "Amazon",
+            active: true,
+            storeIndex: { not: null },
+            ...(filter.amazonStoreIndexes !== null
               ? { storeIndex: { in: filter.amazonStoreIndexes } }
-              : { storeIndex: { in: [-1] } }
-            : {}),
-        },
-      }),
-      prisma.accountHealthSnapshot.findMany({
-        where: { syncStatus: "done" },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
+              : {}),
+          },
+          select: { storeIndex: true },
+        })
+        .then((stores) =>
+          Promise.all(
+            stores.map((st) =>
+              prisma.accountHealthSnapshot.findFirst({
+                where: { storeId: `store${st.storeIndex}` },
+                orderBy: { createdAt: "desc" },
+                select: {
+                  storeId: true,
+                  createdAt: true,
+                  accountHealthRating: true,
+                  accountState: true,
+                },
+              })
+            )
+          )
+        )
+        .then((rows) => rows.filter((r): r is NonNullable<typeof r> => r !== null)),
       prisma.shippingAdjustment.aggregate({
         _sum: { adjustmentAmount: true },
         where: { createdAt: { gte: thirtyDaysAgo } },
@@ -311,6 +320,11 @@ export async function GET(request: NextRequest) {
       recentReportJobs,
       lastAmazonMessage,
       amazonStores,
+      labelsBoughtToday,
+      adjustmentsCharged30d,
+      hubChargebacks,
+      hubNewFeedback,
+      lastOrdersSync,
     ] = await Promise.all([
       prisma.amazonOrder.groupBy({
         by: ["storeIndex"],
@@ -345,6 +359,44 @@ export async function GET(request: NextRequest) {
         where: { channel: "Amazon", active: true, storeIndex: { not: null } },
         select: { storeIndex: true, name: true },
         orderBy: { storeIndex: "asc" },
+      }),
+      // Labels actually bought today (ET) through the Shipping Labels page —
+      // /api/shipping/buy flips the plan item to "bought". There is no
+      // dedicated purchasedAt column, so updatedAt is the purchase moment.
+      // The Dashboard "Shipping progress" panel used the Amazon
+      // status=Shipped count instead, which isn't labels at all.
+      prisma.shippingPlanItem.count({
+        where: { status: "bought", updatedAt: { gte: todayStart } },
+      }),
+      // "Charged" on the /adjustments dispute board for its "30 days" preset
+      // (today-29 … today ET, by the charge's own adjustmentDate, Amazon
+      // board accounts, charges only). The old tile summed every row by
+      // ingest time (createdAt) and netted credits — a number the page
+      // never showed.
+      prisma.shippingAdjustment.aggregate({
+        _sum: { adjustmentAmount: true },
+        _count: { _all: true },
+        where: {
+          channel: "Amazon",
+          storeId: { in: BOARD_STORE_IDS },
+          adjustmentAmount: { lt: 0 },
+          adjustmentDate: {
+            gte: new Date(new Date(`${todayYmd}T12:00:00Z`).getTime() - 29 * 86400000)
+              .toISOString()
+              .slice(0, 10),
+          },
+        },
+      }),
+      // Remaining two terms of the Customer Hub headline ("N items need
+      // your attention") so the sidebar badge can show that same total.
+      prisma.atozzClaim.count({ where: activeClaimsWhere("CHARGEBACK") }),
+      prisma.sellerFeedback.count({ where: { status: "NEW" } }),
+      // Freshness of the Amazon ORDERS feed specifically (cron writes
+      // jobName "orders-amazon" since 2026-10-18).
+      prisma.syncLog.findFirst({
+        where: { jobName: { in: ["orders-amazon", "all"] }, status: "done" },
+        orderBy: { completedAt: "desc" },
+        select: { completedAt: true },
       }),
     ]);
 
@@ -422,18 +474,14 @@ export async function GET(request: NextRequest) {
       if (isVeeqoAuthError(err)) procurementError = VEEQO_KEY_REJECTED_MESSAGE;
     }
 
-    const latestByStore = new Map<string, (typeof healthSnapshots)[0]>();
-    for (const snap of healthSnapshots) {
-      if (!latestByStore.has(snap.storeId)) latestByStore.set(snap.storeId, snap);
-    }
     // Match the Account Health hero "At Risk" card: AHR < 200 only.
-    // The legacy "status critical/warning" buckets also lit up on a single
-    // policy violation, which inflated the sidebar badge with stores that
-    // weren't actually at risk of deactivation per Amazon's rule.
-    const healthIssues = Array.from(latestByStore.values()).filter(
+    const healthIssues = healthSnapshots.filter(
       (s) =>
         typeof s.accountHealthRating === "number" &&
         s.accountHealthRating < 200
+    ).length;
+    const healthDeactivated = healthSnapshots.filter(
+      (s) => s.accountState === "DEACTIVATED"
     ).length;
 
     const latestPerf = new Map<string, (typeof walmartPerfLatest)[number]>();
@@ -476,13 +524,11 @@ export async function GET(request: NextRequest) {
     // endpoint. We grab the most recent successful SyncLog entry; the
     // header chip then shows e.g. "Synced 18m ago" so stale dashboards
     // are obvious instead of always reading "Synced just now".
-    const lastSync = await prisma.syncLog.findFirst({
-      where: { status: "done" },
-      orderBy: { completedAt: "desc" },
-      select: { completedAt: true },
-    });
+    // "Synced Xh ago" = when the Amazon orders feed last ran successfully.
+    // Was the newest SyncLog of ANY job — a Walmart poll or a registry
+    // heartbeat kept it green while store3 orders 403'd for 11 days.
     const syncedAt =
-      lastSync?.completedAt?.toISOString() ?? new Date().toISOString();
+      lastOrdersSync?.completedAt?.toISOString() ?? new Date(0).toISOString();
 
     return NextResponse.json({
       orders: {
@@ -495,12 +541,17 @@ export async function GET(request: NextRequest) {
       customerService: { openCases: openCsCases },
       claims: { active: activeClaims },
       ordersByStore,
+      labelsBoughtToday,
       customerHub: {
+        // Same sum as the hub page headline: unread + A-to-Z + chargebacks
+        // + new feedback.
+        attention: openCsCases + activeClaims + hubChargebacks + hubNewFeedback,
         lastAmazonMessageAt: lastAmazonMessage?.createdAt.toISOString() ?? null,
         stale: inboxStale,
       },
       health: {
         issues: healthIssues,
+        deactivated: healthDeactivated,
         lastSnapshotAt: latestSnapshot?.createdAt.toISOString() ?? null,
         stale: healthStale,
       },
@@ -512,6 +563,10 @@ export async function GET(request: NextRequest) {
       },
       dataIssues,
       adjustments: {
+        charged30d: {
+          amount: Math.abs(adjustmentsCharged30d._sum.adjustmentAmount ?? 0),
+          count: adjustmentsCharged30d._count._all,
+        },
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
         unreviewed: adjustmentsUnreviewed,
       },
@@ -539,6 +594,7 @@ function emptyResponse() {
     customerService: { openCases: 0 },
     claims: { active: 0 },
     ordersByStore: [],
+    labelsBoughtToday: 0,
     customerHub: { lastAmazonMessageAt: null, stale: false },
     health: { issues: 0, lastSnapshotAt: null, stale: false },
     procurement: { ordersToBuy: 0 },

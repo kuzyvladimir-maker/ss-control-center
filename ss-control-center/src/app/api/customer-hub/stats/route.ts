@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  activeClaimsWhere,
+  liveChannels,
+  unreadMessagesWhere,
+} from "@/lib/customer-hub/live-counts";
 
 export async function GET() {
   try {
@@ -7,6 +12,9 @@ export async function GET() {
     // deadline is within the next 4 hours (i.e. created more than 20 hours
     // ago and still NEW or ANALYZED).
     const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000);
+    // Shared definitions with the Dashboard tile + sidebar badge — see
+    // src/lib/customer-hub/live-counts.ts.
+    const channels = await liveChannels();
 
     const [
       unreadMessages,
@@ -17,40 +25,17 @@ export async function GET() {
     ] = await Promise.all([
       // "Unread" = anything the operator hasn't replied to yet. After AI
       // analysis the status flips to ANALYZED but it's still waiting for
-      // a human decision, so we count both.
+      // a human decision, so we count both. Live channels only.
+      prisma.buyerMessage.count({ where: unreadMessagesWhere(channels) }),
       prisma.buyerMessage.count({
         where: {
-          direction: "incoming",
-          status: { in: ["NEW", "ANALYZED"] },
-        },
-      }),
-      prisma.buyerMessage.count({
-        where: {
-          direction: "incoming",
-          status: { in: ["NEW", "ANALYZED"] },
+          ...unreadMessagesWhere(channels),
           createdAt: { lt: twentyHoursAgo },
         },
       }),
-      prisma.atozzClaim.count({
-        where: {
-          status: {
-            in: [
-              "NEW",
-              "EVIDENCE_GATHERED",
-              "RESPONSE_READY",
-              "SUBMITTED",
-            ],
-          },
-        },
-      }),
-      prisma.atozzClaim.count({
-        where: {
-          claimType: "CHARGEBACK",
-          status: {
-            in: ["NEW", "EVIDENCE_GATHERED", "RESPONSE_READY"],
-          },
-        },
-      }),
+      // A-to-Z only (chargebacks have their own card) — was counting both.
+      prisma.atozzClaim.count({ where: activeClaimsWhere("A_TO_Z") }),
+      prisma.atozzClaim.count({ where: activeClaimsWhere("CHARGEBACK") }),
       prisma.sellerFeedback.count({
         where: { status: "NEW" },
       }),

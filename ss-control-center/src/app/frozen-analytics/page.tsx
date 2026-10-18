@@ -104,7 +104,7 @@ export default function FrozenAnalyticsPage() {
       fetchSkuProfiles();
       fetchPatterns();
       // Lightweight: just count pending alerts to drive the tab badge.
-      fetch("/api/frozen/alerts?status=pending&min_level=low&limit=200")
+      fetch("/api/frozen/alerts?status=pending&min_level=low&upcoming=1&limit=200")
         .then((r) => r.json())
         .then((d: { alerts?: unknown[] }) =>
           setTodayRiskCount(d.alerts?.length ?? 0),

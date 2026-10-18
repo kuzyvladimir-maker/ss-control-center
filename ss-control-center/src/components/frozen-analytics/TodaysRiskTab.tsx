@@ -47,7 +47,7 @@ export default function TodaysRiskTab() {
     try {
       const status = showResolved ? "" : "pending";
       const url = status
-        ? `/api/frozen/alerts?status=${status}&min_level=low&limit=200`
+        ? `/api/frozen/alerts?status=${status}&min_level=low&upcoming=1&limit=200`
         : "/api/frozen/alerts?min_level=low&limit=200";
       const res = await fetch(url);
       const data = (await res.json()) as { alerts: RiskAlert[] };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { liveChannels } from "@/lib/customer-hub/live-counts";
 import {
   getConnectedGmailAccounts,
   searchMessages,
@@ -38,6 +39,11 @@ export async function GET(request: NextRequest) {
     } else {
       where.direction = "incoming";
       if (store && store !== "all") where.storeIndex = parseInt(store);
+      // Live channels only (same rule as the hub's "Unread" card), unless
+      // the caller explicitly asks for ?channels=all.
+      if (sp.get("channels") !== "all") {
+        where.channel = { in: await liveChannels() };
+      }
 
       if (status === "active") {
         where.status = { in: ["NEW", "ANALYZED"] };

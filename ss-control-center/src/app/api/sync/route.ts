@@ -97,12 +97,24 @@ export async function POST(request: NextRequest) {
       Object.assign(results, fanOut);
     }
 
+    // "done" only if at least one store's orders actually synced — it used
+    // to say "done" even when every store 403'd, which kept the Dashboard
+    // "Synced" chip green.
+    const orderSteps = Object.entries(results).filter(([k]) => k.startsWith("orders_store"));
+    const anyOrdersOk = orderSteps.some(
+      ([, v]) => (v as { success?: boolean })?.success === true
+    );
+    const failedSteps = Object.entries(results)
+      .filter(([, v]) => (v as { success?: boolean; ok?: boolean })?.success === false ||
+        (v as { ok?: boolean })?.ok === false)
+      .map(([k, v]) => `${k}: ${(v as { error?: string })?.error ?? "failed"}`);
     await prisma.syncLog.update({
       where: { id: log.id },
       data: {
-        status: "done",
+        status: orderSteps.length === 0 || anyOrdersOk ? "done" : "error",
         itemsSynced: totalSynced,
         completedAt: new Date(),
+        error: failedSteps.length ? failedSteps.join(" | ").slice(0, 1000) : null,
       },
     });
 

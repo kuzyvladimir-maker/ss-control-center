@@ -26,3 +26,26 @@ days. A dead source is now visible instead of reading as 0.
 - Store2/3/5 SP-API 403: the owner must renew the LWA client secret / re-authorize in Developer Central. Until then store3 orders and sales stop at 2026-10-07.
 - Customer Hub has ingested no Amazon buyer message since 2026-05-30 — a separate investigation.
 - Local `.env` VEEQO_API_KEY is rejected (401); prod key works.
+
+## Round 2 — every element vs its target page (same day)
+
+| Element | Leads to | Source | Was | Now |
+|---|---|---|---|---|
+| 5 sales cards | /analytics?period=… | AmazonOrder+WalmartOrder, ET, non-cancelled | Page ignored `?period=`, opened on Last 30 days; failed load = endless skeleton | Page reads `?period=` (forecast→MTD); error shown. Sales Overview still includes cancelled + Veeqo eBay/TikTok/Shopify, so totals legitimately differ (documented, not changed). |
+| Awaiting ship | /shipping | Veeqo live (`/api/shipping/dashboard`) | DB count | Same as page + sidebar |
+| "N shipped today" chip, Shipping progress | /shipping | was Amazon status=Shipped | Not labels | `ShippingPlanItem` bought today (ET) = labels bought via Shipping Labels; panel clickable |
+| To buy | /procurement | `fetchProcurementCards` distinct orders | Match | Match (no change) |
+| Cases open | /customer-hub | `src/lib/customer-hub/live-counts.ts` | Tile, hub card and badge used 3 definitions | One definition = hub "Unread messages" (live channels). Hub stats now exclude the inactive Walmart store too. |
+| A-to-Z chip | /customer-hub | same helper | Counted chargebacks too; hub all-time | `claimType A_TO_Z`, in-flight, ≤60 days — both hub and tile |
+| Sidebar Customer hub badge | /customer-hub | summary `customerHub.attention` | open cases | = hub headline "N items need your attention" |
+| Health issues | /account-health | latest snapshot per active store | `take:10`, done-only, no store filter | Same query as the page hero; "deactivated" chip |
+| Frozen at risk | /frozen-analytics | `FrozenRiskAlert` pending, ship date ≥ today | Page included past-dated alerts | Alerts API `upcoming=1`; page badge = tile value |
+| Adjustments 30d | /adjustments?period=30d | dispute-board "Charged", Amazon board accounts, by charge date | createdAt-netted sum the page never showed | Same as board "30 days"; page reads `?period=` |
+| Sidebar Adjustments badge | /adjustments | `/api/adjustments/autopilot` fileable (15-min poll) | 182 "unreviewed" — no such bucket on the page | = "Очередь споров" ready-to-file count |
+| Awaiting fulfilment table | /shipping?q=<order> | Veeqo | Unsorted, rows not clickable | Sorted by ship-by (dispatch_date first); each row opens the order in Shipping (`?q=` pre-fills search) |
+| Customer queue | /customer-hub?message=<id> | BuyerMessage NEW+ANALYZED, oldest first | NEW only; store/order fields never rendered (wrong names); rows not clickable | Fixed fields; each row opens that message |
+| Refresh | POST /api/sync | — | Result swallowed; SyncLog "done" even if all stores failed | Result/failed steps shown under the header; SyncLog "error" when no store synced |
+| "Generate plan" | /shipping | — | Misleading — no such action | Renamed "Open shipping" |
+| Synced Xh ago | — | SyncLog | Any job (Walmart poll, heartbeats) | Amazon orders feed only (`orders-amazon` cron now writes SyncLog) |
+
+Not changed: summary runs the full `fetchProcurementCards` (live Veeqo + SP-API) on every call and the sidebar polls it every 60 s — a cost risk worth a cached count later.

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import { SalesCardsRow } from "@/components/dashboard/SalesCardsRow";
 import {
@@ -43,12 +44,21 @@ interface DashboardData {
   claims: { active: number };
   ordersByStore?: Array<{ storeIndex: number; count: number; lastOrderAt: string | null }>;
   customerHub?: { lastAmazonMessageAt: string | null; stale: boolean };
-  health: { issues: number; lastSnapshotAt?: string | null; stale?: boolean };
+  health: {
+    issues: number;
+    deactivated?: number;
+    lastSnapshotAt?: string | null;
+    stale?: boolean;
+  };
+  labelsBoughtToday?: number;
   procurement: { ordersToBuy: number; error?: string | null };
   frozen: { incidents30d: number; riskElevated?: number; riskLow?: number };
   // Plain-English broken-feed notices from /api/dashboard/summary.
   dataIssues?: string[];
-  adjustments: { monthlyTotal: number };
+  adjustments: {
+    monthlyTotal: number;
+    charged30d?: { amount: number; count: number };
+  };
   walmart?: {
     ordersTotal30d: number;
     ordersToday: number;
@@ -87,11 +97,13 @@ interface VeeqoOrder {
   }>;
 }
 
+// BuyerMessage rows from /api/customer-hub/messages (field names as stored).
 interface CsCaseRow {
   id: string;
   channel?: string | null;
-  store?: string | null;
-  orderId?: string | null;
+  storeName?: string | null;
+  amazonOrderId?: string | null;
+  walmartOrderId?: string | null;
   category?: string | null;
   categoryName?: string | null;
   priority?: string | null;
@@ -142,6 +154,7 @@ export default function DashboardPage() {
     toQueryString,
   } = useStoreFilter();
 
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [cases, setCases] = useState<CsCaseRow[]>([]);
@@ -201,7 +214,7 @@ export default function DashboardPage() {
         )
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
-        fetch("/api/customer-hub/messages?limit=4&status=NEW")
+        fetch("/api/customer-hub/messages?limit=4&status=active")
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
       ]);
@@ -241,7 +254,13 @@ export default function DashboardPage() {
             return false;
           });
 
-      const mapped: OrderRow[] = filteredVeeqo.slice(0, 8).map((o) => {
+      // Most urgent first — same ship-by field the Shipping page buckets on
+      // (dispatch_date, then due_date). Veeqo returns its own order, so the
+      // 8 rows shown used to be arbitrary.
+      const shipByOf = (o: VeeqoOrder) =>
+        new Date(o.dispatch_date ?? o.due_date ?? "9999-12-31").getTime();
+      const urgentFirst = [...filteredVeeqo].sort((a, b) => shipByOf(a) - shipByOf(b));
+      const mapped: OrderRow[] = urgentFirst.slice(0, 8).map((o) => {
         const item = o.line_items?.[0];
         const productName = item?.sellable?.product_title;
         const tags = item?.sellable?.tags || [];
@@ -267,7 +286,7 @@ export default function DashboardPage() {
           marketplace: channel,
           productName,
           productType: isFrozen ? "Frozen" : isDry ? "Dry" : null,
-          shipBy: o.due_date ?? o.dispatch_date ?? null,
+          shipBy: o.dispatch_date ?? o.due_date ?? null,
           status: o.status === "shipped" ? "Shipped" : "Ready",
         };
       });
@@ -311,9 +330,32 @@ export default function DashboardPage() {
     load();
   }, [load, filterLoading, selectedStoreIds.length]);
 
+  // Result of the last manual Refresh — shown under the header so a failed
+  // sync is visible (it used to be swallowed silently).
+  const [syncNote, setSyncNote] = useState<string | null>(null);
+
   async function syncNow() {
     setSyncing(true);
-    await fetch("/api/sync", { method: "POST" }).catch(() => undefined);
+    setSyncNote(null);
+    try {
+      const res = await fetch("/api/sync", { method: "POST" });
+      const j = await res.json().catch(() => null);
+      // /api/sync returns `results` as a map: { orders_store1: {...}, ... }.
+      const results: Array<{ success?: boolean; ok?: boolean; error?: string }> =
+        j?.results && typeof j.results === "object" ? Object.values(j.results) : [];
+      const failed = results.filter((r) => r.success === false || r.ok === false || r.error);
+      if (!res.ok) setSyncNote(`Refresh failed (HTTP ${res.status}).`);
+      else if (failed.length > 0)
+        setSyncNote(`Refresh finished with ${failed.length} failed step(s): ${failed
+          .map((f) => f.error)
+          .filter(Boolean)
+          .slice(0, 2)
+          .join("; ")
+          .slice(0, 220)}`);
+      else setSyncNote("Refresh complete.");
+    } catch {
+      setSyncNote("Refresh failed — request timed out or network error.");
+    }
     await load();
     setSyncing(false);
   }
@@ -336,7 +378,8 @@ export default function DashboardPage() {
   const weekString = now ? `W${getWeek(now)}` : "";
 
   const totalToShip = liveAwaiting ?? data?.orders.awaitingShipment ?? 0;
-  const shippedToday = data?.orders.shippedToday ?? 0;
+  // Labels bought today via Shipping Labels (ShippingPlanItem → bought).
+  const labelsToday = data?.labelsBoughtToday ?? 0;
   const noStoresSelected =
     !filterLoading && allStores.length > 0 && selectedStoreIds.length === 0;
 
@@ -363,7 +406,7 @@ export default function DashboardPage() {
             </Btn>
             <Link href="/shipping">
               <Btn variant="primary" icon={<ArrowRight size={13} />}>
-                Generate plan
+                Open shipping
               </Btn>
             </Link>
           </>
@@ -387,6 +430,12 @@ export default function DashboardPage() {
 
       {!noStoresSelected && (
       <>
+      {syncNote && (
+        <div className="rounded-md border border-rule bg-surface px-4 py-2 text-[12px] text-ink-2">
+          {syncNote}
+        </div>
+      )}
+
       {/* Broken data feeds — one banner instead of tiles silently reading 0. */}
       {(data?.dataIssues?.length ?? 0) > 0 && (
         <div
@@ -423,7 +472,7 @@ export default function DashboardPage() {
           value={totalToShip}
           icon={<Truck size={14} />}
           chips={[
-            { label: `${shippedToday} shipped today`, variant: "ok" },
+            { label: `${labelsToday} labels today`, variant: "ok" },
           ]}
         />
         <KpiCard
@@ -469,7 +518,9 @@ export default function DashboardPage() {
                 : "default"
           }
           chips={
-            data?.health.stale
+            (data?.health.deactivated ?? 0) > 0
+              ? [{ label: `${data?.health.deactivated} deactivated`, variant: "urgent" }]
+              : data?.health.stale
               ? [
                   {
                     label: data.health.lastSnapshotAt
@@ -490,38 +541,38 @@ export default function DashboardPage() {
         <KpiCard
           href="/frozen-analytics"
           label="Frozen at risk"
-          value={data?.frozen.riskElevated ?? 0}
+          // Same number as the "Today's risk" badge on /frozen-analytics:
+          // pending alerts, low and above, ship date today or later.
+          value={(data?.frozen.riskElevated ?? 0) + (data?.frozen.riskLow ?? 0)}
           icon={<Thermometer size={14} />}
           iconVariant={
             (data?.frozen.riskElevated ?? 0) > 0 ? "warn" : "default"
           }
           chips={[
-            ...((data?.frozen.riskLow ?? 0) > 0
-              ? [{ label: `+${data?.frozen.riskLow} low`, variant: "neutral" as const }]
-              : []),
+            ...((data?.frozen.riskElevated ?? 0) > 0
+              ? [{ label: `${data?.frozen.riskElevated} medium+`, variant: "urgent" as const }]
+              : (data?.frozen.riskLow ?? 0) > 0
+                ? [{ label: "all low", variant: "neutral" as const }]
+                : []),
             ...((data?.frozen.incidents30d ?? 0) > 0
               ? [{ label: `${data?.frozen.incidents30d} incidents 30d`, variant: "urgent" as const }]
               : []),
           ]}
         />
+        {/* Same number as the "Charged" figure on /adjustments for its
+            "30 days" period (Amazon board accounts, by charge date). */}
         <KpiCard
-          href="/adjustments"
+          href="/adjustments?period=30d"
           label="Adjustments 30d"
-          value={
-            data?.adjustments.monthlyTotal
-              ? `$${Math.abs(data.adjustments.monthlyTotal).toFixed(0)}`
-              : "$0"
-          }
+          value={`$${Math.round(data?.adjustments.charged30d?.amount ?? 0).toLocaleString("en-US")}`}
           icon={<Receipt size={14} />}
-          iconVariant={
-            (data?.adjustments.monthlyTotal ?? 0) < 0 ? "warn" : "default"
-          }
+          iconVariant={(data?.adjustments.charged30d?.amount ?? 0) > 0 ? "warn" : "default"}
           trend={
-            data?.adjustments.monthlyTotal && data.adjustments.monthlyTotal < 0
+            (data?.adjustments.charged30d?.count ?? 0) > 0
               ? {
-                  value: "loss",
+                  value: `${data?.adjustments.charged30d?.count} charges`,
                   positive: false,
-                  subText: "recover via Adjustments",
+                  subText: "dispute via Adjustments",
                 }
               : undefined
           }
@@ -619,7 +670,9 @@ export default function DashboardPage() {
                       {orders.map((o) => (
                         <tr
                           key={o.id}
-                          className="border-b border-rule last:border-0 hover:bg-surface-tint"
+                          onClick={() => router.push(`/shipping?q=${encodeURIComponent(o.id)}`)}
+                          title="Open this order in Shipping Labels"
+                          className="cursor-pointer border-b border-rule last:border-0 hover:bg-surface-tint"
                         >
                           <td className="px-4 py-2.5 font-mono text-[12px] text-ink">
                             {o.id}
@@ -667,7 +720,11 @@ export default function DashboardPage() {
                 {/* MOBILE cards (< md) */}
                 <div className="md:hidden divide-y divide-rule">
                   {orders.map((o) => (
-                    <div key={o.id} className="px-4 py-3">
+                    <Link
+                      key={o.id}
+                      href={`/shipping?q=${encodeURIComponent(o.id)}`}
+                      className="block px-4 py-3"
+                    >
                       {/* HEAD: order id + status */}
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <span className="font-mono text-[13px] text-ink truncate">
@@ -714,7 +771,7 @@ export default function DashboardPage() {
                           {formatTime(o.shipBy)}
                         </span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </>
@@ -725,17 +782,18 @@ export default function DashboardPage() {
         {/* Right column */}
         <div className="space-y-4">
           {/* Shipping progress */}
-          <Panel className="bg-green-soft border-green-soft2">
+          <Link href="/shipping" className="block">
+          <Panel className="bg-green-soft border-green-soft2 transition-colors hover:border-green-mid/40">
             <PanelBody>
               <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-green-ink/70">
                 Shipping progress
               </div>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-[34px] font-semibold leading-none tabular text-green-ink">
-                  {shippedToday}
+                  {labelsToday}
                 </span>
                 <span className="text-[14px] text-green-ink/60 tabular">
-                  / {shippedToday + totalToShip}
+                  / {labelsToday + totalToShip}
                 </span>
               </div>
               <div className="text-[11.5px] text-green-ink/70 mt-1">
@@ -746,9 +804,9 @@ export default function DashboardPage() {
                   className="h-full rounded-full bg-green"
                   style={{
                     width: `${
-                      (shippedToday + totalToShip) > 0
+                      (labelsToday + totalToShip) > 0
                         ? Math.round(
-                            (shippedToday / (shippedToday + totalToShip)) * 100
+                            (labelsToday / (labelsToday + totalToShip)) * 100
                           )
                         : 0
                     }%`,
@@ -763,20 +821,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-green-ink/60">Shipped today</div>
+                  <div className="text-green-ink/60">Labels today</div>
                   <div className="text-green-ink font-semibold tabular">
-                    {shippedToday}
+                    {labelsToday}
                   </div>
                 </div>
               </div>
             </PanelBody>
           </Panel>
+          </Link>
 
           {/* Customer queue */}
           <Panel>
             <PanelHeader
               title="Customer queue"
-              count={cases.length}
+              count={data?.customerService.openCases ?? cases.length}
               right={
                 <Link
                   href="/customer-hub"
@@ -794,8 +853,9 @@ export default function DashboardPage() {
               ) : (
                 <div>
                   {cases.map((c) => (
-                    <div
+                    <Link
                       key={c.id}
+                      href={`/customer-hub?message=${encodeURIComponent(c.id)}`}
                       className="flex items-start gap-3 border-b border-rule px-4 py-3 last:border-0 hover:bg-surface-tint"
                     >
                       <div
@@ -820,7 +880,8 @@ export default function DashboardPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
                           <div className="truncate text-[12.5px] font-medium text-ink">
-                            {c.category} · {c.categoryName ?? "Open case"}
+                            {c.category ? `${c.category} · ` : ""}
+                            {c.categoryName ?? "Buyer message"}
                           </div>
                           <div className="text-[10.5px] font-mono text-ink-3">
                             {timeAgo(c.createdAt)}
@@ -828,11 +889,12 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-[11px] text-ink-3 truncate">
                           {c.channel ?? "Amazon"}
-                          {c.store && ` · ${c.store}`}
-                          {c.orderId && ` · ${c.orderId}`}
+                          {c.storeName && ` · ${c.storeName}`}
+                          {(c.amazonOrderId || c.walmartOrderId) &&
+                            ` · ${c.amazonOrderId ?? c.walmartOrderId}`}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

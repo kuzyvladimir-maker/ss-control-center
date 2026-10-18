@@ -112,15 +112,17 @@ export function SalesCardsRow() {
     return null;
   }
 
-  if (loading || !data) return <SalesCardsSkeleton />;
-
-  if (error) {
+  // Error first: a failed first load leaves `data` null, and checking the
+  // skeleton first made it pulse forever instead of showing the error.
+  if (error && !data) {
     return (
       <div className="rounded-md border border-rule bg-surface-tint px-4 py-3 text-[12px] text-ink-3">
         Failed to load sales summary: {error}
       </div>
     );
   }
+
+  if (loading || !data) return <SalesCardsSkeleton />;
 
   // Each sales card is a Link to /analytics scoped to that period. The
   // analytics page reads `?period=` to scope its tables and charts to

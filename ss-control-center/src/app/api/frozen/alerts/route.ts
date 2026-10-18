@@ -4,10 +4,14 @@
 //   status     — filter exact: pending | applied | ignored | resolved
 //   min_level  — show only at-or-above this level (low/medium/high/critical)
 //   limit      — cap (default 50)
+//   upcoming   — "1": only ship dates today (ET) or later. Past-dated
+//                pending alerts are orders that already shipped; the
+//                Dashboard "Frozen at risk" tile uses the same rule.
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { LEVEL_ORDER } from "@/lib/frozen-analytics/rules-engine";
+import { todayNY } from "@/lib/shipping/dates";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -17,6 +21,7 @@ export async function GET(request: NextRequest) {
 
   const where: Record<string, unknown> = {};
   if (status) where.status = status;
+  if (sp.get("upcoming") === "1") where.shipDate = { gte: todayNY() };
   if (minLevel) {
     const idx = LEVEL_ORDER.indexOf(minLevel as (typeof LEVEL_ORDER)[number]);
     if (idx >= 0) {

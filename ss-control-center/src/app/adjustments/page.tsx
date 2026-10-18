@@ -125,6 +125,11 @@ export default function AdjustmentsPage() {
   // Вкладка и период сводки
   const [tab, setTab] = useState<TabId>("queue");
   const [period, setPeriod] = useState<Period>(() => presetPeriod("all"));
+  // Deep link from the Dashboard "Adjustments 30d" tile: ?period=30d.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("period");
+    if (p === "7d" || p === "30d" || p === "month" || p === "prevMonth") setPeriod(presetPeriod(p));
+  }, []);
   const boardState = useDisputeBoard(period);
   const autopilot = useAutopilot();
 

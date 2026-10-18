@@ -61,11 +61,12 @@ interface Division {
 interface DashboardSummary {
   orders?: { awaitingShipment?: number };
   customerService?: { openCases?: number };
+  customerHub?: { attention?: number };
   claims?: { active?: number };
   health?: { issues?: number };
   walmart?: { healthIssues?: number };
   procurement?: { ordersToBuy?: number };
-  adjustments?: { monthlyTotal?: number; unreviewed?: number };
+  adjustments?: { monthlyTotal?: number; unreviewed?: number; fileable?: number };
 }
 
 // Module placement per Vladimir's 2026-06-21 decisions:
@@ -162,7 +163,10 @@ const divisions = (s: DashboardSummary): Division[] => [
         icon: Receipt,
         // Unreviewed shipping adjustments (30d). NOT s.claims.active — that's
         // the A-to-Z claim queue, a different number.
-        pillCount: s.adjustments?.unreviewed || undefined,
+        // Batches ready to file — the count on the page's "Очередь споров"
+        // tab (DisputeAutopilot `fileable`). The old `unreviewed` count
+        // (182) matched nothing on the page.
+        pillCount: s.adjustments?.fileable || undefined,
         pillVariant: "warn",
       },
       // Staff training courses + per-browser completion tracking, digitized
@@ -179,7 +183,9 @@ const divisions = (s: DashboardSummary): Division[] => [
         title: "Customer hub",
         href: "/customer-hub",
         icon: MessageSquare,
-        pillCount: s.customerService?.openCases || undefined,
+        // Same total as the hub headline "N items need your attention".
+        pillCount:
+          (s.customerHub?.attention ?? s.customerService?.openCases) || undefined,
         pillVariant: "active",
       },
     ],
@@ -371,20 +377,57 @@ export default function SidebarContent({
         const liveShippingCount = Array.isArray(shippingJson?.orders)
           ? shippingJson.orders.length
           : undefined;
-        setSummary({
+        setSummary((prev) => ({
           ...(summaryJson ?? {}),
           orders: {
             ...(summaryJson?.orders ?? {}),
             awaitingShipment:
               liveShippingCount ?? summaryJson?.orders?.awaitingShipment,
           },
-        });
+          // Owned by the slower autopilot poll below — keep it.
+          adjustments: {
+            ...(summaryJson?.adjustments ?? {}),
+            fileable: prev?.adjustments?.fileable,
+          },
+        }));
       } catch {
         /* sidebar refresh is best-effort */
       }
     };
     load();
     const id = setInterval(load, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  // Adjustments badge = dispute batches ready to file (same list as the
+  // /adjustments "Очередь споров" tab). Computed from the whole registry,
+  // so it polls every 15 min, not every minute.
+  useEffect(() => {
+    let cancelled = false;
+    const loadAutopilot = async () => {
+      try {
+        const res = await fetch("/api/adjustments/autopilot", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const j: {
+          queue?: { ready?: Array<{ choice?: { verdict?: string } }> };
+        } = await res.json();
+        const fileable = (j.queue?.ready ?? []).filter(
+          (d) => d.choice?.verdict === "FILE" || d.choice?.verdict === "FILE_CAUTION"
+        ).length;
+        if (cancelled) return;
+        setSummary((prev) => ({
+          ...(prev ?? {}),
+          adjustments: { ...(prev?.adjustments ?? {}), fileable },
+        }));
+      } catch {
+        /* best-effort */
+      }
+    };
+    loadAutopilot();
+    const id = setInterval(loadAutopilot, 15 * 60_000);
     return () => {
       cancelled = true;
       clearInterval(id);

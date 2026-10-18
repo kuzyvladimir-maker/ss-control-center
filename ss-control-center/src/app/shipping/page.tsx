@@ -752,6 +752,12 @@ export default function ShippingLabelsPage() {
   // shipped, delivered, cancelled, refunded — the ones the dashboard
   // never loads.
   const [searchQuery, setSearchQuery] = useState("");
+  // Deep link from the Dashboard "Awaiting fulfilment" table:
+  // /shipping?q=<order number> pre-fills the search box.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setSearchQuery(q);
+  }, []);
   const [archive, setArchive] = useState<{
     query: string;
     loading: boolean;

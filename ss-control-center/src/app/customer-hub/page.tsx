@@ -27,6 +27,11 @@ export default function CustomerHubPage() {
   const [storeFilter, setStoreFilter] = useState("all");
   const [period, setPeriod] = useState(30);
   const [activeTab, setActiveTab] = useState("messages");
+  // Deep link: /customer-hub?tab=atoz (Dashboard A-to-Z chip) etc.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t && ["messages", "atoz", "chargebacks", "feedback"].includes(t)) setActiveTab(t);
+  }, []);
   const [stats, setStats] = useState<HubStats>({
     unreadMessages: 0,
     urgentMessages: 0,
