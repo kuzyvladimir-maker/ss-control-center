@@ -49,3 +49,10 @@ days. A dead source is now visible instead of reading as 0.
 | Synced Xh ago | — | SyncLog | Any job (Walmart poll, heartbeats) | Amazon orders feed only (`orders-amazon` cron now writes SyncLog) |
 
 Not changed: summary runs the full `fetchProcurementCards` (live Veeqo + SP-API) on every call and the sidebar polls it every 60 s — a cost risk worth a cached count later.
+
+## Round 3 — only store1 is live; Customer Hub ingest
+
+- Owner (2026-10-18): only store1 (Salutem Solutions, Amazon) is live; every other account is blocked. The 403s on store2/3/5 are blocks, not expired keys.
+- Code now treats `Store.active` as the live switch: `activeAmazonStoreIndexes()` (`src/lib/stores/active-amazon.ts`) gates the orders cron, the Account Health report request and `/api/sync`; dashboard Amazon totals default to active stores; the 403 banner lists only active stores.
+- **Pending:** the Store rows for store2–5 are still `active = true` in Turso. Writing that flag to the prod DB was blocked by the agent safety classifier, and no UI toggles `Store.active` yet. Until the flag is flipped, the dashboard still counts those stores.
+- Customer Hub: there was **no cron**; ingest ran only on the hub's Sync button (last press 2026-05-30) with a `newer_than:2d` Gmail window. Store1 Gmail is connected and authorised; ~39 buyer emails in the last 30 days never reached the hub. Sync logic moved to `src/lib/customer-hub/sync-messages.ts`; new `/api/cron/customer-hub-sync` every 30 min (active stores, optional `?window=14d` backfill). AI analysis goes through the subscription worker (no paid keys).

@@ -34,6 +34,7 @@ import {
 } from "@/lib/amazon-sp-api/seller-performance-report";
 import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
 import { resolveAccountState } from "@/lib/amazon-sp-api/account-state";
+import { activeAmazonStoreIndexes } from "@/lib/stores/active-amazon";
 
 const REPORT_TYPE = "GET_V2_SELLER_PERFORMANCE_REPORT";
 // Jobs older than this without completing get marked as failed so the
@@ -68,8 +69,10 @@ export interface PollPhaseResult {
  */
 export async function requestReportsForAllStores(): Promise<RequestPhaseResult[]> {
   const results: RequestPhaseResult[] = [];
+  const active = await activeAmazonStoreIndexes();
   for (let i = 1; i <= 5; i++) {
     if (!getStoreCredentials(i)) continue;
+    if (!active.has(i)) continue; // blocked / inactive account
     const storeId = `store${i}`;
     try {
       const reportId = await requestReport(i);

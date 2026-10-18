@@ -24,6 +24,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { syncOrders } from "@/lib/sync/orders-sync";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
 import { prisma } from "@/lib/prisma";
+import { activeAmazonStoreIndexes } from "@/lib/stores/active-amazon";
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -50,8 +51,10 @@ export async function GET(request: NextRequest) {
   // Sequential, not parallel — Amazon SP-API rate-limits per seller account,
   // running all 5 stores at once just creates 429s and burns retry budget.
   // A small sleep between stores spreads the load further.
+  const active = await activeAmazonStoreIndexes();
   for (let storeIndex = 1; storeIndex <= 5; storeIndex++) {
     if (!getStoreCredentials(storeIndex)) continue;
+    if (!active.has(storeIndex)) continue; // blocked / inactive account
     try {
       const synced = await syncOrders(storeIndex, WINDOW_DAYS, "updated");
       results.push({ storeIndex, success: true, synced });

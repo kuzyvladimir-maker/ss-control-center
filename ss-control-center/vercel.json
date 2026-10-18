@@ -11,6 +11,10 @@
       "schedule": "*/15 7-10 * * *"
     },
     {
+      "path": "/api/cron/customer-hub-sync",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/orders-amazon",
       "schedule": "0 */2 * * *"
     },

@@ -22,9 +22,13 @@ async function resolveStoreFilter(searchParams: URLSearchParams) {
   const total = allStores.length;
 
   // Missing or empty CSV → show everything.
+  // Amazon side always narrows to ACTIVE stores (allStores is active-only):
+  // blocked accounts (store2-5 as of 2026-10-18) must not feed totals.
   if (!raw) {
     return {
-      amazonStoreIndexes: null as number[] | null,
+      amazonStoreIndexes: allStores
+        .filter((s) => s.channel === "Amazon" && s.storeIndex != null)
+        .map((s) => s.storeIndex as number) as number[] | null,
       walmartStoreIndexes: null as number[] | null,
       walmartSellerIds: null as string[] | null,
       noneSelected: false,
@@ -47,7 +51,9 @@ async function resolveStoreFilter(searchParams: URLSearchParams) {
   // skip the IN-list overhead.
   if (requested.size === total && allStores.every((s) => requested.has(s.id))) {
     return {
-      amazonStoreIndexes: null,
+      amazonStoreIndexes: allStores
+        .filter((s) => s.channel === "Amazon" && s.storeIndex != null)
+        .map((s) => s.storeIndex as number) as number[] | null,
       walmartStoreIndexes: null,
       walmartSellerIds: null,
       noneSelected: false,
@@ -423,12 +429,15 @@ export async function GET(request: NextRequest) {
     for (const j of recentReportJobs) {
       if (!latestJobByStore.has(j.storeId)) latestJobByStore.set(j.storeId, j);
     }
+    const activeIdx = new Set(amazonStores.map((st) => `store${st.storeIndex}`));
     const denied = [...latestJobByStore.values()]
+      .filter((j) => activeIdx.has(j.storeId))
       .filter((j) => j.status === "error" && /\b403\b/.test(j.error ?? ""))
       .map((j) => j.storeId.replace("store", "S"))
       .sort();
     if (denied.length > 0) {
       const lwaExpired = [...latestJobByStore.values()]
+        .filter((j) => activeIdx.has(j.storeId))
         .filter((j) => /LWA/i.test(j.error ?? "") && /expired/i.test(j.error ?? ""))
         .map((j) => j.storeId.replace("store", "S"))
         .sort();

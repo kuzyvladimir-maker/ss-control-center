@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { syncOrders } from "@/lib/sync/orders-sync";
 import { syncFinancialEvents } from "@/lib/sync/finances-sync";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+import { activeAmazonStoreIndexes } from "@/lib/stores/active-amazon";
 
 // Vercel default function timeout is 10s on Hobby and 60s on Pro. Fanning
 // out every sync pipeline (5 stores × 2 jobs + Walmart + Account Health +
@@ -23,8 +24,11 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function configuredStores(): number[] {
-  return [1, 2, 3, 4, 5].filter((i) => getStoreCredentials(i));
+// Stores with SP-API credentials AND an active Store row — blocked
+// accounts are skipped instead of failing with 403 on every Refresh.
+async function configuredStores(): Promise<number[]> {
+  const active = await activeAmazonStoreIndexes();
+  return [1, 2, 3, 4, 5].filter((i) => getStoreCredentials(i) && active.has(i));
 }
 
 export async function POST(request: NextRequest) {
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
   const job: string = body.job || "all";
   const storeIndex: number | undefined = body.storeIndex;
 
-  const stores = storeIndex ? [storeIndex] : configuredStores();
+  const stores = storeIndex ? [storeIndex] : await configuredStores();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: Record<string, any> = {};
 
