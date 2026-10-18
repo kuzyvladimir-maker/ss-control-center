@@ -41,9 +41,13 @@ interface DashboardData {
   };
   customerService: { openCases: number };
   claims: { active: number };
-  health: { issues: number };
+  ordersByStore?: Array<{ storeIndex: number; count: number; lastOrderAt: string | null }>;
+  customerHub?: { lastAmazonMessageAt: string | null; stale: boolean };
+  health: { issues: number; lastSnapshotAt?: string | null; stale?: boolean };
   procurement: { ordersToBuy: number; error?: string | null };
-  frozen: { incidents30d: number };
+  frozen: { incidents30d: number; riskElevated?: number; riskLow?: number };
+  // Plain-English broken-feed notices from /api/dashboard/summary.
+  dataIssues?: string[];
   adjustments: { monthlyTotal: number };
   walmart?: {
     ordersTotal30d: number;
@@ -110,6 +114,10 @@ function formatTime(date: string | null | undefined): string {
     day: "numeric",
     ...(sameYear ? {} : { year: "numeric" }),
   });
+}
+
+function shortDay(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function timeAgo(iso: string): string {
@@ -271,13 +279,16 @@ export default function DashboardPage() {
           ? cs
           : [];
       // Customer queue follows channel selection — Walmart cases only when
-      // hasWalmart, Amazon cases only when hasAmazon.
-      const filteredMessages = isAllSelected
-        ? allMessages
-        : allMessages.filter((m) => {
-            const channel = (m.channel || "Amazon").toLowerCase();
-            return channel.includes("walmart") ? hasWalmart : hasAmazon;
-          });
+      // hasWalmart, Amazon cases only when hasAmazon. Applied even for "All
+      // stores": an inactive Walmart store isn't in the selection, and its
+      // 70-day-old messages used to fill the whole queue. Anything older
+      // than 30 days is history, not a queue.
+      const queueCutoff = Date.now() - 30 * 86400000;
+      const filteredMessages = allMessages.filter((m) => {
+        if (new Date(m.createdAt).getTime() < queueCutoff) return false;
+        const channel = (m.channel || "Amazon").toLowerCase();
+        return channel.includes("walmart") ? hasWalmart : hasAmazon;
+      });
       setCases(filteredMessages.slice(0, 4));
     } finally {
       setLoading(false);
@@ -376,6 +387,26 @@ export default function DashboardPage() {
 
       {!noStoresSelected && (
       <>
+      {/* Broken data feeds — one banner instead of tiles silently reading 0. */}
+      {(data?.dataIssues?.length ?? 0) > 0 && (
+        <div
+          className="rounded-lg border px-4 py-3"
+          style={{ background: "var(--warn-tint)", borderColor: "var(--warn)" }}
+        >
+          <div
+            className="mb-1 flex items-center gap-2 text-[12px] font-semibold"
+            style={{ color: "var(--warn-strong)" }}
+          >
+            <AlertTriangle size={14} />
+            Data feeds need attention
+          </div>
+          <ul className="space-y-0.5 text-[12px] text-ink-2">
+            {data?.dataIssues?.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* Sales row — 5-period gross revenue. Lives ABOVE the operations KPI row;
           see docs/SALES_CARDS_DASHBOARD_SPEC_v1_0.md */}
       <SalesCardsRow />
@@ -405,7 +436,12 @@ export default function DashboardPage() {
           }
           trend={{
             value: `${data?.orders.total30d ?? 0} orders 30d`,
-            subText: `S1 ${data?.orders.store1 ?? 0} · S2 ${data?.orders.store2 ?? 0}`,
+            // Every Amazon store with orders in the window (was hard-coded
+            // S1/S2, which hid store3's 84 orders).
+            subText:
+              (data?.ordersByStore ?? [])
+                .map((r) => `S${r.storeIndex} ${r.count}`)
+                .join(" · ") || undefined,
           }}
         />
         <KpiCard
@@ -428,22 +464,45 @@ export default function DashboardPage() {
           iconVariant={
             (data?.health.issues ?? 0) + (data?.walmart?.healthIssues ?? 0) > 0
               ? "danger"
-              : "default"
+              : data?.health.stale
+                ? "warn"
+                : "default"
+          }
+          chips={
+            data?.health.stale
+              ? [
+                  {
+                    label: data.health.lastSnapshotAt
+                      ? `Stale · since ${shortDay(data.health.lastSnapshotAt)}`
+                      : "No data",
+                    variant: "urgent",
+                  },
+                ]
+              : data?.health.lastSnapshotAt
+                ? [{ label: `AHR < 200 · ${shortDay(data.health.lastSnapshotAt)}`, variant: "neutral" }]
+                : undefined
           }
         />
+        {/* Frozen — nightly weather-risk forecast for frozen orders shipping
+            today or later (FrozenRiskAlert, written by
+            /api/cron/frozen-analysis). Replaces the complaint-log count,
+            which nothing populates automatically and read 0 forever. */}
         <KpiCard
           href="/frozen-analytics"
-          label="Frozen 30d"
-          value={data?.frozen.incidents30d ?? 0}
+          label="Frozen at risk"
+          value={data?.frozen.riskElevated ?? 0}
           icon={<Thermometer size={14} />}
           iconVariant={
-            (data?.frozen.incidents30d ?? 0) > 0 ? "warn" : "default"
+            (data?.frozen.riskElevated ?? 0) > 0 ? "warn" : "default"
           }
-          trend={
-            (data?.frozen.incidents30d ?? 0) > 0
-              ? { value: "incidents", positive: false }
-              : undefined
-          }
+          chips={[
+            ...((data?.frozen.riskLow ?? 0) > 0
+              ? [{ label: `+${data?.frozen.riskLow} low`, variant: "neutral" as const }]
+              : []),
+            ...((data?.frozen.incidents30d ?? 0) > 0
+              ? [{ label: `${data?.frozen.incidents30d} incidents 30d`, variant: "urgent" as const }]
+              : []),
+          ]}
         />
         <KpiCard
           href="/adjustments"

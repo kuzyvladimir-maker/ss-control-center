@@ -7,6 +7,10 @@
       "schedule": "0 7 * * *"
     },
     {
+      "path": "/api/cron/account-health-amazon-poll",
+      "schedule": "*/15 7-10 * * *"
+    },
+    {
       "path": "/api/cron/orders-amazon",
       "schedule": "0 */2 * * *"
     },

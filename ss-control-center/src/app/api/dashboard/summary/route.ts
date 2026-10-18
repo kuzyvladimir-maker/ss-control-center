@@ -69,14 +69,45 @@ async function resolveStoreFilter(searchParams: URLSearchParams) {
   };
 }
 
+// Midnight in America/New_York as a UTC instant. `setHours(0)` on Vercel is
+// UTC midnight = 8pm ET the day before, so "shipped today" mixed two days.
+function startOfTodayET(now: Date): Date {
+  const ny = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const offset = now.getTime() - ny.getTime();
+  const midnight = new Date(ny);
+  midnight.setHours(0, 0, 0, 0);
+  return new Date(midnight.getTime() + offset);
+}
+
+// A source older than this is reported as stale on the Dashboard instead of
+// silently rendering 0 (2026-10-18 inspection: Health had no snapshot since
+// 2026-06-30, Customer Hub no message since 2026-05-30 — both read "0").
+const STALE_MS = 2 * 86400000;
+
+function fmtDay(d: Date): string {
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "America/New_York",
+  });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const filter = await resolveStoreFilter(request.nextUrl.searchParams);
     const now = new Date();
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
+    const todayStart = startOfTodayET(now);
+    const todayYmd = todayStart
+      .toLocaleDateString("en-CA", { timeZone: "America/New_York" });
     const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000);
+
+    // Walmart is only "live" when the Store row is active. While it's off,
+    // its 300+ August messages must not inflate the customer counts.
+    const walmartLive =
+      (await prisma.store.count({ where: { channel: "Walmart", active: true } })) > 0;
+    const liveChannels = walmartLive ? ["Amazon", "Walmart"] : ["Amazon"];
 
     // When the caller explicitly selected zero stores, short-circuit with
     // zeroed-out values rather than running every aggregation.
@@ -141,9 +172,33 @@ export async function GET(request: NextRequest) {
           ...amazonStoreFilter,
         },
       }),
-      prisma.csCase.count({ where: { status: "open" } }),
+      // "Cases open" = customer threads still waiting on us, from the last
+      // 30 days, on live channels: open CsCase rows + Customer Hub messages
+      // not yet answered. Was all-time open CsCase only → 3 April Walmart
+      // cases shown forever.
+      Promise.all([
+        prisma.csCase.count({
+          where: {
+            status: "open",
+            createdAt: { gte: thirtyDaysAgo },
+            channel: { in: liveChannels },
+          },
+        }),
+        prisma.buyerMessage.count({
+          where: {
+            status: { in: ["NEW", "ANALYZED"] },
+            createdAt: { gte: thirtyDaysAgo },
+            channel: { in: liveChannels },
+          },
+        }),
+      ]).then(([a, b]) => a + b),
+      // Active A-to-Z = in-flight AND opened in the last 60 days. Amazon
+      // decides a claim within weeks; the 15 rows parked in
+      // EVIDENCE_GATHERED since 2026-04-12 are abandoned workflow state,
+      // not live claims.
       prisma.atozzClaim.count({
         where: {
+          createdAt: { gte: sixtyDaysAgo },
           status: {
             in: ["NEW", "EVIDENCE_GATHERED", "RESPONSE_READY", "SUBMITTED"],
           },
@@ -193,8 +248,9 @@ export async function GET(request: NextRequest) {
           ...amazonStoreFilter,
         },
       }),
-      // Frozen incidents in the last 30 days — drives the Dashboard Frozen
-      // tile. Excludes `outcome: ok` because those are non-incidents (we
+      // Frozen incidents in the last 30 days (complaint log). Kept for the
+      // sidebar/API contract; the Dashboard tile now leads with the nightly
+      // risk forecast below because nothing auto-populates this table. Excludes `outcome: ok` because those are non-incidents (we
       // log them for the regression model but the operator doesn't need
       // an alert for an order that arrived frozen as intended).
       prisma.frozenIncident.count({
@@ -246,6 +302,111 @@ export async function GET(request: NextRequest) {
           })
         : [],
     ]);
+
+    // ── Extra signals for the Dashboard (2026-10-18) ──────────────────────
+    const [
+      ordersByStoreRaw,
+      frozenRiskAlerts,
+      latestSnapshot,
+      recentReportJobs,
+      lastAmazonMessage,
+      amazonStores,
+    ] = await Promise.all([
+      prisma.amazonOrder.groupBy({
+        by: ["storeIndex"],
+        where: { purchaseDate: { gte: thirtyDaysAgo }, ...amazonStoreFilter },
+        _count: { _all: true },
+        _max: { purchaseDate: true },
+      }),
+      // Nightly weather-risk forecast for frozen orders shipping today or
+      // later, still awaiting the operator's decision.
+      prisma.frozenRiskAlert.groupBy({
+        by: ["riskLevel"],
+        where: { shipDate: { gte: todayYmd }, status: "pending" },
+        _count: { _all: true },
+      }),
+      prisma.accountHealthSnapshot.findFirst({
+        where: { syncStatus: "done" },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+      prisma.reportSyncJob.findMany({
+        where: { createdAt: { gte: new Date(now.getTime() - 3 * 86400000) } },
+        orderBy: { createdAt: "desc" },
+        select: { storeId: true, status: true, error: true },
+        take: 40,
+      }),
+      prisma.buyerMessage.findFirst({
+        where: { channel: "Amazon" },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+      prisma.store.findMany({
+        where: { channel: "Amazon", active: true, storeIndex: { not: null } },
+        select: { storeIndex: true, name: true },
+        orderBy: { storeIndex: "asc" },
+      }),
+    ]);
+
+    const ordersByStore = ordersByStoreRaw
+      .filter((r) => r.storeIndex != null)
+      .map((r) => ({
+        storeIndex: r.storeIndex as number,
+        count: r._count._all,
+        lastOrderAt: r._max.purchaseDate?.toISOString() ?? null,
+      }))
+      .sort((a, b) => a.storeIndex - b.storeIndex);
+
+    const riskCount = (levels: string[]) =>
+      frozenRiskAlerts
+        .filter((r) => levels.includes(r.riskLevel))
+        .reduce((n, r) => n + r._count._all, 0);
+    const frozenRiskElevated = riskCount(["medium", "high", "critical"]);
+    const frozenRiskLow = riskCount(["low"]);
+
+    // Plain-English list of broken data feeds, rendered as one banner on the
+    // Dashboard so a dead source is visible instead of reading as "0".
+    const dataIssues: string[] = [];
+    const latestJobByStore = new Map<string, (typeof recentReportJobs)[number]>();
+    for (const j of recentReportJobs) {
+      if (!latestJobByStore.has(j.storeId)) latestJobByStore.set(j.storeId, j);
+    }
+    const denied = [...latestJobByStore.values()]
+      .filter((j) => j.status === "error" && /\b403\b/.test(j.error ?? ""))
+      .map((j) => j.storeId.replace("store", "S"))
+      .sort();
+    if (denied.length > 0) {
+      const lwaExpired = [...latestJobByStore.values()]
+        .filter((j) => /LWA/i.test(j.error ?? "") && /expired/i.test(j.error ?? ""))
+        .map((j) => j.storeId.replace("store", "S"))
+        .sort();
+      dataIssues.push(
+        `Amazon SP-API access denied (403) for ${denied.join(", ")} — orders, sales and health for ${denied.length === 1 ? "this store" : "these stores"} are not updating.` +
+          (lwaExpired.length
+            ? ` ${lwaExpired.join(", ")}: LWA client secret expired — renew it in Developer Central.`
+            : "")
+      );
+    }
+    for (const r of ordersByStore) {
+      const label = amazonStores.find((s) => s.storeIndex === r.storeIndex)?.name ?? `S${r.storeIndex}`;
+      if (r.lastOrderAt && now.getTime() - new Date(r.lastOrderAt).getTime() > 3 * 86400000) {
+        dataIssues.push(`${label}: no new orders since ${fmtDay(new Date(r.lastOrderAt))}.`);
+      }
+    }
+    const healthStale =
+      !latestSnapshot || now.getTime() - latestSnapshot.createdAt.getTime() > STALE_MS;
+    if (healthStale) {
+      dataIssues.push(
+        `Account Health: no fresh report${latestSnapshot ? ` since ${fmtDay(latestSnapshot.createdAt)}` : ""}.`
+      );
+    }
+    const inboxStale =
+      !lastAmazonMessage || now.getTime() - lastAmazonMessage.createdAt.getTime() > 7 * 86400000;
+    if (inboxStale) {
+      dataIssues.push(
+        `Customer Hub: no Amazon buyer message ingested${lastAmazonMessage ? ` since ${fmtDay(lastAmazonMessage.createdAt)}` : ""}.`
+      );
+    }
 
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
@@ -333,9 +494,23 @@ export async function GET(request: NextRequest) {
       },
       customerService: { openCases: openCsCases },
       claims: { active: activeClaims },
-      health: { issues: healthIssues },
+      ordersByStore,
+      customerHub: {
+        lastAmazonMessageAt: lastAmazonMessage?.createdAt.toISOString() ?? null,
+        stale: inboxStale,
+      },
+      health: {
+        issues: healthIssues,
+        lastSnapshotAt: latestSnapshot?.createdAt.toISOString() ?? null,
+        stale: healthStale,
+      },
       procurement: { ordersToBuy: procurementOrdersToBuy, error: procurementError },
-      frozen: { incidents30d: frozenIncidents30d },
+      frozen: {
+        incidents30d: frozenIncidents30d,
+        riskElevated: frozenRiskElevated,
+        riskLow: frozenRiskLow,
+      },
+      dataIssues,
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
         unreviewed: adjustmentsUnreviewed,
@@ -363,9 +538,12 @@ function emptyResponse() {
     },
     customerService: { openCases: 0 },
     claims: { active: 0 },
-    health: { issues: 0 },
+    ordersByStore: [],
+    customerHub: { lastAmazonMessageAt: null, stale: false },
+    health: { issues: 0, lastSnapshotAt: null, stale: false },
     procurement: { ordersToBuy: 0 },
-    frozen: { incidents30d: 0 },
+    frozen: { incidents30d: 0, riskElevated: 0, riskLow: 0 },
+    dataIssues: [],
     adjustments: { monthlyTotal: 0, unreviewed: 0 },
     walmart: null,
     syncedAt: new Date().toISOString(),

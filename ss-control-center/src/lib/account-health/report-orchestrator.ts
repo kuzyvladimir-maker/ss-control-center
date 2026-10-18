@@ -37,9 +37,13 @@ import { resolveAccountState } from "@/lib/amazon-sp-api/account-state";
 
 const REPORT_TYPE = "GET_V2_SELLER_PERFORMANCE_REPORT";
 // Jobs older than this without completing get marked as failed so the
-// UI doesn't poll forever. Amazon usually finishes in <2 min; 30 min is
-// a generous ceiling.
-const JOB_EXPIRY_MS = 30 * 60 * 1000;
+// UI doesn't poll forever. Was 30 min until 2026-10-18 — but the daily cron
+// only polled for ~6s right after requesting, and nothing else polled until
+// the NEXT day's run, which then expired the job. Result: zero snapshots
+// from 2026-06-30 to 2026-10-18 (Dashboard "Health issues" stuck at 0).
+// Now /api/cron/account-health-amazon-poll walks open jobs every 15 min
+// for the following hours, so the ceiling just has to outlast that window.
+const JOB_EXPIRY_MS = 6 * 60 * 60 * 1000;
 
 export interface RequestPhaseResult {
   storeIndex: number;
