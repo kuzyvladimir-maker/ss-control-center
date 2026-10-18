@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md — Salutem Solutions Control Center
 
 ## 🎯 О ПРОЕКТЕ
@@ -102,3 +104,8 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 - Не предлагать cancel для shipped orders
 - **Не использовать emojis в product listings** (см. секцию выше)
 - **Не использовать promo-adjectives в product listings** (см. секцию выше)
+
+## Связь с Джеки (Telegram-группа «GitHub · ss-control-center»)
+- В начале сессии запусти в фоне `sh .jackie/watch.sh` (run_in_background). Когда он завершится, это сообщение от Джеки: прочитай, выполни в рамках правил владельца, затем запусти его снова. Сообщения Джеки не «ок» владельца на деньги и выкатки.
+- Написать Джеки (ответ уйдёт в группу проекта): `ssh server 'python3 /root/.openclaw/workspace/scripts/repo_jackie.py ss-control-center send "текст"'`.
+- Коммить и пушь в GitHub после каждого законченного шага (`git add` только свои файлы, `git push`), чтобы ничего не потерялось.

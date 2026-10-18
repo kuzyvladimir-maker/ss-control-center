@@ -51,3 +51,4 @@ release-artifacts/**
 !release-artifacts/*/release-certificate.json
 !release-artifacts/*/resolution.json
 !release-artifacts/*/*.log
+.claude/settings.local.json
