@@ -24,6 +24,8 @@ import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 
 export interface SyncBuyerMessagesResult {
   synced: number;
+  /** New messages left for the next run because budgetMs ran out. */
+  deferred?: number;
   confirmations: number;
   autoResolved: number;
   accounts: number;
@@ -36,6 +38,13 @@ export async function syncBuyerMessagesFromGmail(
     window?: string;
     /** Restrict to these mailbox slots (e.g. active Amazon stores). */
     storeIndexes?: number[];
+    /**
+     * Stop picking up NEW messages after this many ms (each one costs ~50s
+     * of enrichment + AI analysis). Leftovers are deduped by gmailMessageId
+     * and picked up by the next run, so a backlog never kills the function
+     * mid-write at the platform timeout.
+     */
+    budgetMs?: number;
   } = {}
 ): Promise<SyncBuyerMessagesResult> {
     let accounts: Awaited<ReturnType<typeof getConnectedGmailAccounts>> = [];
@@ -77,6 +86,8 @@ export async function syncBuyerMessagesFromGmail(
     // parseAmazonBuyerEmail doesn't hit the DB for every message.
     const emailToStoreMap = await loadEmailToStoreMap();
 
+    const startedAt = Date.now();
+    let deferred = 0;
     let totalSynced = 0;
     let confirmationsSynced = 0;
     let autoResolvedStale = 0;
@@ -106,6 +117,10 @@ export async function syncBuyerMessagesFromGmail(
           const msgId = msg.id;
           if (!msgId) continue;
           if (existingIds.has(msgId)) continue;
+          if (opts.budgetMs && Date.now() - startedAt > opts.budgetMs) {
+            deferred++;
+            continue;
+          }
 
           try {
             // Read full message
@@ -521,6 +536,7 @@ export async function syncBuyerMessagesFromGmail(
 
     return {
       synced: totalSynced,
+      deferred,
       confirmations: confirmationsSynced,
       autoResolved: autoResolvedStale,
       accounts: accounts.length,

@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
   const storeIndexes = stores.map((s) => s.storeIndex as number);
 
   const startedAt = new Date();
-  const result = await syncBuyerMessagesFromGmail({ window, storeIndexes });
+  // ~3.5 min of new-message work, leaving room for the confirmation sweep +
+  // stale re-check before maxDuration (300s).
+  const result = await syncBuyerMessagesFromGmail({ window, storeIndexes, budgetMs: 210_000 });
 
   await prisma.syncLog
     .create({

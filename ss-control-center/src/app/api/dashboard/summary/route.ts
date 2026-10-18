@@ -158,8 +158,6 @@ export async function GET(request: NextRequest) {
       healthSnapshots,
       adjustmentsSum,
       adjustmentsUnreviewed,
-      ordersStore1,
-      ordersStore2,
       frozenIncidents30d,
       // Walmart
       walmartOrdersTotal30d,
@@ -242,25 +240,6 @@ export async function GET(request: NextRequest) {
           createdAt: { gte: thirtyDaysAgo },
           reviewed: false,
           disputeCaseId: null,
-        },
-      }),
-      // S1 / S2 counts MUST share the same purchaseDate window as the
-      // total Orders 30d card. Previously these omitted the date filter
-      // and reported all-time counts, which broke the math on the card
-      // (S1=1132 > total=746). Match the window so S1 + S2 + others
-      // adds up to the headline number.
-      prisma.amazonOrder.count({
-        where: {
-          storeIndex: 1,
-          purchaseDate: { gte: thirtyDaysAgo },
-          ...amazonStoreFilter,
-        },
-      }),
-      prisma.amazonOrder.count({
-        where: {
-          storeIndex: 2,
-          purchaseDate: { gte: thirtyDaysAgo },
-          ...amazonStoreFilter,
         },
       }),
       // Frozen incidents in the last 30 days (complaint log). Kept for the
@@ -544,8 +523,11 @@ export async function GET(request: NextRequest) {
         total30d: totalOrders,
         awaitingShipment,
         shippedToday,
-        store1: ordersStore1,
-        store2: ordersStore2,
+        // From the per-store groupBy: the old storeIndex:1/2 counts spread
+        // the store filter AFTER the index, so with a filter set "store2"
+        // silently returned store1's number (515 vs 0).
+        store1: ordersByStore.find((r) => r.storeIndex === 1)?.count ?? 0,
+        store2: ordersByStore.find((r) => r.storeIndex === 2)?.count ?? 0,
       },
       customerService: { openCases: openCsCases },
       claims: { active: activeClaims },
