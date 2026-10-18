@@ -137,6 +137,13 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [cases, setCases] = useState<CsCaseRow[]>([]);
+  // Live "awaiting shipment" count from the SAME endpoint the Shipping
+  // Labels page (and the sidebar badge) render — Veeqo awaiting_fulfillment.
+  // The DB count (AmazonOrder.status = Unshipped) drifted to 72 vs Veeqo's
+  // real 46 on 2026-10-18, and the tile links straight to /shipping, so the
+  // two numbers must be identical. null = not loaded / Veeqo unavailable →
+  // fall back to the DB number.
+  const [liveAwaiting, setLiveAwaiting] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -153,6 +160,20 @@ export default function DashboardPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // Slow (live Veeqo walk) — fired separately so it never delays the tiles.
+    fetch("/api/shipping/dashboard")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { orders?: Array<{ storeId?: string }> } | null) => {
+        if (!Array.isArray(j?.orders)) return setLiveAwaiting(null);
+        // Respect the sidebar store filter (orders carry our Store.id).
+        const picked = new Set(selectedStoreIds);
+        setLiveAwaiting(
+          isAllSelected
+            ? j.orders.length
+            : j.orders.filter((o) => o.storeId && picked.has(o.storeId)).length
+        );
+      })
+      .catch(() => setLiveAwaiting(null));
     try {
       const summaryQs = toQueryString();
       // Selected store names so we can ask Veeqo for only those marketplaces.
@@ -303,7 +324,7 @@ export default function DashboardPage() {
     : "";
   const weekString = now ? `W${getWeek(now)}` : "";
 
-  const totalToShip = data?.orders.awaitingShipment ?? 0;
+  const totalToShip = liveAwaiting ?? data?.orders.awaitingShipment ?? 0;
   const shippedToday = data?.orders.shippedToday ?? 0;
   const noStoresSelected =
     !filterLoading && allStores.length > 0 && selectedStoreIds.length === 0;
@@ -501,7 +522,7 @@ export default function DashboardPage() {
         <Panel>
           <PanelHeader
             title="Awaiting fulfilment"
-            count={orders.length}
+            count={totalToShip}
             right={
               <Link
                 href="/shipping"

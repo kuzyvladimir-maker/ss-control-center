@@ -1,8 +1,10 @@
 /**
  * GET /api/cron/orders-amazon
  *
- * Lightweight Amazon orders refresh — pulls just the last 3 days of orders
- * per configured store and upserts to `amazonOrder`. Designed to fit
+ * Lightweight Amazon orders refresh — pulls every order CHANGED in the last
+ * 3 days (LastUpdatedAfter, not CreatedAfter) per configured store and
+ * upserts to `amazonOrder`, so late shipments/cancellations of older orders
+ * also land. Designed to fit
  * inside Vercel Hobby's 10s function timeout, which the heavier 30-day
  * `/api/sync` doesn't reliably do.
  *
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
   for (let storeIndex = 1; storeIndex <= 5; storeIndex++) {
     if (!getStoreCredentials(storeIndex)) continue;
     try {
-      const synced = await syncOrders(storeIndex, WINDOW_DAYS);
+      const synced = await syncOrders(storeIndex, WINDOW_DAYS, "updated");
       results.push({ storeIndex, success: true, synced });
     } catch (err) {
       results.push({
