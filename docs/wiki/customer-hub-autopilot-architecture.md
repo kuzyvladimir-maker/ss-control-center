@@ -1,0 +1,80 @@
+# Customer Hub autopilot — architecture (2026-10-18)
+
+Goal (owner, Telegram topic 8): for the last 2–4 months Vladimir answered
+Amazon buyers by hand in ChatGPT instead of the Command Center. Use that
+history as knowledge so the hub drafts answers his way, and sends routine
+ones on its own. Money and claims stay drafts.
+
+Jackie exports the ChatGPT history (Chrome on the iMac) as text into
+`/root/.openclaw/workspace/wiki/business/`. Everything below is the part
+that lives in SS-CC.
+
+## What exists today (verified in code)
+
+| Piece | Where | State |
+|---|---|---|
+| Ingest Gmail → BuyerMessage | `src/lib/customer-hub/sync-messages.ts`, cron `/api/cron/customer-hub-sync` every 30 min | Live since 2026-10-18 |
+| AI analysis + draft | `src/lib/customer-hub/message-analyzer.ts` (`analyzeMessage`, subscription worker, no paid keys) | Works; writes `suggestedResponse`, `problemType` T1–T21, `riskLevel`, `action`, `factCheckJson` |
+| Knowledge base | `KnowledgeBaseEntry` (problemType, scenario, customerSaid, correctAction, correctResponse, reasoning, source, tags, channel) | 41 hand-seeded rows |
+| KB retrieval | `findSimilarCases()` in `knowledge-base.ts` | **Effectively dead**: called before classification, filters by problemType only for T21, otherwise `scenario contains <first 100 chars of the message>` — almost never matches |
+| Fact check | `factCheckResponse()` → confidence HIGH/MEDIUM/LOW | Works |
+| Send | `sendResponse()` in `response-sender.ts` → SP-API Messaging, preflight of allowed actions | Works, manual click only |
+
+## Design
+
+### 1. Example store — reuse `KnowledgeBaseEntry`, no new table
+
+Each pair "buyer wrote → what Vladimir actually sent" from ChatGPT becomes one row:
+
+- `source = "owner_chatgpt"` (new value next to `manual` / `auto_from_resolved_case`)
+- `problemType` T1–T21, `productType` Frozen/Dry, `correctAction` (info / replacement / partial_refund / full_refund / redirect_amazon …)
+- `customerSaid` = buyer text, `correctResponse` = Vladimir's final text, `reasoning` = why (from the chat)
+- `tags` = `orderId:<…>,date:<…>,hash:<sha1 of buyer+answer>` — the hash makes re-imports idempotent
+
+Plus one **voice guide**: tone, greeting/sign-off, phrases he always or never uses, distilled once from the whole export. Stored as `Setting` key `customer_hub_voice_guide`.
+
+### 2. Importer — `scripts/import-chatgpt-cs-history.ts`
+
+1. Read Jackie's export (plain text / markdown / JSON — whatever comes).
+2. A subscription LLM pass splits it into conversations and extracts, per case: buyer message, order id if present, final answer Vladimir sent (not the drafts he rejected), outcome.
+3. It classifies each case to T1–T21 + action using the same decision table as the analyzer.
+4. Brand-voice gate (`compliance/banned-words.ts` style checks) — reject examples that would teach banned claims.
+5. Upsert to `KnowledgeBaseEntry` by hash; a second pass writes the voice guide.
+6. Dry-run mode prints the extracted cases for the owner to spot-check before writing.
+
+### 3. Retrieval fix — make the KB actually reach the prompt
+
+- A cheap keyword pre-classifier (the trigger-phrase table in `CUSTOMER_HUB_ALGORITHM_v3.0.md §5`) predicts likely T-types before the LLM call.
+- Load KB rows for those types (the table is small — hundreds of rows), rank in memory by token overlap with the buyer message + same productType, take the top 3–5.
+- Prefer `owner_chatgpt` rows over seeds; inject them with the voice guide into `buildContextMessage` as "this is how the owner answered similar cases — match the decision and tone".
+
+### 4. Auto-send policy — `src/lib/customer-hub/autosend-policy.ts`
+
+A pure function over the analyzed message returns `{ eligible, reasons[] }`. **All** of these must hold:
+
+- Global switch `Setting customer_hub_autosend` = `on` (default **shadow**: compute and log only, never send).
+- problemType in the allow-list: **T1** (in transit / where is it), **T3** (late, already delivered or arriving, info only), **T18** (pre-sale question), **T16** acknowledgement — informational answers only.
+- `action` is informational — never REPLACEMENT / REFUND / partial / A2Z / ESCALATE.
+- Hard blocks:
+  - T4 spoiled, T5 damaged, T6 wrong item, T7 missing, T11 refund, T12 unauthorized, T13 A-to-Z, T14 review threat, T15 health, T19 refund issued, T20 repeat, T21 mismatch;
+  - `foodSafetyRisk`, `atozRisk`, riskLevel ≠ LOW, factCheck confidence ≠ HIGH;
+  - no KB example with similarity above a threshold;
+  - non-English;
+  - buyer already got any reply on this order;
+  - brand-voice violation.
+- Volume guard: max N auto-sends per day (start 10), with an emergency stop if Amazon messaging returns errors.
+- Everything else stays a draft for one-click approval — refunds, money and claims are **always** drafts.
+
+Wiring: after `analyzeMessage` in `sync-messages.ts` → `evaluateAutosend` → if `on` and eligible → `sendResponse()` → `responseSentVia = "AUTOPILOT"`. Every decision (sent / would-send / blocked + reasons) is written to the message row, so the hub can show "sent automatically" or "draft — why not auto".
+
+### 5. Rollout
+
+1. Import the history → owner spot-checks 10 extracted cases.
+2. Shadow mode for ~1 week: the hub marks "would auto-send" on real messages; owner compares against what he would have sent.
+3. Owner flips `customer_hub_autosend = on` (his explicit go — sending to buyers is outward-facing).
+4. Weekly: drafts the owner edited before sending are fed back into the KB as new examples, so the voice keeps improving.
+
+## Open inputs
+
+- The ChatGPT export (Jackie).
+- Owner go for step 3.
