@@ -39,3 +39,13 @@ Veeqo иногда отвечает на `POST /bulk_tagging` кодом 200, н
 Локальный `VEEQO_API_KEY` в `.env.local` устарел: ключ в Vercel заменён ~2026-10-04 и помечен
 как sensitive, поэтому `vercel env pull` отдаёт пустое значение. Читать данные можно через сайт
 с токеном `SSCC_API_TOKEN` (только GET): `/api/shipping/dashboard`, `/api/procurement/items`.
+
+## Скрытые технические заказы (2026-10-19)
+Заказ `TEST-RATE-DELETE-ME-2` (Veeqo id 2164588032, канал Phone / DIRECT, $1) — технический,
+для сайта StillFrozen. По решению владельца он не показывается нигде в Command Center: ни в
+Procurement, ни в Shipping, ни в счётчиках меню, ни в статистике и поиске. В самом Veeqo заказ
+остаётся без изменений.
+
+Список: `src/lib/veeqo/hidden-orders.ts`. Фильтр стоит на всех общих точках чтения заказов из Veeqo:
+`fetchAllOrders`, `fetchOrdersInRange`, `searchOrders`, загрузка Procurement, а также поиск
+по базе в Shipping. Чтобы скрыть ещё один заказ, добавь его Veeqo id и номер в этот список.

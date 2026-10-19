@@ -1,6 +1,7 @@
 import { veeqoFetch } from "./client";
 import { parsePackSize } from "@/lib/procurement/pack-size";
 import { shouldIncludeOrderInProcurement } from "@/lib/procurement/filter-rules";
+import { isHiddenVeeqoOrder } from "./hidden-orders";
 import { hasTag, PROCUREMENT_TAGS } from "./tags";
 import { getInternalNotes } from "./notes";
 import {
@@ -304,6 +305,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
   const enrichable: Array<{ card: ProcurementCard; storeIndex: number }> = [];
 
   for (const order of allOrders) {
+    if (isHiddenVeeqoOrder(order)) continue;
     if (!shouldIncludeOrderInProcurement(order)) continue;
 
     const notes = getInternalNotes(order);

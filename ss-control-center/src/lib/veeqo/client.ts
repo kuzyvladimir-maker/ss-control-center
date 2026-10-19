@@ -1,4 +1,5 @@
 import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
+import { withoutHiddenOrders } from "./hidden-orders";
 
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
@@ -104,7 +105,7 @@ export async function fetchAllOrders(status = "awaiting_fulfillment") {
     allOrders.push(...orders);
     page++;
   }
-  return allOrders;
+  return withoutHiddenOrders(allOrders);
 }
 
 /**
@@ -131,7 +132,7 @@ export async function searchOrders(
   const res = await veeqoFetch(
     `/orders?page_size=${pageSize}&query=${encodeURIComponent(q)}`,
   );
-  return Array.isArray(res) ? res : [];
+  return Array.isArray(res) ? withoutHiddenOrders(res) : [];
 }
 
 /**
@@ -221,7 +222,7 @@ export async function fetchOrdersInRange(opts: {
     if (!anyFull || results[results.length - 1].length < PAGE_SIZE) break;
     page += batch;
   }
-  return all.slice(0, cap);
+  return withoutHiddenOrders(all).slice(0, cap);
 }
 
 // Get product details (for tags)

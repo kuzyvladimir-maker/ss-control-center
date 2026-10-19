@@ -37,6 +37,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { searchOrders } from "@/lib/veeqo/client";
+import { isHiddenVeeqoOrder } from "@/lib/veeqo/hidden-orders";
 import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { utcToPacificYMD } from "@/lib/shipping/dates";
 
@@ -530,7 +531,10 @@ export async function GET(request: NextRequest) {
       walmartOrders: allWalmart,
       walmartLabels: [...walmartLabels, ...extraLabels],
       mergeGroups,
-      planItems,
+      // Technical orders (hidden-orders.ts) stay invisible in search too.
+      planItems: planItems.filter(
+        (p) => !isHiddenVeeqoOrder({ id: p.orderId, number: p.orderNumber }),
+      ),
     };
   })();
 
