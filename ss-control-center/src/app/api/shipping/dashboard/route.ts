@@ -30,8 +30,10 @@ import {
   type OrderLineItem,
 } from "@/lib/shipping/packing-signature";
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
-
-const PLACED_TAG = "Placed";
+import {
+  isProcurementPlaced,
+  procurementPlacedSource,
+} from "@/lib/procurement/placed";
 
 type ShipByBucket = "overdue" | "today" | "tomorrow" | "dayafter" | "later";
 
@@ -60,12 +62,11 @@ function shipByBucket(iso: string | null): ShipByBucket | null {
   return "later";
 }
 
+// Placed = the Veeqo `Placed` tag OR a [PROCUREMENT] notes block that marks
+// every line bought — the same rule Procurement uses to hide the order. See
+// src/lib/procurement/placed.ts for why the tag alone is not enough.
 function isPlaced(o: any): boolean {
-  const tags = o.tags ?? [];
-  return tags.some(
-    (t: any) =>
-      String(t?.name ?? "").toLowerCase() === PLACED_TAG.toLowerCase()
-  );
+  return isProcurementPlaced(o);
 }
 
 // Authoritative signal: Veeqo's `order.status`. When a label is bought
@@ -690,6 +691,9 @@ export async function GET() {
         })(),
         state,
         needAttentionReason,
+        // "tag" | "notes" | null — which procurement signal made it Placed.
+        // "notes" means the Veeqo tag is missing but every line is bought.
+        placedVia: procurementPlacedSource(o),
         items: itemsWithType,
         packingSignature: reqsProfile ? sig : null,
         packingProfileFound: reqsProfile ? profileBySig.has(sig) : null,

@@ -18,10 +18,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchAllOrders } from "@/lib/veeqo/client";
 import { findMergeableGroups, type MergeableGroup } from "@/lib/shipping/mergeable";
+import { isProcurementPlaced } from "@/lib/procurement/placed";
 
 export const maxDuration = 60;
-
-const PLACED_TAG = "Placed";
 
 interface VeeqoOrderLite {
   id?: number | string;
@@ -39,12 +38,16 @@ interface VeeqoOrderLite {
   mergable_checksum?: string | null;
   merged_to_id?: number | string | null;
   merged_order?: boolean | null;
+  // Read by isPlaced(): the [PROCUREMENT] block lists line items as bought.
+  line_items?: Array<{ id?: number | string | null }> | null;
+  employee_notes?: unknown;
 }
 
+// Tag OR all-lines-bought notes block — the shared procurement rule
+// (src/lib/procurement/placed.ts), so a merge is not refused for an order
+// Procurement already considers bought.
 function isPlaced(o: VeeqoOrderLite): boolean {
-  return (o.tags ?? []).some(
-    (t) => String(t?.name ?? "").toLowerCase() === PLACED_TAG.toLowerCase(),
-  );
+  return isProcurementPlaced(o);
 }
 
 // Shopify channels are third-party clients whose stock already sits in our

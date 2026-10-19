@@ -69,6 +69,7 @@ export async function applyProcurementAction(
   lineItemId: string;
   newStatus: LineItemStatus | null;
   managedTags: string[];
+  tagsVerified: boolean;
   veeqoResponse?: unknown;
 }> {
   // --- 1. Fetch current order state ---------------------------------------
@@ -188,10 +189,88 @@ export async function applyProcurementAction(
     if (ids.length > 0) await bulkUntagOrders([orderId], ids);
   }
 
+  // --- 6. Verify the tags actually landed --------------------------------
+  // Veeqo has answered /bulk_tagging with 200 while the tag never appeared
+  // (2026-10-19: four orders vanished from Procurement yet sat at "Waiting
+  // for procurement" on Shipping). Re-read, re-apply the missing part once,
+  // and report. Shipping no longer depends on the tag alone — it reads the
+  // notes too (src/lib/procurement/placed.ts) — so a residual mismatch is
+  // logged, not thrown.
+  let tagsVerified = true;
+  if (tagsToAdd.length > 0 || tagsToRemove.length > 0) {
+    tagsVerified = await verifyManagedTags(orderId, desiredManagedTags);
+  }
+
   return {
     lineItemId,
     newStatus: newStatusForLine,
     managedTags: Array.from(desiredManagedTags),
+    tagsVerified,
     veeqoResponse,
   };
+}
+
+function managedDiff(
+  order: VeeqoOrder,
+  desired: ReadonlySet<string>,
+): { add: string[]; remove: string[] } {
+  const present = new Set(
+    getOrderTags(order as never)
+      .map((t) => t.name)
+      .filter((n) => MANAGED_TAGS.includes(n)),
+  );
+  return {
+    add: [...desired].filter((n) => !present.has(n)),
+    remove: [...present].filter((n) => !desired.has(n)),
+  };
+}
+
+async function tagIdsFor(names: string[]): Promise<number[]> {
+  const ids: number[] = [];
+  for (const name of names) {
+    const id = await getTagId(name);
+    if (id != null) ids.push(id);
+  }
+  return ids;
+}
+
+/** Re-read the order; if the managed tags differ from `desired`, re-apply
+ *  the difference once and re-check. Never throws — returns whether the
+ *  order ended up with exactly the desired managed tags. */
+async function verifyManagedTags(
+  orderId: string,
+  desired: ReadonlySet<string>,
+): Promise<boolean> {
+  try {
+    const first = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
+    const diff = managedDiff(first, desired);
+    if (diff.add.length === 0 && diff.remove.length === 0) return true;
+
+    console.warn("[procurement] tag did not land, re-applying", {
+      orderId,
+      ...diff,
+    });
+    const addIds = await tagIdsFor(diff.add);
+    if (addIds.length > 0) await bulkTagOrders([orderId], addIds);
+    const removeIds = await tagIdsFor(diff.remove);
+    if (removeIds.length > 0) await bulkUntagOrders([orderId], removeIds);
+
+    await new Promise((r) => setTimeout(r, 1000));
+    const second = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
+    const left = managedDiff(second, desired);
+    const ok = left.add.length === 0 && left.remove.length === 0;
+    if (!ok) {
+      console.error("[procurement] tag still missing after retry", {
+        orderId,
+        ...left,
+      });
+    }
+    return ok;
+  } catch (e) {
+    console.error("[procurement] tag verification failed", {
+      orderId,
+      error: e instanceof Error ? e.message : String(e),
+    });
+    return false;
+  }
 }

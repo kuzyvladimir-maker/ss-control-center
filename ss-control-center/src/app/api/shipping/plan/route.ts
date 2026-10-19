@@ -25,6 +25,10 @@ import {
 import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
+import {
+  isProcurementPlaced,
+  procurementPlacedSource,
+} from "@/lib/procurement/placed";
 // The rate-choosing rules themselves live in one shared module, so the merged-
 // group quote (/api/shipping/merge/rates) runs the identical algorithm instead
 // of leaving the operator to eyeball a price list.
@@ -227,6 +231,7 @@ export async function GET(request: NextRequest) {
           hasPlacedTag: (o.tags || []).some(
             (t: { name: string }) => t.name === "Placed"
           ),
+          placedSource: procurementPlacedSource(o),
           hasLabelPurchased: (o.employee_notes || "").includes(
             "Label Purchased"
           ),
@@ -281,9 +286,7 @@ export async function GET(request: NextRequest) {
         if (orderIdFilter && !orderIdFilter.has(String(order.id))) continue;
         const ct = (order.channel?.type_code || "").toLowerCase();
         if (ct === "walmart") continue; // Walmart quotes via its own path
-        const placed =
-          order.tags?.some((t: { name: string }) => t.name === "Placed") ||
-          ct === "shopify";
+        const placed = isProcurementPlaced(order) || ct === "shopify";
         if (!placed) continue;
         if (
           !orderIdFilter &&
@@ -328,9 +331,9 @@ export async function GET(request: NextRequest) {
       // here so /api/shipping/plan also rate-quotes them without the gate.
       const planChannelType = (order.channel?.type_code || "").toLowerCase();
       const planIsShopify = planChannelType === "shopify";
-      const hasPlaced = order.tags?.some(
-        (t: { name: string }) => t.name === "Placed"
-      );
+      // Tag OR all-lines-bought notes block — same rule as the dashboard
+      // and Procurement (src/lib/procurement/placed.ts).
+      const hasPlaced = isProcurementPlaced(order);
       if (!hasPlaced && !planIsShopify) return;
       debug.filters.afterPlacedTag++;
 
