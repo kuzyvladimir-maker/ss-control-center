@@ -3,10 +3,19 @@ import {
   getMessagingActionsForOrder,
 } from "@/lib/amazon-sp-api/messaging";
 import { prisma } from "@/lib/prisma";
+import {
+  getGmailAccountByEmail,
+  readMessage,
+  sendGmailMessage,
+} from "@/lib/gmail-api";
+
+/** Buyer-Seller Messaging relay domain — mail from the seller's registered
+ *  address to this address is posted into the buyer's message thread. */
+const AMAZON_RELAY_RE = /@marketplace\.amazon\.com$/i;
 
 export interface SendResult {
   success: boolean;
-  method: "SP_API" | "MANUAL";
+  method: "EMAIL_RELAY" | "SP_API" | "MANUAL";
   /** Error message for display to the operator when success=false */
   error?: string;
   /** When success=false due to Amazon gating, list the actions that
@@ -19,10 +28,21 @@ export interface SendResult {
   messagingClosed?: boolean;
 }
 
+export interface SendOptions {
+  /** Who pressed send — the owner in the hub, or the autopilot. */
+  initiator?: "OWNER" | "AUTOPILOT";
+}
+
 /**
  * Send a prepared buyer response for a BuyerMessage row.
  *
- * - Amazon: posts via SP-API Messaging `createUnexpectedProblem`, updates
+ * - Amazon, preferred (2026-10-19): reply by email from the store's seller
+ *   mailbox to the buyer's `…@marketplace.amazon.com` relay address, inside
+ *   the same Gmail thread. Amazon posts it into Buyer-Seller Messages. Needs
+ *   the store's Gmail connected with the gmail.send scope.
+ * - Amazon, fallback when there is no relay address: SP-API Messaging
+ *   `createUnexpectedProblem` (rarely offered for replies — see
+ *   docs/wiki/customer-hub-diagnosis-2026-10-18.md), updates
  *   the source row to SENT, and creates a companion `direction: "outgoing"`
  *   row so the conversation history renders both sides of the thread.
  * - Walmart: no public API — returns a MANUAL result so the UI prompts
@@ -31,7 +51,10 @@ export interface SendResult {
  * All failures are surfaced back to the caller, never swallowed, so the
  * Messages tab can show an error toast when things go wrong.
  */
-export async function sendResponse(messageId: string): Promise<SendResult> {
+export async function sendResponse(
+  messageId: string,
+  opts: SendOptions = {}
+): Promise<SendResult> {
   const message = await prisma.buyerMessage.findUnique({
     where: { id: messageId },
   });
@@ -40,12 +63,19 @@ export async function sendResponse(messageId: string): Promise<SendResult> {
     return { success: false, method: "MANUAL", error: "Message not found" };
   }
 
+  // One message, one send. A second press (or an overlapping autopilot
+  // run) must never deliver the same reply twice.
+  if (message.responseSentAt) {
+    return {
+      success: false,
+      method: "MANUAL",
+      error: `Already sent ${message.responseSentAt.toISOString()} via ${message.responseSentVia || "unknown"}.`,
+    };
+  }
+
   const responseText = message.editedResponse || message.suggestedResponse;
   if (!responseText) {
     return { success: false, method: "MANUAL", error: "No response text to send" };
-  }
-  if (!message.amazonOrderId) {
-    return { success: false, method: "MANUAL", error: "No Order ID on message" };
   }
   if (message.channel === "Walmart") {
     return {
@@ -54,6 +84,14 @@ export async function sendResponse(messageId: string): Promise<SendResult> {
       error:
         "Walmart has no public buyer-seller messaging API. Copy the response and paste it into Seller Center.",
     };
+  }
+
+  if (message.customerEmail && AMAZON_RELAY_RE.test(message.customerEmail)) {
+    return sendViaEmailRelay(message, responseText, opts);
+  }
+
+  if (!message.amazonOrderId) {
+    return { success: false, method: "MANUAL", error: "No Order ID on message" };
   }
 
   const storeId = `store${message.storeIndex}`;
@@ -114,7 +152,7 @@ export async function sendResponse(messageId: string): Promise<SendResult> {
       data: {
         status: "SENT",
         responseSentAt: now,
-        responseSentVia: "SP_API",
+        responseSentVia: opts.initiator === "AUTOPILOT" ? "AUTOPILOT" : "SP_API",
       },
     });
 
@@ -153,4 +191,113 @@ export async function sendResponse(messageId: string): Promise<SendResult> {
       error: `SP-API error: ${msg}. Copy the response and paste it into Seller Central.`,
     };
   }
+}
+
+type BuyerMessageRow = NonNullable<
+  Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>
+>;
+
+function header(
+  msg: Awaited<ReturnType<typeof readMessage>>,
+  name: string
+): string | null {
+  const h = (msg.payload?.headers || []).find(
+    (x) => x?.name?.toLowerCase() === name.toLowerCase()
+  );
+  return h?.value || null;
+}
+
+async function sendViaEmailRelay(
+  message: BuyerMessageRow,
+  responseText: string,
+  opts: SendOptions
+): Promise<SendResult> {
+  const storeEmail = message.storeEmail;
+  if (!storeEmail) {
+    return {
+      success: false,
+      method: "MANUAL",
+      error: "No seller mailbox recorded on this message. Reply in Seller Central.",
+    };
+  }
+  const account = await getGmailAccountByEmail(storeEmail);
+  if (!account) {
+    return {
+      success: false,
+      method: "MANUAL",
+      error: `Gmail ${storeEmail} is not connected. Connect it in Settings → Gmail (with send permission), or reply in Seller Central.`,
+    };
+  }
+
+  // Thread the reply under the buyer's email so Amazon keeps one conversation.
+  let subject = "Re: Your Amazon order";
+  let inReplyTo: string | undefined;
+  if (message.gmailMessageId) {
+    try {
+      const original = await readMessage(account.refreshToken, message.gmailMessageId);
+      const origSubject = header(original, "Subject");
+      if (origSubject) subject = /^re:/i.test(origSubject) ? origSubject : `Re: ${origSubject}`;
+      inReplyTo = header(original, "Message-ID") || header(original, "Message-Id") || undefined;
+    } catch (e) {
+      console.warn(
+        "[response-sender] could not read original email for threading:",
+        e instanceof Error ? e.message : String(e)
+      );
+    }
+  }
+
+  let sent: { id: string; threadId: string };
+  try {
+    sent = await sendGmailMessage(account.refreshToken, {
+      to: message.customerEmail as string,
+      subject,
+      body: responseText,
+      fromEmail: storeEmail,
+      threadId: message.gmailThreadId || undefined,
+      inReplyTo,
+    });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[response-sender] Gmail relay send failed:", msg);
+    const scope = /insufficient|scope|permission|403/i.test(msg);
+    return {
+      success: false,
+      method: "MANUAL",
+      error: scope
+        ? `Gmail ${storeEmail} is connected read-only. Re-connect it in Settings → Gmail to grant send permission, or reply in Seller Central.`
+        : `Email send failed: ${msg}. Copy the response and paste it into Seller Central.`,
+    };
+  }
+
+  const now = new Date();
+  const via = opts.initiator === "AUTOPILOT" ? "AUTOPILOT" : "EMAIL_RELAY";
+  await prisma.buyerMessage.update({
+    where: { id: message.id },
+    data: { status: "SENT", responseSentAt: now, responseSentVia: via },
+  });
+  await prisma.buyerMessage.create({
+    data: {
+      gmailMessageId: sent.id || null,
+      gmailThreadId: sent.threadId || message.gmailThreadId,
+      channel: message.channel,
+      source: message.source,
+      storeIndex: message.storeIndex,
+      storeName: message.storeName,
+      storeEmail: message.storeEmail,
+      customerName: message.customerName,
+      customerEmail: message.customerEmail,
+      amazonOrderId: message.amazonOrderId,
+      product: message.product,
+      direction: "outgoing",
+      customerMessage: responseText,
+      status: "SENT",
+      responseSentAt: now,
+      responseSentVia: via,
+      action: message.action,
+      problemType: message.problemType,
+      problemTypeName: message.problemTypeName,
+      riskLevel: message.riskLevel,
+    },
+  });
+  return { success: true, method: "EMAIL_RELAY" };
 }

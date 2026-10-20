@@ -21,6 +21,8 @@ import { enrichMessage } from "@/lib/customer-hub/message-enricher";
 import { analyzeMessage } from "@/lib/customer-hub/message-analyzer";
 import { translateText } from "@/lib/customer-hub/translator";
 import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
+import { answeredAfter } from "@/lib/customer-hub/thread-state";
+import { runAutosend } from "@/lib/customer-hub/autosend-runner";
 
 export interface SyncBuyerMessagesResult {
   synced: number;
@@ -130,12 +132,9 @@ export async function syncBuyerMessagesFromGmail(
             const parsed = parseAmazonBuyerEmail(fullMsg, emailToStoreMap);
             if (!parsed) continue; // Not a buyer message
 
-            // Thread-size heuristic for "already handled". When the seller
-            // replies via Amazon Seller Central, Amazon sends a
-            // confirmation email to the seller Gmail which lands in the
-            // same thread. If the thread has more than 1 message, the
-            // case is likely already resolved — mark it accordingly so
-            // it stays out of the Active queue.
+            // "Already handled" check: only a reply from US after this
+            // buyer email counts (thread-state.ts). A buyer follow-up in the
+            // same thread used to close the case as RESOLVED.
             let autoResolved = false;
             if (parsed.gmailThreadId) {
               try {
@@ -143,11 +142,10 @@ export async function syncBuyerMessagesFromGmail(
                   account.refreshToken,
                   parsed.gmailThreadId
                 );
-                const threadMsgCount = thread.messages?.length || 1;
-                if (threadMsgCount > 1) {
+                if (answeredAfter(thread.messages, msgId, account.email)) {
                   autoResolved = true;
                   console.log(
-                    `[Sync] Thread ${parsed.gmailThreadId} has ${threadMsgCount} messages — auto-marking as RESOLVED`
+                    `[Sync] Thread ${parsed.gmailThreadId} already has our reply — auto-marking as RESOLVED`
                   );
                 }
               } catch (threadErr) {
@@ -334,6 +332,20 @@ export async function syncBuyerMessagesFromGmail(
                   factCheckJson: JSON.stringify(analysis.factCheck),
                 },
               });
+
+              // Auto-send policy: shadow by default (verdict only), sends
+              // only when the owner switched customer_hub_autosend = on.
+              try {
+                await runAutosend(saved.id, {
+                  kbTopScore: analysis.kbTopScore,
+                  isFallback: analysis.isFallback,
+                });
+              } catch (autoErr) {
+                console.warn(
+                  `[Sync] Autosend evaluation failed for ${saved.id}:`,
+                  autoErr instanceof Error ? autoErr.message : String(autoErr)
+                );
+              }
             } catch (aiErr) {
               console.warn(`[Sync] AI analysis failed for ${saved.id}:`, aiErr);
             }
@@ -461,12 +473,11 @@ export async function syncBuyerMessagesFromGmail(
         // it visibly rots as OVERDUE in the UI.
         //
         // This pass walks every ANALYZED message for the current account
-        // older than 6 hours and re-fetches its Gmail thread. If the
-        // thread now has more than one message, it means a follow-up
-        // landed (either us replying via Seller Central, or the buyer
-        // sending a follow-up after our reply) — either way the original
-        // case is no longer "needs first response" and can be auto-
-        // resolved. The 6h floor avoids racing against fresh syncs.
+        // older than 6 hours and re-fetches its Gmail thread. It is
+        // auto-resolved only when the thread now holds a reply from US
+        // after the buyer's email (thread-state.ts) — a buyer follow-up
+        // alone no longer closes the case (bug until 2026-10-19). The 6h
+        // floor avoids racing against fresh syncs.
         try {
           const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
           const stale = await prisma.buyerMessage.findMany({
@@ -479,6 +490,7 @@ export async function syncBuyerMessagesFromGmail(
             },
             select: {
               id: true,
+              gmailMessageId: true,
               gmailThreadId: true,
               amazonOrderId: true,
             },
@@ -492,18 +504,20 @@ export async function syncBuyerMessagesFromGmail(
                 account.refreshToken,
                 sm.gmailThreadId
               );
-              const count = thread.messages?.length || 1;
-              if (count > 1) {
+              if (
+                sm.gmailMessageId &&
+                answeredAfter(thread.messages, sm.gmailMessageId, account.email)
+              ) {
                 await prisma.buyerMessage.update({
                   where: { id: sm.id },
                   data: {
                     status: "RESOLVED",
-                    resolution: "auto_resolved_thread_grew",
+                    resolution: "auto_resolved_our_reply_in_thread",
                   },
                 });
                 autoResolvedStale++;
                 console.log(
-                  `[Sync] Stale re-check: ${sm.id} (thread ${sm.gmailThreadId}, ${count} msgs) → RESOLVED`
+                  `[Sync] Stale re-check: ${sm.id} (thread ${sm.gmailThreadId}) has our reply → RESOLVED`
                 );
               }
             } catch (recheckErr) {

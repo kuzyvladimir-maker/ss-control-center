@@ -1049,6 +1049,12 @@ model BuyerMessage {
   // banner and (eventually) for debugging.
   reasoning String?
 
+  // Auto-send policy verdict (autosend-policy.ts), JSON:
+  //   { mode, eligible, reasons[], evaluatedAt, sent? }
+  // Written on every analyzed message — in shadow mode it is the
+  // "would auto-send / draft because …" line the hub shows.
+  autosendDecision String?
+
   @@index([amazonOrderId])
   @@index([storeIndex, status])
 }

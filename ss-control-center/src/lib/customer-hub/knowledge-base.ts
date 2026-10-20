@@ -9,6 +9,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { predictProblemTypes, rankKnowledgeBase } from "./kb-retrieval";
 
 export interface KnowledgeBaseEntryInput {
   problemType: string;
@@ -23,7 +24,9 @@ export interface KnowledgeBaseEntryInput {
   whoShouldPay?: string | null;
   outcome?: "positive" | "negative" | "neutral" | null;
   tags?: string | null;
-  source?: "manual" | "auto_from_resolved_case";
+  /** owner_chatgpt = imported from Vladimir's ChatGPT history;
+   *  owner_edit = a draft the owner edited before sending. */
+  source?: "manual" | "auto_from_resolved_case" | "owner_chatgpt" | "owner_edit";
   channel?: "Amazon" | "Walmart";
 }
 
@@ -50,6 +53,55 @@ export async function findSimilarCases(
     orderBy: { createdAt: "desc" },
     take: limit,
   });
+}
+
+/**
+ * KB lookup used by the analyzer (2026-10-19). Predicts likely T-types from
+ * the buyer text, loads every row of those types (plus T21 on a shipping
+ * mismatch), and ranks them in memory — see kb-retrieval.ts. When nothing is
+ * predicted we rank the whole channel's KB by text overlap alone; it is a few
+ * hundred rows at most.
+ */
+export async function findRelevantCases(
+  input: {
+    customerMessage: string | null | undefined;
+    productType?: string | null;
+    channel?: string | null;
+    shippingMismatch?: boolean;
+  },
+  limit = 4
+) {
+  const predicted = predictProblemTypes(input.customerMessage, {
+    shippingMismatch: input.shippingMismatch,
+  });
+  const types = predicted.map((p) => p.problemType);
+  const rows = await prisma.knowledgeBaseEntry.findMany({
+    where: types.length > 0 ? { problemType: { in: types } } : {},
+    take: 500,
+  });
+  const ranked = rankKnowledgeBase(
+    rows,
+    {
+      customerMessage: input.customerMessage,
+      productType: input.productType,
+      channel: input.channel,
+      predicted,
+    },
+    limit
+  );
+  return {
+    predicted,
+    cases: ranked.map((r) => r.row),
+    topScore: ranked[0]?.score ?? 0,
+  };
+}
+
+/** Setting key holding the owner's tone guide, distilled from his history. */
+export const VOICE_GUIDE_KEY = "customer_hub_voice_guide";
+
+export async function loadVoiceGuide(): Promise<string | null> {
+  const row = await prisma.setting.findUnique({ where: { key: VOICE_GUIDE_KEY } });
+  return row?.value?.trim() || null;
 }
 
 export async function saveToKnowledgeBase(data: KnowledgeBaseEntryInput) {

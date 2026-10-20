@@ -8,9 +8,9 @@
 
 import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
-import { findSimilarCases } from "./knowledge-base";
+import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 
-type KnowledgeBaseHint = Awaited<ReturnType<typeof findSimilarCases>>[number];
+type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
 
 const SYSTEM_PROMPT = `You are a senior Amazon-seller customer-support specialist for a grocery / chilled / frozen / perishable business. You read each customer message carefully, reason about what actually happened, decide the right action against a documented decision matrix, and write a response that resolves the situation correctly. You are NOT filling in a template — you are doing real customer service against documented business policy.
 
@@ -593,6 +593,11 @@ export interface AnalysisResult {
    *    "{product} × {qty} | reason: {short} | original: {orderId}"
    *  Null when no replacement is needed. */
   supplierReorderNote: string | null;
+  /** Best KB match score (kb-retrieval.ts) — 0 when no example matched.
+   *  Read by autosend-policy.ts: no close example → never auto-send. */
+  kbTopScore?: number;
+  /** True when every provider failed and this is the safe template. */
+  isFallback?: boolean;
 }
 
 // Produce several human-readable variants of a YYYY-MM-DD date so
@@ -1091,28 +1096,39 @@ export async function analyzeMessage(
   }
 
   // Pull similar past cases from the knowledge base to give Claude/OpenAI
-  // concrete worked examples. For shipping-mismatch cases we bias the
-  // lookup to T21 so we always find the canonical scenario.
+  // concrete worked examples — keyword pre-classifier + in-memory ranking
+  // (kb-retrieval.ts). Owner examples rank above hand seeds.
   let similarCases: KnowledgeBaseHint[] = [];
+  let kbTopScore = 0;
+  let voiceGuide: string | null = null;
   try {
-    similarCases = await findSimilarCases(
-      input.shippingMismatch ? "T21" : null,
-      input.customerMessage?.substring(0, 100) || null,
-      3
+    const kb = await findRelevantCases(
+      {
+        customerMessage: input.customerMessage,
+        productType: input.productType,
+        channel: input.channel || "Amazon",
+        shippingMismatch: input.shippingMismatch,
+      },
+      4
     );
-    if (similarCases.length > 0) {
-      console.log(
-        `[Analyzer] Found ${similarCases.length} similar KB case(s)`
-      );
-    }
+    similarCases = kb.cases;
+    kbTopScore = kb.topScore;
+    console.log(
+      `[Analyzer] KB: predicted ${kb.predicted.map((p) => p.problemType).join(",") || "none"}, ${similarCases.length} case(s), top score ${kbTopScore}`
+    );
   } catch (e) {
     console.warn(
       "[Analyzer] Knowledge base lookup failed:",
       e instanceof Error ? e.message : String(e)
     );
   }
+  try {
+    voiceGuide = await loadVoiceGuide();
+  } catch {
+    voiceGuide = null;
+  }
 
-  const userMessage = buildContextMessage(input, similarCases);
+  const userMessage = buildContextMessage(input, similarCases, voiceGuide);
   let lastError = "";
 
   for (const provider of config.providerChain) {
@@ -1202,6 +1218,7 @@ export async function analyzeMessage(
               `${parsed.reasoning || ""} [NEEDS REVIEW: ${subtleViolations.join("; ")}]`.trim();
           }
         }
+        parsed.kbTopScore = kbTopScore;
         return parsed;
       }
       lastError = `${provider} returned unparseable response`;
@@ -1224,7 +1241,8 @@ export type { ProviderName };
 
 function buildContextMessage(
   input: AnalysisInput,
-  similarCases: KnowledgeBaseHint[] = []
+  similarCases: KnowledgeBaseHint[] = [],
+  voiceGuide: string | null = null
 ): string {
   let msg = `ANALYZE THIS CUSTOMER MESSAGE AND RESPOND IN JSON FORMAT.
 
@@ -1291,18 +1309,23 @@ MESSAGE HISTORY:
   }
 
   if (similarCases.length > 0) {
-    msg += "\n\nKNOWLEDGE BASE — SIMILAR PAST CASES:\n";
+    msg += "\n\nKNOWLEDGE BASE — HOW THE OWNER HANDLED SIMILAR CASES:\n";
     for (const kb of similarCases) {
       msg += "---\n";
+      msg += `Type: ${kb.problemType}${kb.source === "owner_chatgpt" || kb.source === "owner_edit" ? " (real owner answer)" : ""}\n`;
       msg += `Scenario: ${kb.scenario}\n`;
       msg += `Customer said: ${kb.customerSaid}\n`;
       msg += `Correct action: ${kb.correctAction}\n`;
-      msg += `Correct response: ${kb.correctResponse.substring(0, 200)}\n`;
+      msg += `Correct response: ${kb.correctResponse.substring(0, 600)}\n`;
       msg += `Reasoning: ${kb.reasoning}\n`;
       msg += `Outcome: ${kb.outcome || "unknown"}\n`;
     }
     msg +=
-      "\nUse these past cases as GUIDANCE for your response. Adapt to current situation.\n";
+      "\nMatch the owner's DECISION and TONE from these cases where the facts are the same. Adapt to the current facts; never copy dates or tracking from them. The decision matrix and hard rules still win over any example.\n";
+  }
+
+  if (voiceGuide) {
+    msg += `\n\nOWNER VOICE GUIDE (tone and phrasing to follow):\n${voiceGuide.substring(0, 2000)}\n`;
   }
 
   if (input.extraInstruction) {
@@ -1432,5 +1455,7 @@ function fallbackResult(input: AnalysisInput): AnalysisResult {
     // Safe fallback has no AI-generated dates/carriers → always passes
     factCheck: { passed: true, mismatches: [], confidence: "HIGH" },
     supplierReorderNote: null,
+    kbTopScore: 0,
+    isFallback: true,
   };
 }

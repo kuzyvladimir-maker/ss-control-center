@@ -409,6 +409,46 @@ function PolicyGuidance({ message }: { message: Msg }) {
   );
 }
 
+// Auto-send verdict (autosend-policy.ts). In shadow mode this is the
+// "would auto-send / stays a draft because …" line the owner compares
+// against his own judgement before switching the autopilot on.
+function AutosendVerdict({ json }: { json: string | null | undefined }) {
+  if (!json) return null;
+  let d: {
+    mode?: string;
+    eligible?: boolean;
+    reasons?: string[];
+    sent?: boolean;
+    sendError?: string;
+  };
+  try {
+    d = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  const label = d.sent
+    ? "Sent automatically"
+    : d.eligible
+      ? d.mode === "on"
+        ? "Auto-send failed"
+        : "Would auto-send (shadow mode)"
+      : "Draft — needs your approval";
+  const tone = d.sent || (d.eligible && d.mode !== "on")
+    ? "border-green/30 bg-green-soft2 text-green-ink"
+    : d.eligible
+      ? "border-danger bg-danger-tint text-danger"
+      : "border-rule bg-surface-tint text-ink-2";
+  return (
+    <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${tone}`}>
+      <span className="font-semibold">Autopilot:</span> {label}
+      {!d.eligible && d.reasons && d.reasons.length > 0 && (
+        <span className="text-ink-3"> — {d.reasons.join("; ")}</span>
+      )}
+      {d.sendError && <div className="mt-1 font-mono text-[11px]">{d.sendError}</div>}
+    </div>
+  );
+}
+
 interface MessageDetailProps {
   messageId: string;
   onClose: () => void;
@@ -975,6 +1015,7 @@ export default function MessageDetail({
               </p>
               <ConfidenceIndicator factCheckJson={m.factCheckJson} />
             </div>
+            <AutosendVerdict json={m.autosendDecision} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="text-ink-3">Type:</span>{" "}
@@ -1266,7 +1307,7 @@ export default function MessageDetail({
                 ) : null}
                 {m.status === "SENT" || m.status === "RESOLVED"
                   ? "Already sent"
-                  : "Send via SP-API"}
+                  : "Send to buyer"}
               </Button>
             </div>
             {sendError && sendError.messagingClosed && (
@@ -1295,7 +1336,7 @@ export default function MessageDetail({
             )}
             {sentFlash && (
               <p className="text-xs text-green mt-2">
-                ✓ Sent via SP-API Messaging
+                ✓ Sent to the buyer
               </p>
             )}
           </div>

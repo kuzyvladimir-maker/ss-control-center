@@ -78,3 +78,18 @@ Wiring: after `analyzeMessage` in `sync-messages.ts` → `evaluateAutosend` → 
 
 - The ChatGPT export (Jackie).
 - Owner go for step 3.
+
+## Implemented 2026-10-19 (topic 42)
+
+| Piece | Where | State |
+|---|---|---|
+| KB retrieval fix | `kb-retrieval.ts` (pre-classifier + in-memory ranking), `findRelevantCases()` in `knowledge-base.ts` | Live. On the 27 real Amazon messages, 23 now get examples (before: almost none). Owner rows (`owner_chatgpt`, `owner_edit`) get +0.15 |
+| Voice guide | Setting `customer_hub_voice_guide`, injected into the prompt | Empty until the ChatGPT history is imported |
+| Auto-send policy | `autosend-policy.ts` (pure) + `autosend-runner.ts` | **Shadow mode** by default. Verdict JSON stored in `BuyerMessage.autosendDecision` (Turso column added via `scripts/turso-migrate-customer-hub-autosend.mjs`), shown in MessageDetail as "Autopilot: …" |
+| Send path | `response-sender.ts` → email reply from the store mailbox to the buyer's `@marketplace.amazon.com` relay, in the same Gmail thread | Code live; **needs store1 Gmail re-connected** (scope already includes `gmail.send`) and one owner test send |
+| RESOLVED rule | `thread-state.ts` `answeredAfter()` | Only a reply from us (SENT label / seller From / Seller Central confirmation) after the buyer email closes a case; buyer follow-ups no longer do |
+| Safety | `sendResponse` refuses a second send (`responseSentAt` set); a failed autopilot send flips the mode back to `shadow`; daily cap Setting `customer_hub_autosend_daily_cap` (default 10); re-analyze never sends | Tests: `src/lib/customer-hub/__tests__/autopilot.test.ts` (12) |
+
+Threshold note: with only hand seeds, informational messages score 0.4–0.5,
+below `AUTOSEND_MIN_KB_SCORE = 0.6`, so shadow mode will mostly say "no close
+owner example" until owner examples are imported. That is intended.

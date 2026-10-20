@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { runAutosend } from "@/lib/customer-hub/autosend-runner";
 import { prisma } from "@/lib/prisma";
 import {
   analyzeMessage,
@@ -352,7 +353,23 @@ async function runAnalysis(id: string) {
     },
   });
 
-  return NextResponse.json({ message: updated, analysis: result });
+  // Shadow verdict for the hub ("would auto-send / draft because …").
+  // Never sends from here — re-analyze is an owner click, not the autopilot.
+  let autosend = null;
+  try {
+    autosend = await runAutosend(id, {
+      kbTopScore: result.kbTopScore,
+      isFallback: result.isFallback,
+      neverSend: true,
+    });
+  } catch (e) {
+    console.warn("[messages/:id] autosend verdict failed:", e);
+  }
+
+  return NextResponse.json({
+    message: autosend ? { ...updated, autosendDecision: JSON.stringify(autosend) } : updated,
+    analysis: result,
+  });
 }
 
 // Rewrite — regenerate only `suggestedResponse` (and associated factCheck)

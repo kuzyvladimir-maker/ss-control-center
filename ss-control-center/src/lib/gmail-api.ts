@@ -157,7 +157,16 @@ export async function readThread(refreshToken: string, threadId: string) {
  */
 export async function sendGmailMessage(
   refreshToken: string,
-  opts: { to: string; subject: string; body: string; fromEmail?: string }
+  opts: {
+    to: string;
+    subject: string;
+    body: string;
+    fromEmail?: string;
+    /** Reply inside an existing Gmail thread (Customer Hub email relay). */
+    threadId?: string;
+    /** Message-ID header of the message being answered. */
+    inReplyTo?: string;
+  }
 ): Promise<{ id: string; threadId: string }> {
   const client = createOAuth2Client(refreshToken);
   const gmail = google.gmail({ version: "v1", auth: client });
@@ -171,6 +180,8 @@ export async function sendGmailMessage(
     opts.fromEmail ? `From: ${opts.fromEmail}` : null,
     `To: ${opts.to}`,
     `Subject: ${encodedSubject}`,
+    opts.inReplyTo ? `In-Reply-To: ${opts.inReplyTo}` : null,
+    opts.inReplyTo ? `References: ${opts.inReplyTo}` : null,
     "MIME-Version: 1.0",
     'Content-Type: text/plain; charset="UTF-8"',
     "Content-Transfer-Encoding: base64",
@@ -186,7 +197,7 @@ export async function sendGmailMessage(
 
   const res = await gmail.users.messages.send({
     userId: "me",
-    requestBody: { raw: encodedMessage },
+    requestBody: { raw: encodedMessage, threadId: opts.threadId },
   });
   return {
     id: res.data.id || "",
