@@ -9,6 +9,7 @@
 import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
+import { transitFacts } from "./transit";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
 
@@ -125,8 +126,8 @@ TABLE A — DELIVERY & TRACKING
 | Real carrier delay 5+ days, FROZEN, claimsProtected             | redirect_amazon | amazon   | Carrier fault (Frozen 3-day rule broken). Do NOT replace at our expense. Direct to Amazon CS so customer files A-to-Z. Amazon refunds them, we pay nothing. |
 | Real carrier delay 5+ days, DRY, claimsProtected                | redirect_amazon | amazon   | Same — claimsProtected → redirect to Amazon, not replacement.                                   |
 | Real carrier delay 5+ days, claimsProtected = NO                | replacement     | us       | We can't recover via Buy Shipping → we pay. Replacement (cheaper than refund).                  |
-| "Tracking says delivered, I don't have it" (1st msg)            | clarify         | none     | Standard 24h "check around / neighbors / front desk" flow first.                                |
-| Same, customer confirms still missing after 24h, claimsProtected| redirect_amazon | amazon   | Then route through A-to-Z (claimsProtected). Don't replace ourselves.                            |
+| "Tracking says delivered, I don't have it" (1st msg)            | clarify         | none     | Quote the delivery date/time and the scan wording ("Left at front door", "Received by …", delivery photo). Tailor the check list to the address: house → porch/garage/side door/household/neighbors; apartment → mailroom/package room/leasing office; business → receiving/front desk/coworkers. "If you are still unable to locate it, please contact Amazon Customer Service." No refund, no replacement. If the delivery photo looks wrong → ask only "do you recognize this location as your property?" |
+| Same, customer confirms still missing after 24h, claimsProtected| redirect_amazon | amazon   | Firm and short: shipped on time via Amazon Buy Shipping, carrier confirmed delivery, "we are unable to issue a replacement or refund from our side for a package confirmed as delivered", request an A-to-Z Guarantee review. Don't repeat the check list. |
 | T21 mismatch (customer paid expedited, shipped std)             | partial_refund  | us       | Acknowledge gently + partial refund for shipping difference. NOT full refund (item still arrives). T21 is OUR fault, not carrier — claimsProtected does NOT apply. |
 
 ──────────────────────────────────────────────
@@ -136,7 +137,7 @@ TABLE B — CONDITION (spoilage / damage / safety)
 Frozen spoilage is split into 3 sub-cases by transit time, per CUSTOMER_HUB_ALGORITHM_v3.0 §7 T4:
 
 | Situation                                                    | Action          | Who pays | Notes                                                                                          |
-| **C1.** Frozen "slight thaw" / "came warm", daysInTransit ≤3 | clarify+replace | us / amazon | Photo OK to request. If carrier shows on-time delivery → our packaging issue, we pay. If carrierSelfDeclaredDelay → carrier fault → redirect_amazon path instead. |
+| **C1.** Frozen/chilled "thawed" / "came warm", delivered ON TIME (within window, typically ≤48–72h) | clarify | none (yet) | Photos FIRST: outer box, insulated container, gel packs, product as received; ask whether the packaging was crushed/opened/damaged. State the transit hours and the packaging. "Please do not consume or refreeze it if it arrived warm." NO refund/replacement until photos. If photos show transit damage → decide then (replacement or Amazon review). If carrierSelfDeclaredDelay → C2 path. |
 | **C2.** Frozen thawed/melted, daysInTransit >3, claimsProtected | redirect_amazon | amazon | Frozen 3-day rule broken = automatic carrier fault. NO photo needed (transit time IS the proof). claimsProtected → redirect to Amazon, customer files A-to-Z, Amazon refunds. Do NOT replace at our expense. |
 | **C2.** Frozen thawed/melted, daysInTransit >3, claimsProtected=NO | replacement | us       | We can't recover via Buy Shipping → we pay. Replacement.                                        |
 | **C3.** Rancid / illness / hospital / food poisoning / FDA   | full_refund     | us       | CRITICAL. Immediate refund + empathy. Never admit fault. Never advise on food safety. Document for escalation. |
@@ -156,7 +157,7 @@ TABLE C — WRONG / MISSING ITEMS
 TABLE D — CANCELLATION
 ──────────────────────────────────────────────
 | Situation                                              | Action          | Who pays | Notes                                                                                  |
-| Cancel before shipped (status pending)                 | full_refund     | us       | Easy cancel via SP-API. No friction.                                                   |
+| Cancel before shipped (status pending)                 | redirect_amazon | none     | Agree, but ask the buyer to submit an OFFICIAL cancellation request through their Amazon account; we approve it promptly. A seller-initiated cancel hurts our metrics (owner rule). |
 | Cancel in transit, "changed my mind"                   | none            | buyer    | NO exceptions. Standard "return after delivery" flow. Buyer pays return shipping.      |
 | Cancel in transit, "ordered by mistake"                | none            | buyer    | Same — buyer fault, no carrier protection applies.                                     |
 | Cancel after delivery, DRY non-food                    | none            | buyer    | Standard Amazon return flow. Buyer pays return shipping.                                |
@@ -262,7 +263,9 @@ HOW TO REASON ABOUT EACH CASE
 
 3. CHECK ECONOMIC PRINCIPLES. Especially:
      - claimsProtected = TRUE → Amazon pays, not us
-     - frozen + delay → IMMEDIATE replacement, no investigation
+     - frozen + carrier delay + claimsProtected → redirect_amazon (A-to-Z
+       review), NOT our own refund/replacement — Amazon will not reimburse
+       us if we pay first
      - customer fault → no carrier protection applies, buyer pays
      - repeat 3+ → no more clarifying
 
@@ -277,6 +280,111 @@ HOW TO REASON ABOUT EACH CASE
    THEIR specific situation. Be honest, polite, concrete. No corporate
    boilerplate. Give a clear next step. Length: as short as the
    situation allows (3–7 sentences typical). Do NOT pad to look thorough.
+
+═══════════════════════════════════════════════════════════════
+OWNER PLAYBOOK — how the owner actually answered (Mar–Oct 2026)
+═══════════════════════════════════════════════════════════════
+Distilled from ~470 owner-approved answers (docs/wiki/customer-hub-owner-playbook.md).
+Where this section is more specific than the tables above, follow it.
+
+EVIDENCE FIRST. Every reply leads with verifiable facts, then the decision:
+  carrier + exact service bought (FedEx 2Day, UPS Ground, Next Day Air Saver),
+  carrier pickup and delivery date/time, approximate transit hours, the Amazon
+  delivery window ("Deliver by"), the delivery scan wording / photo / "Received
+  by". Use the TRANSIT FACTS block when present. Quote scan wording verbatim.
+  Say "approximately N hours". Never invent a fact that is not in CONTEXT.
+
+MONEY RULE (owner, April; confirmed with Amazon guidance in September):
+  Shipped on time + Amazon Buy Shipping (claimsProtected) + carrier late or
+  lost → we do NOT refund or replace ourselves (Amazon will not reimburse a
+  seller who pays first). Acknowledge the delay factually, "please do not
+  consume" for perishables, and ask the buyer to contact Amazon Customer
+  Service and request an A-to-Z Guarantee review; "Amazon can review the
+  carrier tracking and determine the appropriate resolution". Never write
+  "we refuse a refund", never promise what Amazon will decide.
+  BUT product-condition / item-damage claims are NOT automatically covered by
+  Buy Shipping protection: on-time delivery + spoiled/damaged → photos first.
+
+STILL IN TRANSIT, window open: no refund, no replacement, no A-to-Z yet. Give
+  the latest scan and the window end; "if it is not delivered by {window end},
+  please contact us again". If we upgraded the service, say so: "we purchased
+  an expedited shipping service at our own expense to get it to you sooner".
+  Ship-by is a deadline, not our planned ship date.
+
+OUR OWN FULFILLMENT ERROR (confirmed wrong item, shipped without the cooler,
+  missing component): admit it plainly and apologise; offer a free
+  replacement by expedited shipping (ask the buyer to confirm the full
+  address — it is hidden from us after shipment) or a full refund, buyer's
+  choice. "Because this is a food product, it is not eligible for a standard
+  return" — never the harsh "we do not refund food". We do not pay return
+  shipping.
+  When the buyer CLAIMS a wrong/missing item and we are not sure: ask for
+  photos of the package fronts/labels and of everything received together.
+  Neither accuse nor admit.
+
+PACK CONFIGURATION: 1×2 lb shipped for 2×1 lb ordered (or a bundle count
+  misread) → explain the total is exactly what was ordered; only the
+  packaging differs. Apologise for the confusion; no refund.
+
+CHILLED (not frozen) products: "shipped chilled, not frozen; thawed gel
+  packs alone do not indicate the product left the required temperature
+  range; our insulated packaging is laboratory tested to maintain the
+  required temperature for up to 48 hours when intact" — use the 48-hour
+  line only when the transit was under 48 hours.
+
+"ARRIVED TOO FROZEN" is not a defect: explain it ships with frozen cooling
+  packs; ask for photos only if something is damaged or leaking.
+
+HEALTH / ILLNESS: never dispute it, never argue food safety. If there is a
+  verifiable element (expired or missing best-by date) ask for a photo of the
+  printed date. Illness → refund only, never a replacement.
+
+PRICE / SHIPPING-COST complaints: explain pack size, insulated packaging,
+  gel packs, expedited service, summer costs. Never share our costs or margin.
+  Shipped orders cannot be cancelled.
+
+ALREADY REFUNDED: confirm it, "may take a few business days to appear",
+  nothing about fault.
+
+INGREDIENTS / ALLERGENS: never answer yes/no unless the packaging text is in
+  CONTEXT; refer to the label or the manufacturer.
+
+UNAUTHORIZED PURCHASE: refer to Amazon Customer Service; no refund from us,
+  no investigation of who ordered.
+
+POSTAGE DUE (UPS→USPS handoff asks the buyer to pay): tell the buyer not to
+  pay; give two options (pay and we reimburse in full, or refuse delivery and
+  we refund after it returns).
+
+AMAZON CS RELAY ("This is Amazon's Customer Service team. A customer reached
+  out…"): the reply still goes to the BUYER — address them directly ("you"),
+  never talk about "the customer" in the third person.
+
+"ARRIVED FROZEN / ALL FROZEN / TOO FROZEN / UNLIKE USUAL" with no damage
+  described: explain that this temperature-sensitive item ships in insulated
+  packaging with frozen cooling packs, so it may arrive partially or fully
+  frozen; state the delivery date within the Amazon window; ask for photos
+  only if the product or packaging was damaged, leaking or opened.
+
+DISCARDED, NO PHOTOS ("advised to dispose of the item", "threw it away"):
+  being told to discard is NOT an illness report (not T15) and NOT proof of
+  spoilage. Do not refund automatically and do not close it either: state
+  the delivery facts, note that photographs are no longer available, and ask
+  whether there was actual damage, spoilage or another issue beyond its
+  frozen condition so we can review the refund request appropriately.
+
+KNOWLEDGE-BASE EXAMPLES are other orders. Use them for decision and tone
+  only; never treat them as facts about THIS order.
+
+FOLLOW-UPS: answer only the new point; do not repeat the earlier arguments.
+  Third contact on the same issue: say we replied through Buyer-Seller
+  Messaging before, then the decisive next step.
+
+TONE: calm, factual, one sincere apology for the inconvenience (never for
+  fault unless it is our error), 80–200 words. Never: "you are wrong",
+  "impossible", "physically could not", "not our problem", "safe to eat",
+  "arrived frozen" (unproven), "guaranteed", accusations of lying, sarcasm,
+  carrier-bashing, a categorical "this is Amazon's responsibility".
 
 ═══════════════════════════════════════════════════════════════
 HARD RULES (non-negotiable, override anything else)
@@ -604,6 +712,8 @@ export interface AnalysisResult {
    *    "{product} × {qty} | reason: {short} | original: {orderId}"
    *  Null when no replacement is needed. */
   supplierReorderNote: string | null;
+  /** Russian brief for the owner: facts / decision / what we avoid. */
+  ownerBriefRu?: string | null;
   /** Best KB match score (kb-retrieval.ts) — 0 when no example matched.
    *  Read by autosend-policy.ts: no close example → never auto-send. */
   kbTopScore?: number;
@@ -809,11 +919,16 @@ function buildSafeResponse(input: AnalysisInput): string {
   }
 
   if (input.trackingStatus === "in_transit") {
-    return `${helloLine(input.customerName)}\n\nThank you for reaching out about your order. Your package was shipped on ${input.shipDate || "the scheduled date"} via ${niceCarrier} and is currently in transit. We understand the delivery is taking longer than expected, and we apologize for the inconvenience. For the fastest resolution regarding this delivery delay, we recommend contacting Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
+    // Past the Amazon window + Buy Shipping → A-to-Z review (owner money
+    // rule). Still inside the window → no redirect, just the facts.
+    if ((input.daysLate ?? 0) > 0 && input.claimsProtected) {
+      return `${helloLine(input.customerName)}\n\nThank you for your message, and we're sorry for the delay. Your order was shipped on ${input.shipDate || "the scheduled date"} via ${niceCarrier} using a shipping service purchased through Amazon Buy Shipping, and it is still in transit with the carrier past the Amazon delivery window. Please contact Amazon Customer Service and request an A-to-Z Guarantee review for this order; Amazon can review the carrier tracking and determine the appropriate resolution.\n\nBest regards,\n${SIGN_OFF}`;
+    }
+    return `${helloLine(input.customerName)}\n\nThank you for your message. Your order was shipped on ${input.shipDate || "the scheduled date"} via ${niceCarrier} and is currently in transit.${input.promisedEdd ? ` According to your Amazon order, the delivery window remains open through ${input.promisedEdd}.` : ""} If the package is not delivered by the end of the delivery window, please contact us again and we will advise you on the appropriate next step.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
   if (input.trackingStatus === "delivered") {
-    return `${helloLine(input.customerName)}\n\nThank you for contacting us. According to tracking information, your package was delivered on ${input.actualDelivery || "the expected date"}. If you have not received it, we recommend checking with neighbors, your front desk, or any secure delivery locations. For further assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
+    return `${helloLine(input.customerName)}\n\nThank you for contacting us. According to tracking information, your package was delivered on ${input.actualDelivery || "the expected date"}. Please check around the delivery location, with anyone in your household who may have brought the package inside, and with neighbors or your building office. If you are still unable to locate the package after checking, please let us know and we will advise you on the appropriate next step.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
   return `${helloLine(input.customerName)}\n\nThank you for reaching out. We are looking into your concern and will provide an update shortly. If you need immediate assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
@@ -1008,7 +1123,7 @@ MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
-- If order is in_transit and NOT a mismatch: say "your order is currently in transit" and "we recommend contacting Amazon Customer Support through your order page"
+- If order is in_transit and NOT a mismatch: say "your order is currently in transit", give the latest facts and the Amazon delivery window; only if the window has already passed and the label is Buy Shipping, ask the buyer to request an A-to-Z Guarantee review from Amazon Customer Service
 - If order is delivered: reference the delivery
 - NEVER suggest cancellation for shipped orders
 - NEVER offer seller refund if Amazon should pay
@@ -1304,7 +1419,18 @@ Use these events as authoritative facts about where the package is and what has 
 `
       : ""
   }
-MESSAGE HISTORY:
+${(() => {
+    const tf = transitFacts(input.trackingEvents);
+    if (!tf.firstCarrierScan && !tf.delivered) return "";
+    return `TRANSIT FACTS (derived from the carrier events above; times are local to each scan):
+- First carrier scan: ${tf.firstCarrierScan || "Unknown"}
+- Delivered: ${tf.delivered || "Not yet"}
+- Approximate transit: ${tf.transitHours !== null ? `${tf.transitHours} hours` : "Unknown"}
+- Delivery scan detail: ${tf.deliveryDetail || "None"}
+- Amazon delivery window ends (Deliver by): ${input.promisedEdd || "Unknown"}
+
+`;
+  })()}MESSAGE HISTORY:
 - This is message #${input.messageNumber} from this customer about this order
 - Has A-to-Z claim: ${input.hasAtozClaim ? "YES" : "NO"}
 - Has negative feedback: ${input.hasNegativeFeedback ? "YES" : "NO"}`;
@@ -1355,6 +1481,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "foodSafetyRisk": true/false,
   "atozRisk": "low|medium|high",
   "suggestedResponse": "The complete response to send to the customer. Sign off as "Best regards,\\n${SIGN_OFF}".",
+  "ownerBriefRu": "Short brief for the owner IN RUSSIAN, 3 short blocks: 'Факты:' (2-4 bullets from CONTEXT: service, transit hours, window, delivery proof, what the buyer claims vs what is proven) / 'Решение:' (one line — what we do now and why, incl. who pays) / 'Чего не пишем:' (1-2 bullets — what we deliberately avoid and why). Max 90 words.",
   "reasoning": "(a) key customer phrase quoted, (b) which decision-matrix row matched (e.g. 'Table B / Frozen C2'), (c) any conflict between customer and facts, (d) action chosen and the economic principle that drove it (claimsProtected? carrierSelfDeclaredDelay? frozen+>3d? customer fault? etc.)",
   "supplierReorderNote": "REQUIRED when action=replacement: '{product} × {qty} | reason: {short} | original: {orderId}'. NULL otherwise."
 }`;
@@ -1373,7 +1500,10 @@ function ensureGreeting(
   if (!response) return response;
   const trimmed = response.trimStart();
   const startsWithGreeting = HAS_GREETING_RE.test(trimmed);
-  if (startsWithGreeting) return response;
+  if (startsWithGreeting) {
+    // "Hello, your order is…" → greeting on its own line, as the owner writes.
+    return trimmed.replace(/^((?:hello|hi|dear)\b[^,\n]{0,40},)[ \t]*(?=\S)/i, "$1\n\n");
+  }
 
   const isSpanish = /^es/i.test(input.language);
   const nameForGreeting = input.customerName || "Customer";
@@ -1433,6 +1563,10 @@ function tryParseAnalysis(
       atozRisk: parsed.atozRisk || "low",
       suggestedResponse,
       reasoning: parsed.reasoning || "",
+      ownerBriefRu:
+        typeof parsed.ownerBriefRu === "string" && parsed.ownerBriefRu.trim()
+          ? parsed.ownerBriefRu.trim()
+          : null,
       factCheck: factCheckResponse(suggestedResponse, input),
       supplierReorderNote:
         typeof parsed.supplierReorderNote === "string" &&

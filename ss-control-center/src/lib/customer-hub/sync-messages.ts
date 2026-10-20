@@ -325,6 +325,7 @@ export async function syncBuyerMessagesFromGmail(
                   suggestedResponseRu: suggestedRu,
                   supplierReorderNote: analysis.supplierReorderNote,
                   reasoning: analysis.reasoning,
+                  ownerBrief: analysis.ownerBriefRu ?? null,
                   category: analysis.problemType,
                   categoryName: analysis.problemTypeName,
                   priority: analysis.riskLevel,

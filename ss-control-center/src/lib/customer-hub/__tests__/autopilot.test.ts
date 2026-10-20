@@ -191,3 +191,24 @@ test("infers the owner's action from reply text", () => {
   assert.equal(inferOwnerAction("Could you please provide a photo of the box?"), "clarify");
   assert.equal(inferOwnerAction("Your package is on the way."), "reassure");
 });
+
+// ── Transit facts ─────────────────────────────────────────────────────
+
+import { transitFacts } from "../transit";
+
+test("transit hours run from the first real carrier scan to delivery", () => {
+  const tf = transitFacts([
+    { date: "2026-10-07", time: "14:06", description: "Shipper created a label, UPS has not received the package yet.", status: "M" },
+    { date: "2026-10-08", time: "19:30", description: "Pickup Scan", status: "P", location: "CLEARWATER, FL" },
+    { date: "2026-10-10", time: "15:34", description: "DELIVERED", status: "D", location: "MARTINSBURG, WV" },
+  ]);
+  assert.equal(tf.firstCarrierScan, "2026-10-08 19:30");
+  assert.equal(tf.transitHours, 44);
+  assert.equal(tf.deliveryDetail, "DELIVERED @ MARTINSBURG, WV");
+});
+
+test("no delivery yet → transit hours unknown", () => {
+  const tf = transitFacts([{ date: "2026-10-08", time: "10:00", description: "Origin Scan", status: "I" }]);
+  assert.equal(tf.delivered, null);
+  assert.equal(tf.transitHours, null);
+});

@@ -1055,6 +1055,10 @@ model BuyerMessage {
   // "would auto-send / draft because …" line the hub shows.
   autosendDecision String?
 
+  // Russian brief for the owner from the analyzer (facts / decision / what
+  // we avoid) — the format he got from ChatGPT for seven months.
+  ownerBrief String?
+
   @@index([amazonOrderId])
   @@index([storeIndex, status])
 }

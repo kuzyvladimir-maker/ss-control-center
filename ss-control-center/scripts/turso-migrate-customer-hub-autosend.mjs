@@ -42,7 +42,10 @@ if (!url || !authToken) {
 const client = createClient({ url, authToken });
 console.log(`→ Target: ${url.split("@")[1] || url}`);
 
-const NEW_COLUMNS = [["autosendDecision", "TEXT"]];
+const NEW_COLUMNS = [
+  ["autosendDecision", "TEXT"],
+  ["ownerBrief", "TEXT"],
+];
 
 const STATEMENTS_AFTER = [];
 

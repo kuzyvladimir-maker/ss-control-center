@@ -1015,6 +1015,16 @@ export default function MessageDetail({
               </p>
               <ConfidenceIndicator factCheckJson={m.factCheckJson} />
             </div>
+            {m.ownerBrief && (
+              <div className="mt-2 rounded-md border border-rule bg-surface-tint px-3 py-2">
+                <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
+                  AI brief
+                </p>
+                <p className="text-xs text-ink-2 whitespace-pre-line">
+                  {m.ownerBrief}
+                </p>
+              </div>
+            )}
             <AutosendVerdict json={m.autosendDecision} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div>

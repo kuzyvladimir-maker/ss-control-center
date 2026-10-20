@@ -350,6 +350,7 @@ async function runAnalysis(id: string) {
       status: "ANALYZED",
       factCheckJson: JSON.stringify(result.factCheck),
       reasoning: result.reasoning,
+      ownerBrief: result.ownerBriefRu ?? null,
     },
   });
 
