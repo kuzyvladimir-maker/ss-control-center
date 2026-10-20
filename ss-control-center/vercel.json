@@ -12,7 +12,7 @@
     },
     {
       "path": "/api/cron/customer-hub-sync",
-      "schedule": "*/30 * * * *"
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/orders-amazon",

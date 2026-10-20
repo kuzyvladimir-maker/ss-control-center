@@ -197,7 +197,8 @@ async function createCard(
     clientRu,
     clientOriginal: original,
     historyRu: a?.historyRu || null,
-    dataRu: snap.items.filter((i) => i.present && i.factRu).map((i) => i.factRu),
+    // M1 is the buyer text itself — already shown as "Клиент".
+    dataRu: snap.items.filter((i) => i.present && i.factRu && i.key !== "M1").map((i) => i.factRu),
     missingRu,
     decisionRu: a?.ownerBriefRu || (missingRu ? "Решения нет: не хватает данных (см. выше)." : "—"),
     draftEn: (m.editedResponse || m.suggestedResponse || "").trim(),
@@ -264,7 +265,7 @@ export async function processCase(
       factsForPrompt(snapshot),
       [
         missingRu
-          ? "Some minimum case data could not be found (see CASE DATA). Do not make a final money decision; draft a safe reply and say in ownerBriefRu what is missing."
+          ? "Some minimum case data could not be found (see the note below). If a playbook rule fully determines the decision regardless of the missing items — e.g. NOT HANDED OVER (no carrier acceptance scan) — follow that rule and write the final reply. Otherwise draft a safe reply without a money decision. Either way, mention the gaps in ownerBriefRu.\nMissing: " + missingRu.replace(/\n/g, " ")
           : null,
         opts.ownerInstruction ? `OWNER'S CORRECTION FOR THIS CASE (follow it): ${opts.ownerInstruction}` : null,
       ]
