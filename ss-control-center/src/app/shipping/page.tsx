@@ -734,12 +734,15 @@ export default function ShippingLabelsPage() {
   const [stateFilter, setStateFilter] = useState<
     "all" | "ready_to_buy" | "need_attention" | "waiting_placed"
   >("all");
-  // List sort. "urgency" = the default actionability order (state → time
-  // bucket); the others sort by label cost / carrier EDD / marketplace
-  // deadline so the operator can re-order like Veeqo's sortable columns.
+  // List sort. Default = "product" (owner 2026-10-20): identical products
+  // sit together so a run of the same item is bought in one pass. Urgent
+  // rows (overdue / need attention) stay pinned on top under every sort.
+  // "urgency" = the plain actionability order (state → time bucket); the
+  // others sort by label cost / carrier EDD / marketplace deadline, like
+  // Veeqo's sortable columns.
   const [sortBy, setSortBy] = useState<
     "urgency" | "cost" | "edd" | "deadline" | "product"
-  >("urgency");
+  >("product");
   // Smart free-text search — matched against order#, customer, ship-to,
   // city, state, store, channel, SKU and product title.
   //
