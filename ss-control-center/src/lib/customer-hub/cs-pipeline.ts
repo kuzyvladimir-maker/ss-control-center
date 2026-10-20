@@ -275,6 +275,19 @@ export async function processCase(
     return { stage: "WAITING_VPS_LOOKUP", lookupTaskId: task.id, missing: missingKeys(snapshot) };
   }
 
+  // Owner rework comments on earlier versions of THIS case's card.
+  const cards = await prisma.csCard.findMany({ where: { buyerMessageId: m.id }, select: { id: true } });
+  const caseRules = cards.length
+    ? await prisma.csOwnerRule.findMany({
+        where: { kind: "rework", cardId: { in: cards.map((c) => c.id) } },
+        orderBy: { createdAt: "asc" },
+      })
+    : [];
+  const ownerInstruction =
+    [...caseRules.map((r) => r.text), opts.ownerInstruction]
+      .filter((x, i, a): x is string => Boolean(x) && a.indexOf(x) === i)
+      .join("\n") || undefined;
+
   const missingRu = step === "OWNER" ? exhaustedNoteRu(snapshot) : null;
   const a = await analyzeMessage(
     analysisInput(
@@ -285,7 +298,7 @@ export async function processCase(
         missingRu
           ? "Some minimum case data could not be found (see the note below). If a playbook rule fully determines the decision regardless of the missing items — e.g. NOT HANDED OVER (no carrier acceptance scan) — follow that rule and write the final reply. Otherwise draft a safe reply without a money decision. Either way, mention the gaps in ownerBriefRu.\nMissing: " + missingRu.replace(/\n/g, " ")
           : null,
-        opts.ownerInstruction ? `OWNER'S CORRECTION FOR THIS CASE (follow it): ${opts.ownerInstruction}` : null,
+        ownerInstruction ? `OWNER'S CORRECTIONS FOR THIS CASE (follow them, they are facts from the owner): ${ownerInstruction}` : null,
       ]
         .filter(Boolean)
         .join("\n") || undefined
@@ -310,7 +323,7 @@ export async function processCase(
       suggestedResponseRu: suggestedRu,
       // A fresh draft replaces an older manual edit only when the owner
       // asked for a rework.
-      editedResponse: opts.ownerInstruction ? null : undefined,
+      editedResponse: ownerInstruction ? null : undefined,
       supplierReorderNote: a.supplierReorderNote,
       reasoning: a.reasoning,
       ownerBrief: a.ownerBriefRu ?? null,

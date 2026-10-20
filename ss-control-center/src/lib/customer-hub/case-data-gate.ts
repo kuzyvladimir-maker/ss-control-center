@@ -27,7 +27,7 @@ export const MINIMUM: Record<CaseDataKey, { labelRu: string; chain: string[] }> 
   },
   M6: {
     labelRu: "трекинг перевозчика (скан приёмки, доставка)",
-    chain: ["API перевозчика (UPS/FedEx/USPS)", "повторный запрос к API", "Seller Central через VPS (страница заказа)"],
+    chain: ["API перевозчика (UPS/FedEx/USPS)", "сохранённый трекинг", "Seller Central через VPS (страница заказа)"],
   },
   M7: { labelRu: "тип товара Frozen/Dry (теги Veeqo)", chain: ["теги Veeqo первой позиции", "теги Veeqo всех позиций"] },
   M8: {

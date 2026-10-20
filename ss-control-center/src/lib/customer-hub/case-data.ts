@@ -211,20 +211,24 @@ export async function collectCaseData(
   if (unshipped) {
     items.push(item("M6", true, "No tracking: not shipped yet.", "трекинга нет — не отгружен", [{ source: "SP-API Orders", ok: true }]));
   } else {
-    try {
-      events = m.trackingEvents ? (JSON.parse(m.trackingEvents) as TransitEvent[]) : null;
-    } catch {
-      events = null;
-    }
-    m6tried.push({ source: "API перевозчика (UPS/FedEx/USPS)", ok: Boolean(events?.length) });
-    if (!events?.length && m.trackingNumber) {
+    // Fresh carrier data first — the stored events can be days old (a
+    // reprinted label may have been scanned since the buyer wrote).
+    if (m.trackingNumber) {
       try {
         events = await carrierEvents(m.carrier, m.trackingNumber);
         if (events?.length) patch.trackingEvents = JSON.stringify(events);
-        m6tried.push({ source: "повторный запрос к API", ok: Boolean(events?.length) });
+        m6tried.push({ source: "API перевозчика (UPS/FedEx/USPS)", ok: Boolean(events?.length) });
       } catch (e) {
-        m6tried.push({ source: "повторный запрос к API", ok: false, note: errText(e) });
+        m6tried.push({ source: "API перевозчика (UPS/FedEx/USPS)", ok: false, note: errText(e) });
       }
+    }
+    if (!events?.length) {
+      try {
+        events = m.trackingEvents ? (JSON.parse(m.trackingEvents) as TransitEvent[]) : null;
+      } catch {
+        events = null;
+      }
+      m6tried.push({ source: "сохранённый трекинг", ok: Boolean(events?.length) });
     }
     const tf = transitFacts(events);
     const ok = Boolean(events?.length);

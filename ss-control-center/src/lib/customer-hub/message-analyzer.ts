@@ -390,6 +390,13 @@ NOT HANDED OVER (tracking has only "label created" / "has not received the
   riskLevel HIGH. In ownerBriefRu tell the owner to check whether the box
   physically left and to void the unused label.
 
+ALREADY SHIPPED AFTER THE BUYER WROTE (owner, 2026-10-20): if TRANSIT FACTS
+  or CASE DATA show a fresh carrier scan / shipment after the buyer's message
+  (or the owner says it went out), do NOT promise a resend and do NOT ask to
+  confirm the address — state the fact: the order was shipped on {date},
+  tracking {number}, expected delivery within two business days; apologise
+  only for the inconvenience.
+
 DISCARDED, NO PHOTOS ("advised to dispose of the item", "threw it away"):
   being told to discard is NOT an illness report (not T15) and NOT proof of
   spoilage. Do not refund automatically and do not close it either: state
@@ -1296,8 +1303,10 @@ export async function analyzeMessage(
   // table; newest first; they ADD to the playbook, never replace it.
   let ownerRules: string[] = [];
   try {
+    // "rework" comments are about one case and reach only that case (via
+    // cs-pipeline ownerInstruction); general rules/corrections go everywhere.
     const rows = await prisma.csOwnerRule.findMany({
-      where: { active: true },
+      where: { active: true, kind: { not: "rework" } },
       orderBy: { createdAt: "desc" },
       take: 40,
     });

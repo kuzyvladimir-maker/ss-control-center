@@ -19,7 +19,9 @@ import type { JackieTool } from "../registry";
 function reprocessLater(messageId: string, ownerInstruction?: string) {
   after(async () => {
     try {
-      await processCase(messageId, { ownerInstruction });
+      // The owner is already working on this case: always rebuild the card,
+      // never park it behind a VPS lookup.
+      await processCase(messageId, { ownerInstruction, forceCard: true });
     } catch (e) {
       console.error("[cs-agent] reprocess failed:", e);
     }
