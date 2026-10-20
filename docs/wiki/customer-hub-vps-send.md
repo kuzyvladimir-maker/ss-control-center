@@ -134,3 +134,83 @@ calls `processCase` for every new message.
 - Unchanged and still in force: the playbook in the system prompt
   ([[customer-hub-owner-playbook]], from the ChatGPT export) and the voice
   guide (`Setting customer_hub_voice_guide`).
+
+## Exact contract for Jackie (2026-10-20)
+
+**Endpoint:** `POST https://salutemsolutions.info/api/mcp` (MCP over JSON-RPC 2.0).
+**Auth:** header `Authorization: Bearer <JACKIE_API_TOKEN>` — the same token
+Jackie already uses for the hub MCP. Headers also:
+`Content-Type: application/json`, `Accept: application/json, text/event-stream`.
+
+Every call:
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"tools/call",
+ "params":{"name":"<tool>","arguments":{...}}}
+```
+
+Result: `result.structuredContent` (also `result.content[0].text` as JSON).
+`result.isError: true` → the text is the error message.
+
+### Cards → Telegram topic 42
+
+| Step | Call | Arguments | Returns |
+|---|---|---|---|
+| poll every 1–2 min | `cs_cards_pending` | `{"limit":10}` | array of cards (below) |
+| after posting | `cs_card_published` | `{"card_id","telegram_message_id"}` | `{ok:true}` |
+| button pressed | `cs_card_action` | `{"card_id","action":"approve\|wrong\|rework","comment"?}` | see below |
+
+Card JSON (one array element):
+
+```json
+{
+  "cardId": "cmv…", "version": 1, "buyerMessageId": "cmv…",
+  "store": "Salutem Solutions", "storeIndex": 1, "orderId": "114-…",
+  "deadlineRu": "ответить до 20.10, 23:29 ET (осталось ~9 ч)",
+  "clientRu": "…", "clientOriginal": "…", "historyRu": "…" ,
+  "dataRu": ["…", "…"], "missingRu": null,
+  "decisionRu": "Факты: … Решение: … Чего не пишем: …",
+  "draftEn": "Hello …,\n\n…\n\nBest regards,\nCustomer Support Team",
+  "attachments": [],
+  "buttons": [
+    {"action":"approve","label":"Утвердить и отправить","callbackData":"cs:<cardId>:approve"},
+    {"action":"wrong","label":"Не так","callbackData":"cs:<cardId>:wrong"},
+    {"action":"rework","label":"Доработать","callbackData":"cs:<cardId>:rework"}
+  ],
+  "textRu": "ready-to-post Russian message (all of the above formatted)"
+}
+```
+
+Post `textRu` as the message body (it can exceed 4096 chars rarely — split,
+buttons on the last part) with the three inline buttons using `callbackData`.
+
+`cs_card_action` returns:
+- approve → `{"ok":true,"taskId":"…"}` — a SEND task is queued; reply under
+  the card "Утверждено, отправка поставлена в очередь".
+- wrong/rework without comment → `{"ok":true,"askOwnerRu":"Что именно не так…"}`
+  — post it as a reply to the card; when the owner answers (voice → text),
+  call `cs_card_action` again with the same card_id/action and `comment`.
+- with comment → `{"ok":true,"reprocessMessageId":"…"}` — the rule is saved;
+  a new card version (v2…) shows up in `cs_cards_pending` in ~1 minute.
+- error "Card … is SUPERSEDED" → the owner pressed an old version; tell him
+  the newer card is the live one.
+
+### VPS tasks (run ONLY on the VPS of that Amazon account)
+
+| Step | Call | Arguments |
+|---|---|---|
+| poll | `cs_tasks_list` | `{"store_index":1,"kind"?:"SEND\|LOOKUP"}` |
+| lock | `cs_task_claim` | `{"task_id","vps":"salutem-vps"}` |
+| report | `cs_task_complete` | `{"task_id","outcome":"DONE\|FAILED\|UNKNOWN","screenshot_url"?,"result"?,"error"?}` |
+
+Task JSON: `{id, kind, storeIndex, amazonOrderId, buyerMessageId, payload}`.
+- SEND payload: `{body, attachments[], buyerName, instructionsRu}` — paste
+  `body` exactly, attach files, Send, upload a screenshot of the sent
+  message and pass its URL.
+- LOOKUP payload: `{need:["M6",…], needRu:[…], instructionsRu}` — read only;
+  return `result` keyed by the requested items, e.g.
+  `{"M6":"UPS: label created 10/04, no carrier scan","M8":"no refunds"}`.
+
+Rules: claim before acting; one task = one attempt; `UNKNOWN` is never
+re-sent — read the thread and report; verify order ID + buyer name and that
+we have not replied after the buyer's last message before sending.
