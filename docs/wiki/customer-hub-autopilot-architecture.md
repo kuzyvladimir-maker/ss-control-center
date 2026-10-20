@@ -119,3 +119,7 @@ with a copy of the text.
   draft that the policy would otherwise have let through).
 - Re-run after new replies accumulate:
   `npx tsx scripts/import-owner-replies-from-gmail.ts --apply` (new pairs only).
+
+## Owner playbook from the ChatGPT history (2026-10-19)
+
+Seven months of owner-approved answers distilled into prompt rules — see [[customer-hub-owner-playbook]].
