@@ -226,7 +226,12 @@ export interface ProcessResult {
 
 export async function processCase(
   messageId: string,
-  opts: { ownerInstruction?: string } = {}
+  opts: {
+    ownerInstruction?: string;
+    /** Build a card now even if data is missing (owner-requested test /
+     *  urgent case): skips the VPS lookup wait, the card lists the gaps. */
+    forceCard?: boolean;
+  } = {}
 ): Promise<ProcessResult> {
   let m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
   if (!m || m.direction !== "incoming") return { stage: "SKIPPED" };
@@ -239,7 +244,8 @@ export async function processCase(
     data: { ...patch, caseDataJson: JSON.stringify(snapshot), caseStage: "COLLECTING" },
   });
 
-  const step = nextStep(snapshot);
+  const gate = nextStep(snapshot);
+  const step = opts.forceCard && gate === "VPS_LOOKUP" ? "OWNER" : gate;
   if (step === "VPS_LOOKUP") {
     const task = await enqueueLookupTask(m, snapshot);
     snapshot.vpsLookup = { status: task.status, at: new Date().toISOString() };

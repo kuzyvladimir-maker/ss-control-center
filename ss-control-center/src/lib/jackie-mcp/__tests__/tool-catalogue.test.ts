@@ -82,6 +82,7 @@ test("every write tool is flagged write=true; every read tool is write=false", (
     "channelmax_job_reconcile",
     // Customer Service cards + VPS tasks (queue state only; the marketplace
     // action itself happens on the account VPS after owner approval)
+    "cs_case_process",
     "cs_card_published",
     "cs_card_action",
     "cs_task_claim",

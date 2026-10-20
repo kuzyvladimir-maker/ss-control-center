@@ -12,6 +12,7 @@ import { after } from "next/server";
 import { cardAction, markPublished, pendingCards } from "@/lib/customer-hub/cs-cards";
 import { claimTask, completeTask, listTasks } from "@/lib/customer-hub/cs-tasks";
 import { processCase } from "@/lib/customer-hub/cs-pipeline";
+import { prisma } from "@/lib/prisma";
 import { optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
 
@@ -138,4 +139,43 @@ const taskComplete: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [cardsPending, cardPublished, cardActionTool, tasksList, taskClaim, taskComplete];
+const caseProcess: JackieTool = {
+  name: "cs_case_process",
+  description:
+    "Run the Customer Service pipeline now for one buyer message (by message_id or amazon_order_id): collect data → analysis → approval card. force_card=true builds the card even if some data is missing (gaps listed on the card). Runs in the background; poll cs_cards_pending ~1-2 min later.",
+  write: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      message_id: { type: "string" },
+      amazon_order_id: { type: "string" },
+      force_card: { type: "boolean" },
+    },
+    additionalProperties: false,
+  },
+  handler: async (args) => {
+    let id = optionalString(args, "message_id");
+    const orderId = optionalString(args, "amazon_order_id");
+    if (!id && orderId) {
+      const m = await prisma.buyerMessage.findFirst({
+        where: { amazonOrderId: orderId, direction: "incoming" },
+        orderBy: { receivedAt: "desc" },
+      });
+      id = m?.id;
+    }
+    if (!id) throw new Error("message_id or amazon_order_id with an incoming message is required");
+    const messageId = id;
+    const forceCard = args.force_card === true;
+    after(async () => {
+      try {
+        const r = await processCase(messageId, { forceCard });
+        console.log("[cs_case_process]", messageId, JSON.stringify(r));
+      } catch (e) {
+        console.error("[cs_case_process] failed:", e);
+      }
+    });
+    return { ok: true, messageId, queued: true, hint: "poll cs_cards_pending in ~1-2 min" };
+  },
+};
+
+export const tools: JackieTool[] = [caseProcess, cardsPending, cardPublished, cardActionTool, tasksList, taskClaim, taskComplete];
