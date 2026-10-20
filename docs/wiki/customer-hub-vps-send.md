@@ -11,7 +11,7 @@ Owner decisions, 2026-10-20 (topic 42, case 114-1631599-6877866):
 
 Supersedes the "email relay" recommendation in
 [[customer-hub-diagnosis-2026-10-18]]. Rules: [[customer-hub-owner-playbook]].
-Status: **proposal — awaiting owner approval** of the lists and the flow.
+Status: **approved by the owner 2026-10-20** (M8 stays in the minimum; the hub must fetch missing data itself). Built 2026-10-20 — see "Built" below.
 
 ## 1. Data sets (proposal)
 
@@ -78,3 +78,59 @@ queued without the owner's approval until he switches the autopilot on.
 - Gmail `gmail.send` reconnect for Store 1 is no longer needed.
 - NOT HANDED OVER rule: apologise and resend within 1–2 business days,
   standard shipping, no refund offer unless asked, never A-to-Z.
+
+
+## Built 2026-10-20
+
+### Data: source chains (hub fetches; owner sees only exhausted gaps)
+
+| Item | Chain (first → fallback) |
+|---|---|
+| M1 buyer text | Gmail ingest → Seller Central (VPS LOOKUP) |
+| M2 thread | hub DB → owner replies from Amazon confirmations → Seller Central (VPS) |
+| M3 order | SP-API Orders + items → DB copy (AmazonOrder) → Seller Central (VPS) |
+| M4 Ship by / Deliver by | SP-API → DB copy → Seller Central (VPS) |
+| M5 shipment | Veeqo → Seller Central (VPS) |
+| M6 carrier tracking | stored carrier API events → fresh carrier API call → Seller Central (VPS) |
+| M7 Frozen/Dry | Veeqo tags of line 1 → Veeqo tags of all lines (never guessed; not in Seller Central) |
+| M8 already done | SP-API Finances refunds + A-to-Z/chargeback table + our replies → Seller Central (VPS) |
+
+Gate (`case-data-gate.ts`): complete → analysis + card; missing and Seller
+Central can help → LOOKUP task, no decision yet; still missing after the
+lookup → card with "⚠️ Не нашли: … Искали: …" in Russian.
+
+Code: `case-data.ts` (collector), `case-data-gate.ts` (pure gate),
+`cs-pipeline.ts` (processCase), `cs-tasks.ts`, `cs-cards.ts`; ingest cron
+calls `processCase` for every new message.
+
+### Telegram card exchange with Jackie (MCP tools on /api/mcp)
+
+1. `cs_cards_pending` → cards: `{cardId, version, store, orderId, textRu,
+   buttons:[{action, label, callbackData:"cs:<cardId>:<action>"}], draftEn, …}`.
+   Jackie posts `textRu` to topic 42 with the three inline buttons
+   (Утвердить и отправить / Не так / Доработать), then
+   `cs_card_published {card_id, telegram_message_id}`.
+2. Button press → `cs_card_action {card_id, action, comment?}`:
+   - `approve` → SEND task queued for that account's VPS; the approved text is
+     also saved as an owner example in the KB.
+   - `wrong` / `rework` without comment → returns `askOwnerRu`; Jackie asks
+     the owner (reply to the card, voice or text) and calls again with
+     `comment`. With comment → saved as an owner rule; a new card version
+     appears in `cs_cards_pending` within ~1 minute.
+3. VPS agent (on the account's own VPS only):
+   `cs_tasks_list {store_index}` → `cs_task_claim {task_id, vps}` → act →
+   `cs_task_complete {task_id, outcome DONE|FAILED|UNKNOWN, screenshot_url |
+   result{M6:"…"}}`.
+
+### Learning — where the owner's corrections live
+
+- `CsOwnerRule` (append-only table): every "Не так"/"Доработать" comment,
+  with the case type and card id. The newest 40 are injected into EVERY
+  analysis prompt as "OWNER CORRECTIONS"; they add to the playbook, nothing
+  is overwritten or deleted.
+- `KnowledgeBaseEntry` `source=owner_edit`: every approved reply (tag
+  `card:<id>`), next to the 175 Seller Central replies and the seeds; ranked
+  above seeds by `kb-retrieval.ts`.
+- Unchanged and still in force: the playbook in the system prompt
+  ([[customer-hub-owner-playbook]], from the ChatGPT export) and the voice
+  guide (`Setting customer_hub_voice_guide`).

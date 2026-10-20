@@ -12,14 +12,14 @@ import {
   parseAutosendMode,
   type AutosendMode,
 } from "./autosend-policy";
-import { sendResponse } from "./response-sender";
+import { enqueueSendTask } from "./cs-tasks";
 
 export interface StoredAutosendDecision {
   mode: AutosendMode;
   eligible: boolean;
   reasons: string[];
   evaluatedAt: string;
-  /** Set when mode=on and the send was attempted. */
+  /** Set when mode=on: true = queued for the VPS agent. */
   sent?: boolean;
   sendError?: string;
 }
@@ -97,13 +97,19 @@ export async function runAutosend(
 
   const decision: StoredAutosendDecision = { mode, ...verdict };
 
+  // "on": an eligible reply is approved by the autopilot and queued for the
+  // account's VPS agent (Seller Central) — never sent from here.
   if (mode === "on" && verdict.eligible && !extra.neverSend) {
-    const result = await sendResponse(m.id, { initiator: "AUTOPILOT" });
-    decision.sent = result.success;
-    if (!result.success) {
-      decision.sendError = result.error;
-      // Emergency stop: one failed autopilot send drops the whole hub back
-      // to shadow mode until the owner looks at it.
+    try {
+      const task = await enqueueSendTask(m, { approvedBy: "autopilot" });
+      decision.sent = true;
+      decision.sendError = undefined;
+      console.log(`[autosend] queued VPS send task ${task.id} for ${m.id}`);
+    } catch (e) {
+      decision.sent = false;
+      decision.sendError = e instanceof Error ? e.message : String(e);
+      // Emergency stop: a failed autopilot queueing drops the hub back to
+      // shadow mode until the owner looks at it.
       await prisma.setting.upsert({
         where: { key: AUTOSEND_SETTING_KEY },
         create: { key: AUTOSEND_SETTING_KEY, value: "shadow" },

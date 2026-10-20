@@ -1059,6 +1059,13 @@ model BuyerMessage {
   // we avoid) — the format he got from ChatGPT for seven months.
   ownerBrief String?
 
+  // Case data snapshot (case-data.ts): every minimum-set item with the
+  // sources tried, plus VPS read-only lookup results. JSON.
+  caseDataJson String?
+  // COLLECTING | WAITING_VPS_LOOKUP | NEEDS_OWNER_DATA | CARD_PENDING |
+  // QUEUED_SEND | SENT | SEND_FAILED | SEND_UNKNOWN
+  caseStage    String?
+
   @@index([amazonOrderId])
   @@index([storeIndex, status])
 }
@@ -5084,4 +5091,72 @@ model PublishBatchItem {
   @@index([publish_batch_id, status])
   @@index([locked_at])
   @@index([bundle_draft_id])
+}
+
+// ----------------------------------------------------------------------------
+// Customer Hub — VPS agent tasks, Telegram approval cards, owner corrections
+// docs/wiki/customer-hub-vps-send.md
+// ----------------------------------------------------------------------------
+
+// One queue for the agent on each Amazon account's VPS (Jackie's Chrome):
+//   SEND   — post an owner-approved reply in Seller Central Buyer-Seller
+//            Messaging for this order (attachments optional)
+//   LOOKUP — read-only: fetch data the hub could not get from APIs
+// One task = one attempt. UNKNOWN is never re-sent; only read back.
+model CsTask {
+  id             String    @id @default(cuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  kind           String // SEND | LOOKUP
+  status         String    @default("QUEUED") // QUEUED | CLAIMED | DONE | FAILED | UNKNOWN | CANCELLED
+  storeIndex     Int
+  amazonOrderId  String?
+  buyerMessageId String
+  cardId         String?
+  payloadJson    String // SEND: {body, attachments[]}; LOOKUP: {need[], instructionsRu}
+  idempotencyKey String    @unique
+  approvedBy     String?
+  approvedAt     DateTime?
+  claimedBy      String?
+  claimedAt      DateTime?
+  completedAt    DateTime?
+  resultJson     String?
+  error          String?
+
+  @@index([storeIndex, status])
+  @@index([buyerMessageId])
+}
+
+// Approval card for the owner, published by Jackie to Telegram topic 42.
+// A "Rework" creates a new version; older versions become SUPERSEDED.
+model CsCard {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  buyerMessageId    String
+  version           Int       @default(1)
+  status            String    @default("PENDING") // PENDING | PUBLISHED | APPROVED | WRONG | REWORK | SUPERSEDED | SENT | SEND_FAILED
+  cardJson          String
+  telegramMessageId String?
+  publishedAt       DateTime?
+  decidedAt         DateTime?
+  decision          String? // approve | wrong | rework
+  ownerComment      String?
+
+  @@index([status])
+  @@index([buyerMessageId])
+}
+
+// Owner corrections from "Wrong" / "Rework". Append-only: never edited or
+// deleted by code; injected into every analysis prompt (newest first).
+model CsOwnerRule {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  text        String
+  problemType String?
+  cardId      String?
+  kind        String   @default("correction") // correction | rule
+  active      Boolean  @default(true)
+
+  @@index([createdAt])
 }

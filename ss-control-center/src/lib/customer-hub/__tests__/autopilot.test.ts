@@ -223,3 +223,43 @@ test("label-only tracking = carrier never accepted the package", () => {
     assert.equal(transitFacts([{ date: "2026-10-04", time: "10:00", description: d, status: "I" }]).firstCarrierScan, null, d);
   }
 });
+
+// ── Minimum case data gate ────────────────────────────────────────────
+
+import { exhaustedNoteRu, nextStep, type CaseDataSnapshot } from "../case-data-gate";
+
+function snap(missing: string[], vps?: string): CaseDataSnapshot {
+  const keys = ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"] as const;
+  return {
+    collectedAt: "2026-10-20T00:00:00Z",
+    items: keys.map((k) => ({
+      key: k,
+      present: !missing.includes(k),
+      fact: missing.includes(k) ? "" : `${k} fact`,
+      factRu: missing.includes(k) ? "" : `${k} факт`,
+      tried: missing.includes(k) ? [{ source: "Veeqo", ok: false, note: "не найдено" }] : [],
+    })),
+    vpsLookup: vps ? { status: vps, at: "2026-10-20T00:00:00Z" } : null,
+  };
+}
+
+test("complete data → READY", () => {
+  assert.equal(nextStep(snap([])), "READY");
+});
+
+test("missing tracking → VPS lookup first, owner only after it", () => {
+  assert.equal(nextStep(snap(["M6"])), "VPS_LOOKUP");
+  assert.equal(nextStep(snap(["M6"], "QUEUED")), "VPS_LOOKUP");
+  assert.equal(nextStep(snap(["M6"], "DONE")), "OWNER");
+  assert.equal(nextStep(snap(["M6"], "FAILED")), "OWNER");
+});
+
+test("product type cannot come from Seller Central → straight to owner", () => {
+  assert.equal(nextStep(snap(["M7"])), "OWNER");
+});
+
+test("owner note says what was searched and where", () => {
+  const note = exhaustedNoteRu(snap(["M7"]));
+  assert.match(note, /Нет: тип товара/);
+  assert.match(note, /Искали: Veeqo \(не найдено\)/);
+});

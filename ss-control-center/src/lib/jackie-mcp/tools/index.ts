@@ -8,6 +8,7 @@ import { registerTool } from "../registry";
 import { tools as listings } from "./listings";
 import { tools as orders } from "./orders";
 import { tools as customerHub } from "./customer-hub";
+import { tools as customerServiceAgent } from "./customer-service-agent";
 import { tools as accountHealth } from "./account-health";
 import { tools as alerts } from "./alerts";
 import { tools as bundleFactory } from "./bundle-factory";
@@ -26,6 +27,7 @@ const ALL_TOOLS = [
   ...listings,
   ...orders,
   ...customerHub,
+  ...customerServiceAgent,
   ...accountHealth,
   ...alerts,
   ...bundleFactory,

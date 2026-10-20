@@ -80,6 +80,12 @@ test("every write tool is flagged write=true; every read tool is write=false", (
     "channelmax_job_create",
     "channelmax_job_cancel",
     "channelmax_job_reconcile",
+    // Customer Service cards + VPS tasks (queue state only; the marketplace
+    // action itself happens on the account VPS after owner approval)
+    "cs_card_published",
+    "cs_card_action",
+    "cs_task_claim",
+    "cs_task_complete",
   ]);
   for (const t of ALL) {
     if (writeNames.has(t.name)) {

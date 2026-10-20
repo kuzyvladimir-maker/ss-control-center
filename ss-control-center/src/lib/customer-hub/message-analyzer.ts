@@ -10,6 +10,7 @@ import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { transitFacts } from "./transit";
+import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
 
@@ -679,6 +680,8 @@ export interface AnalysisInput {
   // "Rewrite safer" button to steer the model (e.g. "Rewrite to be
   // strictly policy-safe for Amazon").
   extraInstruction?: string;
+  /** Verified minimum case data (case-data-gate.ts factsForPrompt). */
+  caseFacts?: string;
 }
 
 export interface FactCheckMismatch {
@@ -726,6 +729,10 @@ export interface AnalysisResult {
   supplierReorderNote: string | null;
   /** Russian brief for the owner: facts / decision / what we avoid. */
   ownerBriefRu?: string | null;
+  /** Russian gist of the buyer's message (Telegram card). */
+  clientGistRu?: string | null;
+  /** Russian thread history in time order (Telegram card). */
+  historyRu?: string | null;
   /** Best KB match score (kb-retrieval.ts) — 0 when no example matched.
    *  Read by autosend-policy.ts: no close example → never auto-send. */
   kbTopScore?: number;
@@ -1263,8 +1270,23 @@ export async function analyzeMessage(
   } catch {
     voiceGuide = null;
   }
+  // Owner corrections from Telegram cards ("Wrong" / "Rework"). Append-only
+  // table; newest first; they ADD to the playbook, never replace it.
+  let ownerRules: string[] = [];
+  try {
+    const rows = await prisma.csOwnerRule.findMany({
+      where: { active: true },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    });
+    ownerRules = rows.map(
+      (r) => `[${r.createdAt.toISOString().slice(0, 10)}${r.problemType ? ` ${r.problemType}` : ""}] ${r.text}`
+    );
+  } catch {
+    ownerRules = [];
+  }
 
-  const userMessage = buildContextMessage(input, similarCases, voiceGuide);
+  const userMessage = buildContextMessage(input, similarCases, voiceGuide, ownerRules);
   let lastError = "";
 
   for (const provider of config.providerChain) {
@@ -1378,7 +1400,8 @@ export type { ProviderName };
 function buildContextMessage(
   input: AnalysisInput,
   similarCases: KnowledgeBaseHint[] = [],
-  voiceGuide: string | null = null
+  voiceGuide: string | null = null,
+  ownerRules: string[] = []
 ): string {
   let msg = `ANALYZE THIS CUSTOMER MESSAGE AND RESPOND IN JSON FORMAT.
 
@@ -1479,6 +1502,14 @@ ${notAccepted}- First carrier scan: ${tf.firstCarrierScan || "None"}
     msg += `\n\nOWNER VOICE GUIDE (tone and phrasing to follow):\n${voiceGuide.substring(0, 2000)}\n`;
   }
 
+  if (input.caseFacts) {
+    msg += `\n\n${input.caseFacts}\nThese facts were collected from Amazon, Veeqo and the carrier for THIS order — they win over anything else.\n`;
+  }
+
+  if (ownerRules.length > 0) {
+    msg += `\n\nOWNER CORRECTIONS (from the owner's reviews of earlier cases, newest first; apply them where relevant — they add to the playbook):\n${ownerRules.map((r) => `- ${r}`).join("\n")}\n`;
+  }
+
   if (input.extraInstruction) {
     msg += `\n\nADDITIONAL INSTRUCTION:\n${input.extraInstruction}`;
   }
@@ -1497,6 +1528,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "foodSafetyRisk": true/false,
   "atozRisk": "low|medium|high",
   "suggestedResponse": "The complete response to send to the customer. Sign off as "Best regards,\\n${SIGN_OFF}".",
+  "clientGistRu": "IN RUSSIAN, 1-2 lines: what the buyer wants, in plain words.",
+  "historyRu": "IN RUSSIAN, 1-4 short lines in time order, ONLY if there were earlier messages on this order (buyer said → we replied → Amazon wrote → buyer asked again). Empty string if none.",
   "ownerBriefRu": "Short brief for the owner IN RUSSIAN, 3 short blocks: 'Факты:' (2-4 bullets from CONTEXT: service, transit hours, window, delivery proof, what the buyer claims vs what is proven) / 'Решение:' (one line — what we do now and why, incl. who pays) / 'Чего не пишем:' (1-2 bullets — what we deliberately avoid and why). Max 90 words.",
   "reasoning": "(a) key customer phrase quoted, (b) which decision-matrix row matched (e.g. 'Table B / Frozen C2'), (c) any conflict between customer and facts, (d) action chosen and the economic principle that drove it (claimsProtected? carrierSelfDeclaredDelay? frozen+>3d? customer fault? etc.)",
   "supplierReorderNote": "REQUIRED when action=replacement: '{product} × {qty} | reason: {short} | original: {orderId}'. NULL otherwise."
@@ -1582,6 +1615,14 @@ function tryParseAnalysis(
       ownerBriefRu:
         typeof parsed.ownerBriefRu === "string" && parsed.ownerBriefRu.trim()
           ? parsed.ownerBriefRu.trim()
+          : null,
+      clientGistRu:
+        typeof parsed.clientGistRu === "string" && parsed.clientGistRu.trim()
+          ? parsed.clientGistRu.trim()
+          : null,
+      historyRu:
+        typeof parsed.historyRu === "string" && parsed.historyRu.trim()
+          ? parsed.historyRu.trim()
           : null,
       factCheck: factCheckResponse(suggestedResponse, input),
       supplierReorderNote:

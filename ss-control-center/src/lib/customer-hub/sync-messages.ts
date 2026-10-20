@@ -18,11 +18,10 @@ import {
 } from "@/lib/gmail-api";
 import { parseAmazonBuyerEmail } from "@/lib/customer-hub/gmail-parser";
 import { enrichMessage } from "@/lib/customer-hub/message-enricher";
-import { analyzeMessage } from "@/lib/customer-hub/message-analyzer";
 import { translateText } from "@/lib/customer-hub/translator";
 import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 import { answeredAfter } from "@/lib/customer-hub/thread-state";
-import { runAutosend } from "@/lib/customer-hub/autosend-runner";
+import { processCase } from "@/lib/customer-hub/cs-pipeline";
 
 export interface SyncBuyerMessagesResult {
   synced: number;
@@ -253,102 +252,13 @@ export async function syncBuyerMessagesFromGmail(
               continue;
             }
 
-            // Auto-analyze with Claude (non-blocking — don't fail sync if AI is down)
+            // Case pipeline (cs-pipeline.ts): collect the minimum data set
+            // through its source chains → VPS lookup or analysis → approval
+            // card for Telegram topic 42. Never sends anything.
             try {
-              // Get history for this order
-              const history = enriched.amazonOrderId
-                ? await prisma.buyerMessage.findMany({
-                    where: { amazonOrderId: enriched.amazonOrderId, id: { not: saved.id } },
-                    orderBy: { createdAt: "asc" },
-                  })
-                : [];
-
-              const analysis = await analyzeMessage({
-                customerMessage: enriched.customerMessage,
-                customerName: enriched.customerName,
-                language: enriched.language,
-                storeName: enriched.storeName,
-                channel: "Amazon",
-                amazonOrderId: enriched.amazonOrderId,
-                orderDate: enriched.orderDate,
-                orderTotal: enriched.orderTotal,
-                product: enriched.product,
-                productType: enriched.productType,
-                carrier: enriched.carrier,
-                service: enriched.service,
-                trackingNumber: enriched.trackingNumber,
-                trackingStatus: enriched.trackingStatus,
-                shipDate: enriched.shipDate,
-                promisedEdd: enriched.promisedEdd,
-                actualDelivery: enriched.actualDelivery,
-                daysInTransit: enriched.daysInTransit,
-                daysLate: enriched.daysLate,
-                requestedShippingService: enriched.requestedShippingService,
-                actualShippingService: enriched.actualShippingService,
-                shippingMismatch: enriched.shippingMismatch,
-                carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
-                trackingEvents: enriched.trackingEvents,
-                boughtThroughVeeqo: enriched.boughtThroughVeeqo,
-                claimsProtected: enriched.claimsProtected,
-                shippedOnTime: enriched.shippedOnTime,
-                messageNumber: history.length + 1,
-                conversationHistory: history.map((h) => ({
-                  date: h.createdAt.toISOString().split("T")[0],
-                  direction: h.direction,
-                  text: h.customerMessage || h.suggestedResponse || "",
-                  action: h.action,
-                })),
-                hasAtozClaim: false,
-                hasNegativeFeedback: false,
-              });
-
-              const suggestedRu = analysis.suggestedResponse
-                ? await translateText(
-                    analysis.suggestedResponse,
-                    "en-ru"
-                  ).catch(() => null)
-                : null;
-
-              await prisma.buyerMessage.update({
-                where: { id: saved.id },
-                data: {
-                  problemType: analysis.problemType,
-                  problemTypeName: analysis.problemTypeName,
-                  riskLevel: analysis.riskLevel,
-                  action: analysis.action,
-                  secondaryAction: analysis.secondaryAction,
-                  whoShouldPay: analysis.whoShouldPay,
-                  internalAction: analysis.internalAction,
-                  foodSafetyRisk: analysis.foodSafetyRisk,
-                  atozRisk: analysis.atozRisk,
-                  suggestedResponse: analysis.suggestedResponse,
-                  suggestedResponseRu: suggestedRu,
-                  supplierReorderNote: analysis.supplierReorderNote,
-                  reasoning: analysis.reasoning,
-                  ownerBrief: analysis.ownerBriefRu ?? null,
-                  category: analysis.problemType,
-                  categoryName: analysis.problemTypeName,
-                  priority: analysis.riskLevel,
-                  status: "ANALYZED",
-                  factCheckJson: JSON.stringify(analysis.factCheck),
-                },
-              });
-
-              // Auto-send policy: shadow by default (verdict only), sends
-              // only when the owner switched customer_hub_autosend = on.
-              try {
-                await runAutosend(saved.id, {
-                  kbTopScore: analysis.kbTopScore,
-                  isFallback: analysis.isFallback,
-                });
-              } catch (autoErr) {
-                console.warn(
-                  `[Sync] Autosend evaluation failed for ${saved.id}:`,
-                  autoErr instanceof Error ? autoErr.message : String(autoErr)
-                );
-              }
+              await processCase(saved.id);
             } catch (aiErr) {
-              console.warn(`[Sync] AI analysis failed for ${saved.id}:`, aiErr);
+              console.warn(`[Sync] Case pipeline failed for ${saved.id}:`, aiErr);
             }
 
             totalSynced++;

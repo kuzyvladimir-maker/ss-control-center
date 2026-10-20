@@ -427,7 +427,7 @@ function AutosendVerdict({ json }: { json: string | null | undefined }) {
     return null;
   }
   const label = d.sent
-    ? "Sent automatically"
+    ? "Approved by autopilot — queued for VPS send"
     : d.eligible
       ? d.mode === "on"
         ? "Auto-send failed"
@@ -1015,6 +1015,15 @@ export default function MessageDetail({
               </p>
               <ConfidenceIndicator factCheckJson={m.factCheckJson} />
             </div>
+            {m.caseStage && (
+              <p className="mt-2 text-[11px] text-ink-3">
+                Case stage: <span className="font-mono">{m.caseStage}</span>
+                {m.caseStage === "WAITING_VPS_LOOKUP" &&
+                  " — missing data requested from Seller Central (account VPS)"}
+                {m.caseStage === "CARD_PENDING" && " — approval card sent to Telegram topic 42"}
+                {m.caseStage === "QUEUED_SEND" && " — approved, waiting for the VPS agent"}
+              </p>
+            )}
             {m.ownerBrief && (
               <div className="mt-2 rounded-md border border-rule bg-surface-tint px-3 py-2">
                 <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
