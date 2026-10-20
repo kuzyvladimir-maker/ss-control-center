@@ -280,6 +280,7 @@ test("card text follows the approved Telegram format", () => {
     verdictRu: "Наша вина — отправляем повторно за 1–2 рабочих дня",
     pointsRu: ["Не упоминаем A-to-Z"],
     missing: [],
+    draftRu: "Здравствуйте,\n\nПриносим извинения.",
     draftEn: "Hello,\n\nWe are sorry.\n\nBest regards,\nCustomer Support Team",
     attachments: [],
   });
@@ -287,5 +288,7 @@ test("card text follows the approved Telegram format", () => {
   assert.match(t, /## Факты\n\n\| Что \| Данные \|\n\|---\|---\|\n\| Отгрузка \| UPS Ground, трек `1Z29K3Y40313308184` \/ этикетка 04\.10 \|/);
   assert.match(t, /## Решение движка\n\n\*\*Наша вина — .*\*\*\n\n- Не упоминаем A-to-Z/);
   assert.doesNotMatch(t, /Не удалось проверить/);
-  assert.match(t, /## Текст покупателю \(уйдёт по-английски\)\n\n> Hello,\n>\n> We are sorry\./);
+  assert.match(t, /## Ответ покупателю \(по-русски, для тебя\)\n\n> Здравствуйте,/);
+  assert.match(t, /## Что уйдёт покупателю \(по-английски\)\n\n> Hello,\n>\n> We are sorry\./);
+  assert.ok(t.indexOf("по-русски") < t.indexOf("по-английски"));
 });

@@ -170,6 +170,7 @@ Card JSON (one array element):
   "clientRu": "…", "clientOriginal": "…", "historyRu": "…" ,
   "dataRu": ["…", "…"], "missingRu": null,
   "decisionRu": "Факты: … Решение: … Чего не пишем: …",
+  "draftRu": "Здравствуйте, … (Russian translation for the owner — never sent)",
   "draftEn": "Hello …,\n\n…\n\nBest regards,\nCustomer Support Team",
   "attachments": [],
   "buttons": [
@@ -214,3 +215,14 @@ Task JSON: `{id, kind, storeIndex, amazonOrderId, buyerMessageId, payload}`.
 Rules: claim before acting; one task = one attempt; `UNKNOWN` is never
 re-sent — read the thread and report; verify order ID + buyer name and that
 we have not replied after the buyer's last message before sending.
+
+
+### Card text format (owner-approved 2026-10-20)
+
+`textRu` is Telegram markdown: `# Заказ <id> · <магазин>` → bold deadline
+line + version → `##` sections with a blank line between blocks: «Что пишет
+клиент», «История переписки» (only if any), «Факты» (`| Что | Данные |`
+table, tracking in backticks), «Решение движка» (bold verdict + bullets),
+«Не удалось проверить» (only if gaps), «Ответ покупателю (по-русски, для
+тебя)» (quote, `draftRu`) and «Что уйдёт покупателю (по-английски)» (quote,
+`draftEn`). Only `draftEn` is ever sent. Code: `card-format.ts`.

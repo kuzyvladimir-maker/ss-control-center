@@ -18,6 +18,9 @@ export interface CardView {
   verdictRu: string;
   pointsRu: string[];
   missing: string[];
+  /** Russian translation for the owner — never sent. */
+  draftRu: string | null;
+  /** The text that will actually go to the buyer. */
   draftEn: string;
   attachments: string[];
 }
@@ -37,12 +40,16 @@ export function renderCardText(v: CardView): string {
   const points = v.pointsRu.filter(Boolean).map((p) => `- ${p.replace(/^[-•]\s*/, "")}`);
   blocks.push(`## Решение движка\n\n**${v.verdictRu.trim()}**${points.length ? `\n\n${points.join("\n")}` : ""}`);
   if (v.missing.length) blocks.push(`## Не удалось проверить\n\n${v.missing.map((m) => `- ${m}`).join("\n")}`);
-  const quote = v.draftEn
-    .trim()
-    .split("\n")
-    .map((l) => (l.trim() ? `> ${l}` : ">"))
-    .join("\n");
-  blocks.push(`## Текст покупателю (уйдёт по-английски)\n\n${quote}`);
+  const quote = (t: string) =>
+    t
+      .trim()
+      .split("\n")
+      .map((l) => (l.trim() ? `> ${l}` : ">"))
+      .join("\n");
+  // The owner does not read English (2026-10-20): Russian first, then the
+  // English text that actually goes out.
+  if (v.draftRu?.trim()) blocks.push(`## Ответ покупателю (по-русски, для тебя)\n\n${quote(v.draftRu)}`);
+  blocks.push(`## Что уйдёт покупателю (по-английски)\n\n${quote(v.draftEn)}`);
   if (v.attachments.length) blocks.push(`Вложения: ${v.attachments.join(", ")}`);
   return blocks.join("\n\n");
 }

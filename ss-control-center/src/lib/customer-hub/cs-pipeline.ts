@@ -140,6 +140,8 @@ export interface CardPayload {
   dataRu: string[];
   missingRu: string | null;
   decisionRu: string;
+  /** Russian translation of draftEn for the owner (never sent). */
+  draftRu: string | null;
   draftEn: string;
   attachments: string[];
   buttons: Array<{ action: "approve" | "wrong" | "rework"; label: string; callbackData: string }>;
@@ -192,6 +194,7 @@ async function createCard(
     dataRu: snap.items.filter((i) => i.present && i.factRu && i.key !== "M1").map((i) => i.factRu),
     missingRu,
     decisionRu: a?.ownerBriefRu || (missingRu ? "Решения нет: не хватает данных (см. выше)." : "—"),
+    draftRu: null,
     draftEn: (m.editedResponse || m.suggestedResponse || "").trim(),
     attachments: [],
     buttons: [
@@ -201,6 +204,9 @@ async function createCard(
     ],
     textRu: "",
   };
+  payload.draftRu =
+    (m.editedResponse ? m.editedResponseRu : m.suggestedResponseRu) ||
+    (payload.draftEn ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
   payload.textRu = renderCardText({
     orderId: payload.orderId,
     store: payload.store,
@@ -219,6 +225,7 @@ async function createCard(
         const tried = i.tried.map((t) => `${t.source}${t.note ? ` (${t.note})` : ""}`).join(" → ");
         return `${MINIMUM[i.key].labelRu}${tried ? ` — искали: ${tried}` : ""}`;
       }),
+    draftRu: payload.draftRu,
     draftEn: payload.draftEn,
     attachments: payload.attachments,
   });
