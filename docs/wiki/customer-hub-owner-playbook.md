@@ -42,7 +42,7 @@ GPT's answers, so this is the target behaviour. Companion docs:
 | In transit, window open | No refund, no A-to-Z yet; latest scan + window end; "contact us if not delivered by …". Mention the expedited service we paid for. Ship by = deadline, not plan. |
 | Delivered, not received — 1st contact | Quote date/time and scan wording/photo; check list tailored to house / apartment / business; "if still unable, contact Amazon CS". Suspicious photo → only ask "do you recognise this location?" |
 | Delivered, not received — follow-up | Firm and short: "unable to issue a replacement or refund from our side for a package confirmed as delivered" → A-to-Z review. Don't repeat the check list. |
-| Our fulfilment error (wrong item, no cooler) | Admit plainly; free expedited replacement (confirm full address — hidden after shipment) or full refund. "Not eligible for a standard return." We don't pay return shipping. |
+| Our fulfilment error (wrong item, no cooler) | **Never admit fault in the buyer text** (owner, 2026-10-20) — "we understand something went wrong, we apologize for the inconvenience"; free expedited replacement (confirm full address — hidden after shipment) or full refund. "Not eligible for a standard return." We don't pay return shipping. |
 | Buyer claims wrong/missing, we're not sure | Photos of package fronts/labels and everything received together; neither accuse nor admit. |
 | 1×2 lb shipped for 2×1 lb | Same total; only the packaging differs; no refund. |
 | Cancel before shipment | Ask the buyer to submit an official cancellation request in Amazon; we approve it (seller-initiated cancel hurts metrics). |
@@ -101,3 +101,14 @@ carrier's first scan. Now:
   or full refund, never A-to-Z; brief tells the owner to check the box and
   void the unused label.
 - `transit.ts` recognises UPS/FedEx/USPS label-only wording.
+
+
+## Rule 2026-10-20 17:24 — never admit fault to the buyer
+
+Not in writing, not publicly: no "our error / our mistake / on our side /
+it never left us / not the carrier's fault". Allowed: "we understand something
+went wrong, we apologize for the inconvenience, we will resend your order and
+it will arrive within two business days; please confirm your delivery
+address". The honest cause stays in the internal "Решение движка" only.
+Enforced in code: prompt rule, `FAULT_ADMISSION_RE` (autosend-policy.ts) →
+hard validator rewrite, autopilot filter; stored as a `CsOwnerRule`.
