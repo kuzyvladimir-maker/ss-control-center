@@ -89,6 +89,7 @@ export async function runAutosend(
     isFallback: extra.isFallback,
     responseText: m.editedResponse || m.suggestedResponse,
     alreadyRepliedOnOrder: repliedOnOrder > 0,
+    hasOrderContext: Boolean(m.amazonOrderId || m.asin || m.product),
     reasoning: m.reasoning,
     customerEmail: m.customerEmail,
     autoSentToday,

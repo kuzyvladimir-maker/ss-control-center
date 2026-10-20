@@ -93,3 +93,29 @@ Wiring: after `analyzeMessage` in `sync-messages.ts` → `evaluateAutosend` → 
 Threshold note: with only hand seeds, informational messages score 0.4–0.5,
 below `AUTOSEND_MIN_KB_SCORE = 0.6`, so shadow mode will mostly say "no close
 owner example" until owner examples are imported. That is intended.
+
+## Owner examples imported from Gmail (2026-10-19, round 2)
+
+The ChatGPT export is blocked (no ChatGPT login on the iMac / server — Jackie,
+2026-10-19). A better source was already in the mailbox: every reply the owner
+sends from Seller Central produces an Amazon "Your e-mail to …" confirmation
+with a copy of the text.
+
+- `scripts/import-owner-replies-from-gmail.ts` (read-only on Gmail):
+  199 confirmations in 365 days → **175 buyer→owner pairs**, each AI-labeled
+  (type, action, one-line scenario) on the subscription worker, stored as
+  `KnowledgeBaseEntry` `source = owner_edit`, idempotent by hash tag.
+  Flags: `--dry-run`, `--apply`, `--reuse` (relabel from
+  `data/customer-hub-owner-replies.json` without Gmail), `--voice`.
+- **Voice guide** distilled from the replies → Setting
+  `customer_hub_voice_guide`. Learned "ask for a review" lines are stripped;
+  hard limits appended (no review asks, no links/contacts, no cancel of
+  shipped orders, no food-safety arguments).
+- **House style changed in the analyzer**: greeting `Hello {first name},`
+  (or `Hello,`) and sign-off `Best regards, / Customer Support Team` — the
+  owner uses these in 171 / 163 of 175 real replies. Was `Dear …` + store name.
+- Policy rule added: **no order or product context → draft only** (a
+  pre-sale "16 boxes × 8?" with no ASIN got a useless "send us the order ID"
+  draft that the policy would otherwise have let through).
+- Re-run after new replies accumulate:
+  `npx tsx scripts/import-owner-replies-from-gmail.ts --apply` (new pairs only).

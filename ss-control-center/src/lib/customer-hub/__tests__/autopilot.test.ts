@@ -61,6 +61,7 @@ const base: AutosendInput = {
   kbTopScore: 0.9,
   responseText: "Dear Anna,\n\nYour package is with UPS and is expected on October 21.\n\nBest regards,\nSalutem Solutions",
   alreadyRepliedOnOrder: false,
+  hasOrderContext: true,
   reasoning: "Table A row 1",
   customerEmail: "abc123@marketplace.amazon.com",
   autoSentToday: 0,
@@ -91,6 +92,7 @@ test("money and claims are never eligible", () => {
     { kbTopScore: 0.3 },
     { language: "Spanish" },
     { alreadyRepliedOnOrder: true },
+    { hasOrderContext: false },
     { isFallback: true },
     { channel: "Walmart" },
     { reasoning: "x [NEEDS REVIEW: tone]" },
@@ -109,6 +111,8 @@ test("reply content rules catch links, contacts, review asks, emoji", () => {
   assert.ok(replyContentViolations("call 727-555-1234").length > 0);
   assert.ok(replyContentViolations("please leave us a positive review").length > 0);
   assert.ok(replyContentViolations("Thanks 😊").length > 0);
+  assert.ok(replyContentViolations("this snack cures headaches").length > 0);
+  assert.deepEqual(replyContentViolations("so we can prevent any future issues"), []);
   assert.deepEqual(replyContentViolations(base.responseText as string), []);
 });
 
@@ -152,4 +156,38 @@ test("Seller Central confirmation counts as an answer", () => {
     { id: "c1", internalDate: "3000", labelIds: ["INBOX"], payload: hdr("donotreply@amazon.com", "Your e-mail to Anna") },
   ];
   assert.equal(answeredAfter(msgs, "b1", SELLER), true);
+});
+
+// ── Owner reply import ────────────────────────────────────────────────
+
+import { inferOwnerAction, parseConfirmationText } from "../owner-reply-import";
+
+test("parses an Amazon 'Your e-mail to' confirmation", () => {
+  const text = `Dear Salutem Solutions,
+Here is a copy of the e-mail that you sent to Debbi.
+Order ID: 112-0463352-2305004:
+B097S4JNKY
+Tyson Grilled Chicken Fillets (Pack of 3)
+------------- Begin message -------------
+Hello Debbi,
+Could you please clarify whether there was any actual damage?
+Best regards,
+Customer Support Team
+------------- End message -------------
+Warmest Regards`;
+  const c = parseConfirmationText(text, "Your e-mail to Debbi");
+  assert.ok(c);
+  assert.equal(c.orderId, "112-0463352-2305004");
+  assert.equal(c.buyerName, "Debbi");
+  assert.equal(c.product, "Tyson Grilled Chicken Fillets (Pack of 3)");
+  assert.match(c.replyText, /^Hello Debbi,/);
+  assert.match(c.replyText, /Customer Support Team$/);
+  assert.equal(parseConfirmationText("no markers here", "x"), null);
+});
+
+test("infers the owner's action from reply text", () => {
+  assert.equal(inferOwnerAction("We will send a replacement at no cost."), "replacement");
+  assert.equal(inferOwnerAction("We have issued a full refund."), "full_refund");
+  assert.equal(inferOwnerAction("Could you please provide a photo of the box?"), "clarify");
+  assert.equal(inferOwnerAction("Your package is on the way."), "reassure");
 });

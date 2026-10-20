@@ -50,6 +50,10 @@ export interface AutosendInput {
   alreadyRepliedOnOrder: boolean;
   /** Analyzer appended [NEEDS REVIEW: …] / [AUTO-FIXED: …] to reasoning. */
   reasoning?: string | null;
+  /** We know the order or the product (ASIN / title). Without it the AI
+   *  answers blind — e.g. a pre-sale "16 boxes × 8 = 128?" got "please send
+   *  the order ID" instead of an answer. */
+  hasOrderContext: boolean;
   /** The buyer's relay address — email-relay sending needs it. */
   customerEmail?: string | null;
   autoSentToday: number;
@@ -69,7 +73,9 @@ const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/;
 /** Amazon forbids asking for (positive) feedback/reviews in buyer messages. */
 const REVIEW_ASK_RE =
   /\b(leave|write|post|update|change|remove)\b[^.]{0,40}\b(review|feedback|rating)\b|\b5[- ]star\b/i;
-const HEALTH_RE = /\b(cure|treat|prevent|heal|detox|weight loss|boost (your )?immun)/i;
+// Health claims only — "prevent any future issues" in a support reply is not one.
+const HEALTH_RE =
+  /\b(cures?\b|treats? (disease|illness|symptoms)|prevents? (disease|illness|cancer|infection)|heals?\b|healing\b|detox|weight loss|boosts? (your )?immun)/i;
 
 /**
  * Message-body rules for a reply that goes to the buyer without the owner.
@@ -113,6 +119,7 @@ export function evaluateAutosend(
     );
   if (!/^en/i.test(input.language || "")) reasons.push(`language ${input.language || "unknown"}`);
   if (input.alreadyRepliedOnOrder) reasons.push("buyer already got a reply on this order");
+  if (!input.hasOrderContext) reasons.push("no order or product context");
   if (/\[(NEEDS REVIEW|AUTO-FIXED)/.test(input.reasoning || ""))
     reasons.push("validator flagged the draft");
   if (!input.customerEmail || !/@marketplace\.amazon\.com$/i.test(input.customerEmail))

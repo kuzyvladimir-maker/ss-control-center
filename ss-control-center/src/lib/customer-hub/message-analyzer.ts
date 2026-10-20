@@ -326,13 +326,13 @@ DUPLICATES:
 RESPONSE FORMAT (minimal structure — body is freeform)
 ═══════════════════════════════════════════════════════════════
 
-  Line 1:  "Dear {customerName},"  (or "Dear Customer," if name unknown)
+  Line 1:  "Hello {customerFirstName},"  (or just "Hello," if name unknown)
            Spanish: "Estimado/a {customerName},"
   Line 2:  blank
   Body:    situation-specific paragraphs. 3–7 sentences typical.
   Blank line
   "Best regards,"
-  {storeName}
+  Customer Support Team
 
 NO mandatory thank-you. NO mandatory tracking sentence. NO padding.
 
@@ -359,7 +359,7 @@ Reasoning chain:
   - claimsProtected=true → DO NOT replace at our expense → redirect Amazon
   - No lecturing about "don't consume" — 14 days transit, customer knows
 
-  "Dear Customer,
+  "Hello,
 
   I'm sorry the Uncrustables arrived in that condition — fourteen days
   in transit is well beyond what should have happened, and the carrier
@@ -372,7 +372,7 @@ Reasoning chain:
   I'll help walk you through it.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ──────────────────────────────────────────────
 
@@ -385,7 +385,7 @@ Match: TABLE A row "T21 mismatch" → action=clarify+partial, pays=us
 Use real carrier ETA (April 15), not promisedEdd. Offer partial refund
 for the shipping difference, not full.
 
-  "Dear Deborah,
+  "Hello Deborah,
 
   Thank you for reaching out, and I completely understand the timing
   matters. Your order was processed and shipped using the fastest
@@ -399,7 +399,7 @@ for the shipping difference, not full.
   the rest of the refund there.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ──────────────────────────────────────────────
 
@@ -411,7 +411,7 @@ Facts: tracking events show Round Rock as a sorting facility, final scan
 Match: TABLE A row "Carrier scan shows wrong city" → action=clarify, pays=none
 This is normal logistics, not a real problem.
 
-  "Dear Customer,
+  "Hello,
 
   I understand the concern, but the Round Rock reference in the tracking
   is just the UPS sorting facility your package passed through on its
@@ -420,7 +420,7 @@ This is normal logistics, not a real problem.
   address. If you can't locate it, please reply and we'll dig in further.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ──────────────────────────────────────────────
 
@@ -431,7 +431,7 @@ Facts: status=delivered, no complaint detail, first message
 Match: TABLE E row "no reason given" → action=clarify, pays=none
 Never refund blind. Politely ask for the issue.
 
-  "Dear Customer,
+  "Hello,
 
   I'd be glad to help look into a refund. Could you let me know a bit
   more about what's prompting the request — is there an issue with the
@@ -439,7 +439,7 @@ Never refund blind. Politely ask for the issue.
   happened I can find the best way forward.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ──────────────────────────────────────────────
 
@@ -450,7 +450,7 @@ Facts: status=in_transit, claimsProtected=true, dry product, ETA in 2 days
 Match: TABLE D row "Cancel in transit, ordered by mistake" → action=none, pays=buyer
 claimsProtected does NOT help here — this is buyer fault.
 
-  "Dear Customer,
+  "Hello,
 
   I understand, but unfortunately the order has already shipped and we
   can no longer cancel it once it's with the carrier. Once it arrives,
@@ -460,7 +460,7 @@ claimsProtected does NOT help here — this is buyer fault.
   when the package arrives.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ──────────────────────────────────────────────
 
@@ -477,7 +477,7 @@ JSON output MUST include supplierReorderNote like:
 
   "supplierReorderNote": "Freshpet Chicken Recipe × 1 | reason: wrong item shipped (customer received Beef) | original: 113-1234567-1234567"
 
-  "Dear Customer,
+  "Hello,
 
   I'm sorry — that's clearly the wrong item. To process the replacement,
   could you share a quick photo of what arrived (and the label) through
@@ -485,7 +485,7 @@ JSON output MUST include supplierReorderNote like:
   recipe on its way to you right away.
 
   Best regards,
-  Salutem Solutions"
+  Customer Support Team"
 
 ═══════════════════════════════════════════════════════════════
 OUTPUT
@@ -497,7 +497,7 @@ should record:
   (c) any conflict between customer and facts you noticed
   (d) the action chosen and why (cite the economic principle)
 
-The "suggestedResponse" field MUST start with "Dear ".`;
+The "suggestedResponse" field MUST start with "Hello" (Spanish: "Estimado/a").`;
 
 export interface AnalysisInput {
   customerMessage: string;
@@ -572,6 +572,17 @@ export interface FactCheckResult {
   passed: boolean;
   mismatches: FactCheckMismatch[];
   confidence: "HIGH" | "MEDIUM" | "LOW";
+}
+
+// Owner house style (2026-10-19): 171 of 175 real Seller Central replies
+// open with "Hello {first name}," and 163 sign off "Customer Support Team"
+// — see scripts/import-owner-replies-from-gmail.ts.
+export const SIGN_OFF = "Customer Support Team";
+const HAS_GREETING_RE = /^(hello|hi|dear|estimad[oa])\b/i;
+
+export function helloLine(customerName: string | null | undefined): string {
+  const first = (customerName || "").trim().split(/\s+/)[0];
+  return first && !/^customer$/i.test(first) ? `Hello ${first},` : "Hello,";
 }
 
 export interface AnalysisResult {
@@ -781,8 +792,6 @@ interface ValidationResult {
 }
 
 function buildSafeResponse(input: AnalysisInput): string {
-  const name = input.customerName || "Customer";
-  const store = input.storeName;
   // Normalise carrier label: Veeqo returns "Buy Shipping" (brand name)
   // when we purchased through their Buy Shipping program. Derive the
   // actual carrier from service_name for customer-facing copy.
@@ -796,18 +805,18 @@ function buildSafeResponse(input: AnalysisInput): string {
   if (input.shippingMismatch && input.trackingStatus !== "delivered") {
     const deliveryDate =
       input.carrierEstimatedDelivery || input.promisedEdd || "the scheduled date";
-    return `Dear ${name},\n\nThank you for your message.\n\nI understand your concern regarding the delivery timing. Your order was processed and shipped promptly using the fastest available shipping option at the time.\n\nAt this stage, the package is already in transit with ${niceCarrier} and is currently scheduled for delivery on ${deliveryDate}. Unfortunately, once an order has been shipped, we are unable to cancel it.\n\nWe recommend waiting for delivery. If the item is no longer needed upon arrival, you can request a return or refund through your Amazon account.\n\nIf you need any assistance with that process, please feel free to reach out.\n\nBest regards,\n${store}`;
+    return `${helloLine(input.customerName)}\n\nThank you for your message.\n\nI understand your concern regarding the delivery timing. Your order was processed and shipped promptly using the fastest available shipping option at the time.\n\nAt this stage, the package is already in transit with ${niceCarrier} and is currently scheduled for delivery on ${deliveryDate}. Unfortunately, once an order has been shipped, we are unable to cancel it.\n\nWe recommend waiting for delivery. If the item is no longer needed upon arrival, you can request a return or refund through your Amazon account.\n\nIf you need any assistance with that process, please feel free to reach out.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
   if (input.trackingStatus === "in_transit") {
-    return `Dear ${name},\n\nThank you for reaching out about your order. Your package was shipped on ${input.shipDate || "the scheduled date"} via ${niceCarrier} and is currently in transit. We understand the delivery is taking longer than expected, and we apologize for the inconvenience. For the fastest resolution regarding this delivery delay, we recommend contacting Amazon Customer Support through your order page.\n\nBest regards,\n${store}`;
+    return `${helloLine(input.customerName)}\n\nThank you for reaching out about your order. Your package was shipped on ${input.shipDate || "the scheduled date"} via ${niceCarrier} and is currently in transit. We understand the delivery is taking longer than expected, and we apologize for the inconvenience. For the fastest resolution regarding this delivery delay, we recommend contacting Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
   if (input.trackingStatus === "delivered") {
-    return `Dear ${name},\n\nThank you for contacting us. According to tracking information, your package was delivered on ${input.actualDelivery || "the expected date"}. If you have not received it, we recommend checking with neighbors, your front desk, or any secure delivery locations. For further assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${store}`;
+    return `${helloLine(input.customerName)}\n\nThank you for contacting us. According to tracking information, your package was delivered on ${input.actualDelivery || "the expected date"}. If you have not received it, we recommend checking with neighbors, your front desk, or any secure delivery locations. For further assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
-  return `Dear ${name},\n\nThank you for reaching out. We are looking into your concern and will provide an update shortly. If you need immediate assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${store}`;
+  return `${helloLine(input.customerName)}\n\nThank you for reaching out. We are looking into your concern and will provide an update shortly. If you need immediate assistance, please contact Amazon Customer Support through your order page.\n\nBest regards,\n${SIGN_OFF}`;
 }
 
 /**
@@ -947,7 +956,7 @@ SPECIAL CASE — SHIPPING MISMATCH (T21):
 This customer paid for "${input.requestedShippingService || "expedited"}" shipping but the order shipped via "${input.actualShippingService || "standard"}".
 Your rewrite MUST follow this exact pattern (substitute real values):
 
-"Dear ${input.customerName || "Customer"},
+"${helloLine(input.customerName)}
 
 Thank you for your message.
 
@@ -960,7 +969,7 @@ We recommend waiting for delivery. If the item is no longer needed upon arrival,
 If you need any assistance with that process, please feel free to reach out.
 
 Best regards,
-${input.storeName}"
+${SIGN_OFF}"
 
 CRITICAL T21 RULES:
 - NEVER say "we couldn't buy Next Day" or "we could not purchase expedited shipping"
@@ -996,7 +1005,7 @@ FACTS (use ONLY these dates and data):
 - Store Name: ${input.storeName}
 ${t21Instructions}
 MANDATORY RULES FOR REWRITE:
-- Start with "Dear ${input.customerName || "Customer"},"
+- Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
 - If order is in_transit and NOT a mismatch: say "your order is currently in transit" and "we recommend contacting Amazon Customer Support through your order page"
@@ -1004,7 +1013,7 @@ MANDATORY RULES FOR REWRITE:
 - NEVER suggest cancellation for shipped orders
 - NEVER offer seller refund if Amazon should pay
 - NEVER guarantee food safety
-- End with "Best regards," and store name
+- End with "Best regards," and "${SIGN_OFF}"
 - Keep 4-8 sentences
 
 Return ONLY the rewritten response text, no JSON, no explanation.`;
@@ -1018,7 +1027,7 @@ Return ONLY the rewritten response text, no JSON, no explanation.`;
             ? await callClaudeRaw(fixPrompt)
             : await callOpenAIRaw(fixPrompt);
         const trimmed = fixedText.trim();
-        if (trimmed && trimmed.toLowerCase().startsWith("dear")) {
+        if (trimmed && HAS_GREETING_RE.test(trimmed)) {
           console.log(`[Validator] Response fixed with ${provider}`);
           return {
             fixed: true,
@@ -1345,7 +1354,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "internalAction": "support_case|buy_shipping_reimbursement|sku_check|supplier_reorder|none",
   "foodSafetyRisk": true/false,
   "atozRisk": "low|medium|high",
-  "suggestedResponse": "The complete response to send to the customer. Sign off as ${input.storeName}.",
+  "suggestedResponse": "The complete response to send to the customer. Sign off as "Best regards,\\n${SIGN_OFF}".",
   "reasoning": "(a) key customer phrase quoted, (b) which decision-matrix row matched (e.g. 'Table B / Frozen C2'), (c) any conflict between customer and facts, (d) action chosen and the economic principle that drove it (claimsProtected? carrierSelfDeclaredDelay? frozen+>3d? customer fault? etc.)",
   "supplierReorderNote": "REQUIRED when action=replacement: '{product} × {qty} | reason: {short} | original: {orderId}'. NULL otherwise."
 }`;
@@ -1355,7 +1364,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
 
 // Belt-and-braces: Claude sometimes still skips the greeting despite the
 // prompt's "VIOLATION CHECK" clause. If the response doesn't start with
-// "Dear" (or the Spanish equivalent), prepend a correct greeting so the
+// "Hello" (or the Spanish equivalent), prepend a correct greeting so the
 // operator never has to hand-add one.
 function ensureGreeting(
   response: string,
@@ -1363,15 +1372,14 @@ function ensureGreeting(
 ): string {
   if (!response) return response;
   const trimmed = response.trimStart();
-  const startsWithGreeting =
-    /^dear\b/i.test(trimmed) || /^estimad[oa]\b/i.test(trimmed);
+  const startsWithGreeting = HAS_GREETING_RE.test(trimmed);
   if (startsWithGreeting) return response;
 
   const isSpanish = /^es/i.test(input.language);
   const nameForGreeting = input.customerName || "Customer";
   const greeting = isSpanish
     ? `Estimado/a ${nameForGreeting},`
-    : `Dear ${nameForGreeting},`;
+    : helloLine(input.customerName);
   return `${greeting}\n\n${trimmed}`;
 }
 
@@ -1394,7 +1402,7 @@ function ensureClosing(
 
   const isSpanish = /^es/i.test(input.language);
   const closing = isSpanish ? "Atentamente," : "Best regards,";
-  return `${trimmed}\n\n${closing}\n${input.storeName}`;
+  return `${trimmed}\n\n${closing}\n${SIGN_OFF}`;
 }
 
 // Provider-loop parser. Returns null on failure so the caller can fall
@@ -1439,7 +1447,7 @@ function tryParseAnalysis(
 }
 
 function fallbackResult(input: AnalysisInput): AnalysisResult {
-  const suggestedResponse = `Dear ${input.customerName || "Customer"},\n\nThank you for reaching out. We are looking into your concern and will get back to you shortly.\n\nBest regards,\n${input.storeName}`;
+  const suggestedResponse = `${helloLine(input.customerName)}\n\nThank you for reaching out. We are looking into your concern and will get back to you shortly.\n\nBest regards,\n${SIGN_OFF}`;
   return {
     problemType: "T18",
     problemTypeName: "Unable to classify",
