@@ -212,3 +212,16 @@ test("no delivery yet → transit hours unknown", () => {
   assert.equal(tf.delivered, null);
   assert.equal(tf.transitHours, null);
 });
+
+test("label-only tracking = carrier never accepted the package", () => {
+  // Real case 2026-10-20: 16 days on this single event; the hub had called it
+  // "shipped on time" and sent the buyer to A-to-Z.
+  const tf = transitFacts([
+    { date: "2026-10-04", time: "16:29", description: "Shipper created a label, UPS has not received the package yet. ", status: "M", location: "US" },
+  ]);
+  assert.equal(tf.firstCarrierScan, null);
+  assert.equal(tf.transitHours, null);
+  for (const d of ["Shipping Label Created, USPS Awaiting Item", "Shipment information sent to FedEx"]) {
+    assert.equal(transitFacts([{ date: "2026-10-04", time: "10:00", description: d, status: "I" }]).firstCarrierScan, null, d);
+  }
+});

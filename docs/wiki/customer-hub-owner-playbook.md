@@ -83,3 +83,21 @@ review requests.
 - Checked on real messages against what the owner actually sent: pack-size
   and "all frozen" cases match his replies; "discarded, no photos" now asks
   for details instead of refunding.
+
+## Fix 2026-10-20 — "label created" is not "shipped"
+
+Order 114-1631599-6877866 (frozen, $204.98): tracking had a single event
+"Shipper created a label, UPS has not received the package yet" for 16 days.
+The enricher took the label date as the ship date → `shippedOnTime = true`,
+`claimsProtected = true`, and the draft sent the buyer to A-to-Z — a claim
+Amazon would charge to us, because Amazon judges on-time shipment by the
+carrier's first scan. Now:
+
+- `message-enricher.ts` 8b: no carrier scan → `carrierAccepted = false`,
+  `shippedOnTime = false`, `claimsProtected = false`; first scan after Ship by
+  → `shippedOnTime = false`.
+- Prompt: TRANSIT FACTS prints `CARRIER ACCEPTANCE: NONE`; new **NOT HANDED
+  OVER** rule — our side, apologise, replacement (expedited, confirm address)
+  or full refund, never A-to-Z; brief tells the owner to check the box and
+  void the unused label.
+- `transit.ts` recognises UPS/FedEx/USPS label-only wording.

@@ -36,7 +36,8 @@ HARD-CODED OPERATING RULES (always true for Salutem Solutions)
 1. **All shipping labels are purchased through Amazon Buy Shipping** (via
    Veeqo). Therefore: Buy Shipping Claims Protection is the default
    coverage for ANY carrier-fault complaint. claimsProtected = YES
-   unless explicitly proven otherwise.
+   unless explicitly proven otherwise — and it IS disproven when TRANSIT
+   FACTS show CARRIER ACCEPTANCE: NONE (label only, never scanned).
 
 2. **FROZEN PRODUCTS — 3-DAY RULE.** For any product tagged Frozen, we
    only purchase shipping services where the carrier's promised delivery
@@ -365,6 +366,16 @@ AMAZON CS RELAY ("This is Amazon's Customer Service team. A customer reached
   packaging with frozen cooling packs, so it may arrive partially or fully
   frozen; state the delivery date within the Amazon window; ask for photos
   only if the product or packaging was damaged, leaking or opened.
+
+NOT HANDED OVER (tracking has only "label created" / "has not received the
+  package", no carrier scan): this is OUR side, not a carrier delay. Never
+  say "shipped on time", never cite Buy Shipping, never send the buyer to
+  A-to-Z (Amazon would charge the claim to us). Apologise plainly: the carrier
+  has no record of receiving the package, only the label was created on
+  {date}. Offer a replacement by expedited shipping at no cost (confirm the
+  full address) or a full refund, buyer's choice. action = replacement,
+  whoShouldPay = us, riskLevel HIGH. In ownerBriefRu tell the owner to check
+  whether the box physically left and to void the unused label.
 
 DISCARDED, NO PHOTOS ("advised to dispose of the item", "threw it away"):
   being told to discard is NOT an illness report (not T15) and NOT proof of
@@ -1422,8 +1433,12 @@ Use these events as authoritative facts about where the package is and what has 
 ${(() => {
     const tf = transitFacts(input.trackingEvents);
     if (!tf.firstCarrierScan && !tf.delivered) return "";
+    const notAccepted = !tf.firstCarrierScan
+      ? `- CARRIER ACCEPTANCE: NONE — only a shipping label exists; the carrier has never scanned this package. It was NOT handed over (or never scanned). Amazon treats this as not shipped on time: Buy Shipping protection does NOT apply. See the NOT HANDED OVER rule.
+`
+      : "";
     return `TRANSIT FACTS (derived from the carrier events above; times are local to each scan):
-- First carrier scan: ${tf.firstCarrierScan || "Unknown"}
+${notAccepted}- First carrier scan: ${tf.firstCarrierScan || "None"}
 - Delivered: ${tf.delivered || "Not yet"}
 - Approximate transit: ${tf.transitHours !== null ? `${tf.transitHours} hours` : "Unknown"}
 - Delivery scan detail: ${tf.deliveryDetail || "None"}

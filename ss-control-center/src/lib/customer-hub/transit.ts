@@ -35,7 +35,8 @@ function at(e: TransitEvent): number | null {
   return Number.isNaN(t) ? null : t;
 }
 
-const LABEL_ONLY_RE = /label created|created a label|has not received|label has been created|shipment information sent/i;
+const LABEL_ONLY_RE =
+  /label created|created a label|has not received|label has been created|shipment information sent|awaiting item|pre-shipment|shipping label created/i;
 
 function isCarrierScan(e: TransitEvent): boolean {
   if ((e.status || "").toUpperCase() === "M") return false;

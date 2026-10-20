@@ -2,6 +2,7 @@
  * Enrich parsed buyer email with SP-API order data + Veeqo tracking
  */
 
+import { transitFacts } from "./transit";
 import { spApiGet } from "@/lib/amazon-sp-api/client";
 import { prisma } from "@/lib/prisma";
 import type { ParsedBuyerEmail } from "./gmail-parser";
@@ -37,6 +38,8 @@ export interface EnrichedMessage extends ParsedBuyerEmail {
   boughtThroughVeeqo: boolean;
   claimsProtected: boolean;
   shippedOnTime: boolean | null;
+  /** false = only a label exists, the carrier never scanned the package. */
+  carrierAccepted?: boolean | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -603,6 +606,24 @@ export async function enrichMessage(
   } else if (enriched.shipDate) {
     // Default to true if Amazon didn't return a ship-by date but we shipped
     enriched.shippedOnTime = true;
+  }
+
+  // 8b. Amazon judges "shipped on time" by the carrier's FIRST SCAN, not by
+  //     the label date. A label with no carrier scan means the package was
+  //     never handed over: not on time, and Buy Shipping protection does not
+  //     apply. (2026-10-20: order 114-1631599-6877866 sat 16 days on "label
+  //     created" and the hub told the buyer to file A-to-Z — that claim would
+  //     have been charged to us.)
+  if (enriched.trackingEvents && enriched.trackingEvents.length > 0) {
+    const tf = transitFacts(enriched.trackingEvents);
+    const firstScanDay = tf.firstCarrierScan?.slice(0, 10) || null;
+    if (!firstScanDay) {
+      enriched.carrierAccepted = false;
+      enriched.shippedOnTime = false;
+    } else {
+      enriched.carrierAccepted = true;
+      if (latestShipDate) enriched.shippedOnTime = firstScanDay <= latestShipDate;
+    }
   }
 
   // 9. Claims Protected — Veeqo Buy Shipping AND shipped on time
