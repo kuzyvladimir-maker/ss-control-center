@@ -75,6 +75,10 @@ const REVIEW_ASK_RE =
 const HEALTH_RE =
   /\b(cures?\b|treats? (disease|illness|symptoms)|prevents? (disease|illness|cancer|infection)|heals?\b|healing\b|detox|weight loss|boosts? (your )?immun)/i;
 
+/** Owner rule 2026-10-20: the buyer text never admits fault. */
+export const FAULT_ADMISSION_RE =
+  /\b(our (own )?(error|mistake|fault|oversight)|(was|is) (on )?our (side|end|fault)|on our (side|end)|(was|is) our responsibility|it never (actually )?left (us|our)|we (made|have made) (a|an) (mistake|error)|we (failed|messed up)|not the carrier'?s (fault|error)|our fulfil?l?ment (error|mistake|failure))\b/i;
+
 /**
  * Message-body rules for a reply that goes to the buyer without the owner.
  * Returns human-readable violations; empty means clean.
@@ -87,6 +91,7 @@ export function replyContentViolations(text: string): string[] {
   if (PHONE_RE.test(text)) out.push("reply contains a phone number");
   if (REVIEW_ASK_RE.test(text)) out.push("reply mentions reviews/feedback");
   if (HEALTH_RE.test(text)) out.push("reply makes a health claim");
+  if (FAULT_ADMISSION_RE.test(text)) out.push("reply admits fault");
   return out;
 }
 

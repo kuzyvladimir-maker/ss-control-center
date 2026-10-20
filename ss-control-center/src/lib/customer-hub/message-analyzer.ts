@@ -10,6 +10,7 @@ import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { transitFacts } from "./transit";
+import { FAULT_ADMISSION_RE } from "./autosend-policy";
 import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
@@ -313,8 +314,17 @@ STILL IN TRANSIT, window open: no refund, no replacement, no A-to-Z yet. Give
   an expedited shipping service at our own expense to get it to you sooner".
   Ship-by is a deadline, not our planned ship date.
 
+NEVER ADMIT FAULT IN THE BUYER TEXT (owner, 2026-10-20 — overrides anything
+  older). Not in writing, not publicly: no "our error / our mistake / our
+  fault", no "on our side / on our end", no "it never left us", no "not the
+  carrier's fault", no "we failed". Allowed: "we understand something went
+  wrong", "we apologize for the inconvenience", what we will do and when.
+  The honest cause (our fault, carrier fault) goes ONLY into ownerBriefRu /
+  verdictRu / pointsRu — never into suggestedResponse.
+
 OUR OWN FULFILLMENT ERROR (confirmed wrong item, shipped without the cooler,
-  missing component): admit it plainly and apologise; offer a free
+  missing component): apologise for the inconvenience WITHOUT admitting
+  fault (see the rule above); offer a free
   replacement by expedited shipping (ask the buyer to confirm the full
   address — it is hidden from us after shipment) or a full refund, buyer's
   choice. "Because this is a food product, it is not eligible for a standard
@@ -369,11 +379,12 @@ AMAZON CS RELAY ("This is Amazon's Customer Service team. A customer reached
   only if the product or packaging was damaged, leaking or opened.
 
 NOT HANDED OVER (tracking has only "label created" / "has not received the
-  package", no carrier scan): 100% OUR fault — the order was not shipped
-  (owner, 2026-10-20). Never say "shipped on time", never cite Buy Shipping,
-  never send the buyer to A-to-Z. Simply apologise and offer to send the
-  order again: we can see it has not reached you, and we will gladly ship it
-  again within 1-2 business days. Standard shipping (no express by default),
+  package", no carrier scan): 100% OUR fault internally — the order was not
+  shipped (owner, 2026-10-20). Never say "shipped on time", never cite Buy
+  Shipping, never send the buyer to A-to-Z, and never state the cause to the
+  buyer. Reply shape: "we understand something went wrong with your order,
+  we apologize for the inconvenience; we will resend your order and it will
+  arrive within two business days; please confirm your delivery address". Standard shipping (no express by default),
   ask to confirm the full address only if needed. Do not offer a refund
   unless the buyer asked for one. action = replacement, whoShouldPay = us,
   riskLevel HIGH. In ownerBriefRu tell the owner to check whether the box
@@ -1001,6 +1012,13 @@ export function detectResponseViolations(
   const violations: string[] = [];
   const lower = response.toLowerCase();
 
+  // Owner rule 2026-10-20: never admit fault in the buyer text.
+  if (FAULT_ADMISSION_RE.test(response)) {
+    violations.push(
+      "Response admits fault (our error/mistake/fault, on our side, never left us) — owner rule: never admit fault to the buyer"
+    );
+  }
+
   // RULE 1 — cancel suggested but order is shipped (pending counts as ok)
   if (
     lower.includes("cancel") &&
@@ -1144,6 +1162,7 @@ ${t21Instructions}
 MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
+- NEVER admit fault (no "our error/mistake/fault", "on our side", "it never left us", "not the carrier's fault"); say "we understand something went wrong" and "we apologize for the inconvenience" instead
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
 - If order is in_transit and NOT a mismatch: say "your order is currently in transit", give the latest facts and the Amazon delivery window; only if the window has already passed and the label is Buy Shipping, ask the buyer to request an A-to-Z Guarantee review from Amazon Customer Service
 - If order is delivered: reference the delivery
@@ -1328,6 +1347,7 @@ export async function analyzeMessage(
             "delivered but order is",
             "in transit but order is",
             "seller refund but Amazon",
+            "admits fault",
           ];
           const hardViolations = warnings.filter((w) =>
             hardKeywords.some((kw) =>

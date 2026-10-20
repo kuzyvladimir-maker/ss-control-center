@@ -292,3 +292,16 @@ test("card text follows the approved Telegram format", () => {
   assert.match(t, /## Что уйдёт покупателю \(по-английски\)\n\n> Hello,\n>\n> We are sorry\./);
   assert.ok(t.indexOf("по-русски") < t.indexOf("по-английски"));
 });
+
+test("buyer text never admits fault (owner rule 2026-10-20)", () => {
+  for (const bad of [
+    "This means the delay is on our side, not the carrier's.",
+    "so it never actually left us",
+    "This was our error and we apologize.",
+    "We made a mistake with your order.",
+  ]) assert.ok(replyContentViolations(bad).includes("reply admits fault"), bad);
+  assert.deepEqual(
+    replyContentViolations("We understand something went wrong with your order, and we apologize for the inconvenience."),
+    []
+  );
+});
