@@ -9,7 +9,7 @@
 import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
-import { transitFacts } from "./transit";
+import { ownerStatedDates, transitFacts } from "./transit";
 import { FAULT_ADMISSION_RE } from "./autosend-policy";
 import { prisma } from "@/lib/prisma";
 
@@ -840,6 +840,12 @@ export function factCheckResponse(
     const deliveryFormatted = context.actualDelivery
       ? formatDateVariants(context.actualDelivery)
       : [];
+    // Also verified: carrier scan dates (a reprinted label can be scanned
+    // after the buyer wrote) and dates the OWNER stated in his correction.
+    const extraFormatted = [
+      ...(context.trackingEvents || []).map((e) => e.date).filter((d): d is string => Boolean(d)),
+      ...ownerStatedDates(context.extraInstruction, context.shipDate),
+    ].flatMap((d) => formatDateVariants(d));
 
     for (const dateInResponse of datePatterns) {
       const normalized = dateInResponse.trim().toLowerCase();
@@ -848,7 +854,8 @@ export function factCheckResponse(
       if (
         !matches(shipDateFormatted) &&
         !matches(eddFormatted) &&
-        !matches(deliveryFormatted)
+        !matches(deliveryFormatted) &&
+        !matches(extraFormatted)
       ) {
         mismatches.push({
           field: "date",
@@ -1165,7 +1172,7 @@ FACTS (use ONLY these dates and data):
 - Days Late: ${input.daysLate ?? "0"}
 - Customer Name: ${input.customerName || "Customer"}
 - Store Name: ${input.storeName}
-${t21Instructions}
+${input.extraInstruction ? `- OWNER CORRECTIONS (verified facts, they win over the fields above): ${input.extraInstruction}\n` : ""}${t21Instructions}
 MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them

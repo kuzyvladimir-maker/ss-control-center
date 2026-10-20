@@ -192,7 +192,7 @@ test("infers the owner's action from reply text", () => {
 
 // ── Transit facts ─────────────────────────────────────────────────────
 
-import { transitFacts } from "../transit";
+import { ownerStatedDates, transitFacts } from "../transit";
 
 test("transit hours run from the first real carrier scan to delivery", () => {
   const tf = transitFacts([
@@ -304,4 +304,11 @@ test("buyer text never admits fault (owner rule 2026-10-20)", () => {
     replyContentViolations("We understand something went wrong with your order, and we apologize for the inconvenience."),
     []
   );
+});
+
+test("dates the owner states in a correction count as verified", () => {
+  const d = ownerStatedDates("Посылка отправлена сегодня (20.10) с той же этикеткой UPS", "2026-10-04");
+  assert.deepEqual(d, ["2026-10-20"]);
+  assert.deepEqual(ownerStatedDates("shipped 2026-10-20, eta 10/22", "2026-10-04").sort(), ["2026-10-20", "2026-10-22"]);
+  assert.deepEqual(ownerStatedDates("трек 1Z29K3Y40313308184, 3.5 lb", null), []);
 });

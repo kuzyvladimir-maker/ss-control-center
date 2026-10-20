@@ -71,3 +71,17 @@ export function transitFacts(events: TransitEvent[] | null | undefined): Transit
     deliveryDetail: detail || null,
   };
 }
+
+/** ISO dates the owner wrote in a correction: 2026-10-20, 20.10(.2026), 10/20. */
+export function ownerStatedDates(text: string | null | undefined, refIso?: string | null): string[] {
+  if (!text) return [];
+  const year = (refIso || new Date().toISOString()).slice(0, 4);
+  const pad = (n: string) => n.padStart(2, "0");
+  const out = new Set<string>();
+  for (const m of text.matchAll(/\b(20\d{2})-(\d{2})-(\d{2})\b/g)) out.add(`${m[1]}-${m[2]}-${m[3]}`);
+  for (const m of text.matchAll(/\b(\d{1,2})\.(\d{2})(?:\.(20\d{2}))?\b/g))
+    if (+m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) out.add(`${m[3] || year}-${pad(m[2])}-${pad(m[1])}`);
+  for (const m of text.matchAll(/\b(\d{1,2})\/(\d{1,2})(?:\/(20\d{2}))?\b/g))
+    if (+m[1] >= 1 && +m[1] <= 12 && +m[2] >= 1 && +m[2] <= 31) out.add(`${m[3] || year}-${pad(m[1])}-${pad(m[2])}`);
+  return [...out];
+}
