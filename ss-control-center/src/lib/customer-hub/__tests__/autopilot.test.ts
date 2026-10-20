@@ -263,3 +263,29 @@ test("owner note says what was searched and where", () => {
   assert.match(note, /Нет: тип товара/);
   assert.match(note, /Искали: Veeqo \(не найдено\)/);
 });
+
+// ── Card text format (owner-approved, 2026-10-20) ─────────────────────
+
+import { renderCardText } from "../card-format";
+
+test("card text follows the approved Telegram format", () => {
+  const t = renderCardText({
+    orderId: "114-1631599-6877866",
+    store: "Salutem Solutions",
+    version: 2,
+    deadlineRu: "ответить до 20.10, 23:29 ET (осталось ~5 ч)",
+    clientRu: "Просит отправить заказ повторно.",
+    historyRu: null,
+    facts: [{ what: "Отгрузка", value: "UPS Ground, трек `1Z29K3Y40313308184` | этикетка 04.10" }],
+    verdictRu: "Наша вина — отправляем повторно за 1–2 рабочих дня",
+    pointsRu: ["Не упоминаем A-to-Z"],
+    missing: [],
+    draftEn: "Hello,\n\nWe are sorry.\n\nBest regards,\nCustomer Support Team",
+    attachments: [],
+  });
+  assert.match(t, /^# Заказ 114-1631599-6877866 · Salutem Solutions\n\n\*\*ответить до .*\*\* · v2/);
+  assert.match(t, /## Факты\n\n\| Что \| Данные \|\n\|---\|---\|\n\| Отгрузка \| UPS Ground, трек `1Z29K3Y40313308184` \/ этикетка 04\.10 \|/);
+  assert.match(t, /## Решение движка\n\n\*\*Наша вина — .*\*\*\n\n- Не упоминаем A-to-Z/);
+  assert.doesNotMatch(t, /Не удалось проверить/);
+  assert.match(t, /## Текст покупателю \(уйдёт по-английски\)\n\n> Hello,\n>\n> We are sorry\./);
+});

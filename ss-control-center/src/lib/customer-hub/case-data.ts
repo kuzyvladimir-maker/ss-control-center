@@ -199,7 +199,7 @@ export async function collectCaseData(
         "M5",
         ok,
         `Shipment: ${m.carrier} ${m.service || ""}, tracking ${m.trackingNumber}, label ${m.shipDate}, Amazon Buy Shipping: ${m.boughtThroughVeeqo ? "yes" : "no"}`,
-        `${m.carrier} ${m.service || ""}, трек ${m.trackingNumber}, этикетка ${m.shipDate}`,
+        `${m.carrier} ${m.service || ""}, трек \`${m.trackingNumber}\`, этикетка ${m.shipDate}${m.boughtThroughVeeqo ? ", Buy Shipping" : ""}`,
         [{ source: "Veeqo", ok, note: ok ? undefined : "отгрузка не найдена" }]
       )
     );

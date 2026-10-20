@@ -729,6 +729,9 @@ export interface AnalysisResult {
   supplierReorderNote: string | null;
   /** Russian brief for the owner: facts / decision / what we avoid. */
   ownerBriefRu?: string | null;
+  /** Russian one-line verdict + 2-4 bullets for the Telegram card. */
+  verdictRu?: string | null;
+  pointsRu?: string[] | null;
   /** Russian gist of the buyer's message (Telegram card). */
   clientGistRu?: string | null;
   /** Russian thread history in time order (Telegram card). */
@@ -1528,6 +1531,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "foodSafetyRisk": true/false,
   "atozRisk": "low|medium|high",
   "suggestedResponse": "The complete response to send to the customer. Sign off as "Best regards,\\n${SIGN_OFF}".",
+  "verdictRu": "IN RUSSIAN, ONE short line: the decision (e.g. 'Наша вина — отправляем заказ повторно за 1–2 рабочих дня').",
+  "pointsRu": ["IN RUSSIAN, 2-4 short bullets: what we do and what we deliberately do not write, with the reason"],
   "clientGistRu": "IN RUSSIAN, 1-2 lines: what the buyer wants, in plain words.",
   "historyRu": "IN RUSSIAN, 1-4 short lines in time order, ONLY if there were earlier messages on this order (buyer said → we replied → Amazon wrote → buyer asked again). Empty string if none.",
   "ownerBriefRu": "Short brief for the owner IN RUSSIAN, 3 short blocks: 'Факты:' (2-4 bullets from CONTEXT: service, transit hours, window, delivery proof, what the buyer claims vs what is proven) / 'Решение:' (one line — what we do now and why, incl. who pays) / 'Чего не пишем:' (1-2 bullets — what we deliberately avoid and why). Max 90 words.",
@@ -1616,6 +1621,13 @@ function tryParseAnalysis(
         typeof parsed.ownerBriefRu === "string" && parsed.ownerBriefRu.trim()
           ? parsed.ownerBriefRu.trim()
           : null,
+      verdictRu:
+        typeof parsed.verdictRu === "string" && parsed.verdictRu.trim()
+          ? parsed.verdictRu.trim()
+          : null,
+      pointsRu: Array.isArray(parsed.pointsRu)
+        ? parsed.pointsRu.filter((x: unknown) => typeof x === "string" && x.trim()).map((x: string) => x.trim())
+        : null,
       clientGistRu:
         typeof parsed.clientGistRu === "string" && parsed.clientGistRu.trim()
           ? parsed.clientGistRu.trim()

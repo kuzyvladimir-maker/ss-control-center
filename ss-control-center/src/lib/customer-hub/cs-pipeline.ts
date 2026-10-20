@@ -29,6 +29,7 @@ import {
   type CaseDataSnapshot,
 } from "./case-data-gate";
 import { runAutosend } from "./autosend-runner";
+import { FACT_LABEL_RU, renderCardText, verdictFromBrief } from "./card-format";
 export { enqueueSendTask } from "./cs-tasks";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
@@ -125,22 +126,6 @@ function deadlineRu(m: Msg): string {
   return left > 0 ? `ответить до ${fmt} ET (осталось ~${left} ч)` : `срок ответа прошёл ${fmt} ET`;
 }
 
-export function renderCardTextRu(c: CardPayload): string {
-  const parts = [
-    `🟦 Customer Service · ${c.store} · заказ ${c.orderId || "—"} · v${c.version}`,
-    `⏱ ${c.deadlineRu}`,
-    "",
-    `Клиент: ${c.clientRu}`,
-  ];
-  if (c.historyRu) parts.push("", `История:\n${c.historyRu}`);
-  parts.push("", `Данные:\n${c.dataRu.map((d) => `• ${d}`).join("\n")}`);
-  if (c.missingRu) parts.push("", `⚠️ Не нашли, нужно ваше решение:\n${c.missingRu}`);
-  parts.push("", `Решение движка:\n${c.decisionRu}`);
-  parts.push("", `Текст покупателю (уйдёт по-английски):\n${c.draftEn}`);
-  if (c.attachments.length) parts.push("", `Вложения: ${c.attachments.join(", ")}`);
-  return parts.join("\n");
-}
-
 export interface CardPayload {
   cardId: string;
   version: number;
@@ -164,7 +149,13 @@ export interface CardPayload {
 async function createCard(
   m: Msg,
   snap: CaseDataSnapshot,
-  a: { clientGistRu?: string | null; historyRu?: string | null; ownerBriefRu?: string | null } | null,
+  a: {
+    clientGistRu?: string | null;
+    historyRu?: string | null;
+    ownerBriefRu?: string | null;
+    verdictRu?: string | null;
+    pointsRu?: string[] | null;
+  } | null,
   missingRu: string | null
 ) {
   const prev = await prisma.csCard.findMany({
@@ -210,7 +201,27 @@ async function createCard(
     ],
     textRu: "",
   };
-  payload.textRu = renderCardTextRu(payload);
+  payload.textRu = renderCardText({
+    orderId: payload.orderId,
+    store: payload.store,
+    version,
+    deadlineRu: payload.deadlineRu,
+    clientRu,
+    historyRu: payload.historyRu,
+    facts: snap.items
+      .filter((i) => i.present && i.factRu && i.key !== "M1")
+      .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: i.factRu })),
+    verdictRu: a?.verdictRu || verdictFromBrief(a?.ownerBriefRu),
+    pointsRu: a?.pointsRu || [],
+    missing: snap.items
+      .filter((i) => !i.present)
+      .map((i) => {
+        const tried = i.tried.map((t) => `${t.source}${t.note ? ` (${t.note})` : ""}`).join(" → ");
+        return `${MINIMUM[i.key].labelRu}${tried ? ` — искали: ${tried}` : ""}`;
+      }),
+    draftEn: payload.draftEn,
+    attachments: payload.attachments,
+  });
   await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify(payload) } });
   await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "CARD_PENDING" } });
   return card.id;
