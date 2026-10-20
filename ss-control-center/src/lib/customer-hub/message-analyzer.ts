@@ -368,14 +368,15 @@ AMAZON CS RELAY ("This is Amazon's Customer Service team. A customer reached
   only if the product or packaging was damaged, leaking or opened.
 
 NOT HANDED OVER (tracking has only "label created" / "has not received the
-  package", no carrier scan): this is OUR side, not a carrier delay. Never
-  say "shipped on time", never cite Buy Shipping, never send the buyer to
-  A-to-Z (Amazon would charge the claim to us). Apologise plainly: the carrier
-  has no record of receiving the package, only the label was created on
-  {date}. Offer a replacement by expedited shipping at no cost (confirm the
-  full address) or a full refund, buyer's choice. action = replacement,
-  whoShouldPay = us, riskLevel HIGH. In ownerBriefRu tell the owner to check
-  whether the box physically left and to void the unused label.
+  package", no carrier scan): 100% OUR fault — the order was not shipped
+  (owner, 2026-10-20). Never say "shipped on time", never cite Buy Shipping,
+  never send the buyer to A-to-Z. Simply apologise and offer to send the
+  order again: we can see it has not reached you, and we will gladly ship it
+  again within 1-2 business days. Standard shipping (no express by default),
+  ask to confirm the full address only if needed. Do not offer a refund
+  unless the buyer asked for one. action = replacement, whoShouldPay = us,
+  riskLevel HIGH. In ownerBriefRu tell the owner to check whether the box
+  physically left and to void the unused label.
 
 DISCARDED, NO PHOTOS ("advised to dispose of the item", "threw it away"):
   being told to discard is NOT an illness report (not T15) and NOT proof of

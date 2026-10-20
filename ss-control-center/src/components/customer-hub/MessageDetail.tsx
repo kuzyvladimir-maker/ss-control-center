@@ -1325,7 +1325,7 @@ export default function MessageDetail({
                 <span className="shrink-0">⚠️</span>
                 <div>
                   <div className="font-semibold mb-0.5">
-                    Amazon messaging window is closed for this order
+                    Send in Seller Central
                   </div>
                   <div className="text-warn-strong">{sendError.message}</div>
                   <div className="text-[10px] text-warn-strong mt-1">

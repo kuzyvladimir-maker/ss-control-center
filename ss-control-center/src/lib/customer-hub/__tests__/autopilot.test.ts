@@ -63,7 +63,6 @@ const base: AutosendInput = {
   alreadyRepliedOnOrder: false,
   hasOrderContext: true,
   reasoning: "Table A row 1",
-  customerEmail: "abc123@marketplace.amazon.com",
   autoSentToday: 0,
   dailyCap: 10,
 };
@@ -96,7 +95,6 @@ test("money and claims are never eligible", () => {
     { isFallback: true },
     { channel: "Walmart" },
     { reasoning: "x [NEEDS REVIEW: tone]" },
-    { customerEmail: "buyer@gmail.com" },
     { autoSentToday: 10 },
   ] as Partial<AutosendInput>[]) {
     const d = evaluateAutosend({ ...base, ...patch });

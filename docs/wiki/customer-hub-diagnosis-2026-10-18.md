@@ -41,3 +41,5 @@ fulfilment problem, not a reply in the buyer's thread.
   once we reply by email that rule must key on *our* outgoing message, not
   thread length.
 - ChatGPT history not imported yet (Jackie blocked on the logged-in browser).
+
+> **Superseded 2026-10-20:** sending is only via Seller Central on the account VPS, never Gmail — see [[customer-hub-vps-send]].

@@ -54,8 +54,6 @@ export interface AutosendInput {
    *  answers blind — e.g. a pre-sale "16 boxes × 8 = 128?" got "please send
    *  the order ID" instead of an answer. */
   hasOrderContext: boolean;
-  /** The buyer's relay address — email-relay sending needs it. */
-  customerEmail?: string | null;
   autoSentToday: number;
   dailyCap: number;
 }
@@ -122,8 +120,6 @@ export function evaluateAutosend(
   if (!input.hasOrderContext) reasons.push("no order or product context");
   if (/\[(NEEDS REVIEW|AUTO-FIXED)/.test(input.reasoning || ""))
     reasons.push("validator flagged the draft");
-  if (!input.customerEmail || !/@marketplace\.amazon\.com$/i.test(input.customerEmail))
-    reasons.push("no Amazon relay address");
 
   const text = (input.responseText || "").trim();
   if (!text) reasons.push("empty draft");
