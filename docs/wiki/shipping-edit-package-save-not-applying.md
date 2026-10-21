@@ -64,3 +64,6 @@ weight/size`, если раньше данных не было) до полно�
 - Живые 429 от Walmart. Их стало видно, но не меньше.
 
 Коммит: `fd015ffd`.
+
+
+See also: [2026-10-21 follow-up — Buy after Save returned zeros (stale planId)](shipping-package-autofill-and-own-deadline-2026-10-21.md)

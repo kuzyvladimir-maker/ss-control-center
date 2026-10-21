@@ -24,6 +24,7 @@ import {
 } from "@/lib/shipping/packing-signature";
 import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
+import { findShippedPackage } from "@/lib/shipping/package-history";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
 import {
   isProcurementPlaced,
@@ -490,20 +491,121 @@ export async function GET(request: NextRequest) {
         "";
       let skuWeight: number | null = null;
       let skuBoxSize: string | null = null;
+      // Same sku / title / qty strings the plan row stores below, so a past
+      // bought row of this order shape matches exactly.
+      const historySku = (order.line_items ?? [])
+        .map((li: { sellable?: { sku_code?: string; sku?: string } }) =>
+          li?.sellable?.sku_code || li?.sellable?.sku || "")
+        .join("; ");
+      const historyProduct = (order.line_items ?? [])
+        .map((li: { sellable: unknown }) => buildVeeqoItemTitle(li.sellable as never))
+        .join("; ");
+      const historyQty =
+        (order.line_items ?? []).reduce(
+          (sum: number, li: { quantity: number }) => sum + li.quantity,
+          0,
+        ) || 1;
+      const shippedPackageFor = async () => {
+        try {
+          return await findShippedPackage(prisma as never, {
+            sku: historySku,
+            product: historyProduct,
+            qty: historyQty,
+          });
+        } catch (e) {
+          console.warn(`[plan] ${order.number} package history lookup failed:`, e instanceof Error ? e.message : e);
+          return null;
+        }
+      };
 
       if (requiresPackingProfile(orderLines)) {
         const signature = buildPackingSignature(orderLines);
         const profile = await prisma.packingProfile.findUnique({
           where: { signature },
         });
-        if (!profile) {
+        // No profile yet → reuse the box/weight of a label we already
+        // bought for this exact composition (see package-history.ts), and
+        // save it as the profile so the next order doesn't need the lookup.
+        const shipped = profile ? null : await shippedPackageFor();
+        if (!profile && shipped) {
+          skuWeight = shipped.weight;
+          skuBoxSize = shipped.boxSize;
+          try {
+            await prisma.packingProfile.create({
+              data: {
+                signature,
+                description: historyProduct,
+                boxSize: shipped.boxSize,
+                weight: shipped.weight,
+                weightFedex: shipped.weight * 1.25,
+                itemCount: orderLines.length,
+                totalQty: historyQty,
+                source: "history",
+              },
+            });
+          } catch (e) {
+            console.warn(`[plan] ${order.number} history profile save failed:`, e instanceof Error ? e.message : e);
+          }
+        } else if (!profile) {
           stopReason = `Multi-item order — no PackingProfile for "${signature}"`;
         } else {
           skuWeight = profile.weight;
           skuBoxSize = profile.boxSize;
         }
       } else {
-        const skuData = skuDatabase.find((r) => r.sku === firstSku) || null;
+        let skuData = skuDatabase.find((r) => r.sku === firstSku) || null;
+        // Empty / incomplete catalog row (thousands were created blank by the
+        // COGS identify script) → reuse the package of a label we already
+        // bought for this SKU or this exact listing title, and write it back
+        // so the SKU is complete from now on. Amazon only: other channels
+        // quote from the package already set in Veeqo.
+        if (!stopReason && isAmazon && !skuData?.hasCompleteData) {
+          const shipped = await shippedPackageFor();
+          const dims = shipped ? resolveBoxDimensions(shipped.boxSize) : null;
+          if (shipped && dims) {
+            skuData = {
+              ...(skuData ?? {
+                sku: firstSku,
+                productTitle: historyProduct,
+                marketplace: "Amazon",
+                category: "",
+                weightFedex: null,
+              }),
+              weight: skuData?.weight ?? shipped.weight,
+              length: skuData?.length ?? dims.length,
+              width: skuData?.width ?? dims.width,
+              height: skuData?.height ?? dims.height,
+              hasCompleteData: true,
+            };
+            if (firstSku) {
+              try {
+                await prisma.skuShippingData.upsert({
+                  where: { sku: firstSku },
+                  create: {
+                    sku: firstSku,
+                    productTitle: historyProduct || null,
+                    marketplace: "Amazon",
+                    weight: skuData.weight,
+                    length: skuData.length,
+                    width: skuData.width,
+                    height: skuData.height,
+                    weightFedex: (skuData.weight ?? shipped.weight) * 1.25,
+                    notes: `Package from shipped order ${shipped.fromOrder}`,
+                    source: "history",
+                  },
+                  update: {
+                    weight: skuData.weight,
+                    length: skuData.length,
+                    width: skuData.width,
+                    height: skuData.height,
+                  },
+                });
+              } catch (e) {
+                console.warn(`[plan] ${order.number} history SKU save failed:`, e instanceof Error ? e.message : e);
+              }
+            }
+          }
+        }
         // For Amazon orders our local SkuShippingData is the source of
         // truth — we push those dims to Veeqo and quote from them, so
         // missing data here is genuinely a blocker.

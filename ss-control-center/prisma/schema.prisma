@@ -165,6 +165,11 @@ model ShippingPlanItem {
   // cache. Applied by scripts/turso-migrate-shipping-search-indexes.mjs.
   @@index([orderNumber])
   @@index([trackingNumber])
+  // Shipped-package fallback (src/lib/shipping/package-history.ts) looks up
+  // past bought labels by SKU / listing title. Applied by
+  // scripts/turso-migrate-shipping-package-history-indexes.mjs.
+  @@index([sku])
+  @@index([product])
 }
 
 // ── Merge Orders ────────────────────────────────────────────────────────

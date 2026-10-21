@@ -61,3 +61,5 @@
   - Post-buy modal + audit log — [veeqo-api-quirks §9](veeqo-api-quirks.md)
   - Google Drive upload реализован в ss-control-center (раньше работал только n8n) — [google-drive-setup](google-drive-setup.md), [veeqo-api-quirks §10](veeqo-api-quirks.md)
   - Dry-правила выбора ставки упрощены (убраны 12pm USPS cutoff и 10% UPS prefer) — [shipping-rate-selection](shipping-rate-selection.md)
+
+- 2026-10-21 — [Package autofill from shipped history, Buy-after-Save zeros, our ship-by deadline](shipping-package-autofill-and-own-deadline-2026-10-21.md)

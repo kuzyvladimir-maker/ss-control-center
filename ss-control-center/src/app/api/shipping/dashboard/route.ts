@@ -30,6 +30,7 @@ import {
   type OrderLineItem,
 } from "@/lib/shipping/packing-signature";
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
+import { ownShipBy, bucketForYmd } from "@/lib/shipping/own-deadline";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -477,10 +478,19 @@ export async function GET() {
       // a day for the late-PT-evening encoding Veeqo uses for dispatch
       // deadlines). Pacific is the right anchor for marketplace data.
       const shipByRaw: string | null = o.dispatch_date ?? o.due_date ?? null;
+      // No marketplace ship-by (e.g. NAN health / Shopify) → OUR deadline:
+      // placed + 2 days, so the order still lands in Overdue / Today /
+      // Tomorrow instead of vanishing from every filter. Flagged as
+      // estimated so the UI says it's ours. See own-deadline.ts.
+      const estimatedShipBy = shipByRaw ? null : ownShipBy(o.created_at);
       const shipBy: string | null = shipByRaw
         ? utcToPacificYMD(shipByRaw)
-        : null;
-      const bucket = shipByBucket(shipByRaw);
+        : estimatedShipBy;
+      const bucket = shipByRaw
+        ? shipByBucket(shipByRaw)
+        : estimatedShipBy
+          ? bucketForYmd(estimatedShipBy, todayPacific())
+          : null;
       if (bucket) timeBuckets[bucket]++;
 
       // Walmart-channel orders are always treated as Dry — Vladimir's
@@ -665,6 +675,7 @@ export async function GET() {
         storeName,
         channel: channelName || null,
         shipBy,
+        shipByEstimated: estimatedShipBy != null,
         timeBucket: bucket,
         // The Amazon/Walmart deliver-by deadline lives on Veeqo's `due_date`
         // (same field /api/shipping/plan reads). The other candidate names

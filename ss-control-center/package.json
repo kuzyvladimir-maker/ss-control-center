@@ -81,6 +81,7 @@
     "test:channelmax-canary-artifacts": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-canary-artifact-route.test.ts",
     "models:check": "npx tsx scripts/check-model-updates.ts",
     "postinstall": "prisma generate",
+    "test:shipping": "node --import tsx --test src/lib/shipping/__tests__/*.test.ts",
     "test:procurement-placed": "node --import tsx --test src/lib/procurement/__tests__/placed.test.ts src/lib/veeqo/__tests__/hidden-orders.test.ts"
   },
   "dependencies": {

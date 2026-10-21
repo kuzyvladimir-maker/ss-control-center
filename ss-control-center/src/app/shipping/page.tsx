@@ -48,6 +48,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
+import { groupBuyTargets } from "@/lib/shipping/buy-targets";
 // DYMO Connect Web Service path was tried (port 41951 HTTPS / 41952 HTTP) but
 // the local DYMO Label service only enumerates older LabelWriter models
 // (e.g. 450) — it doesn't see the 5XL that's wired in via the macOS CUPS
@@ -95,6 +96,9 @@ interface DashboardOrder {
   storeName: string;
   channel: string | null;
   shipBy: string | null;
+  // True when the marketplace gave no ship-by and `shipBy` is OUR deadline
+  // (placed + 2 days, src/lib/shipping/own-deadline.ts).
+  shipByEstimated?: boolean;
   timeBucket: ShipByBucket | null;
   deliverBy: string | null;
   state: State;
@@ -136,6 +140,11 @@ interface DashboardOrder {
 interface PlanItem {
   id: string;
   orderNumber: string;
+  // The plan this item belongs to, when it is NOT the page's batch plan — set
+  // on items merged in from a single-order re-quote (which the server answers
+  // with a new plan). The buy must send THIS planId, or the server can't find
+  // the item and buys nothing. See src/lib/shipping/buy-targets.ts.
+  planId?: string | null;
   carrier: string | null;
   service: string | null;
   price: number | null;
@@ -1460,7 +1469,9 @@ export default function ShippingLabelsPage() {
         );
         // Whatever came back — rate or stop — is newer than what the row is
         // showing, so put it on the row.
-        if (item) mergeIntoPlan(withSavedBox(item));
+        // Tag it with the plan it came from: this single-order re-quote is
+        // a NEW plan, not the page's batch plan, and Buy must send this id.
+        if (item) mergeIntoPlan(withSavedBox({ ...item, planId: j.planId }));
         if (item && item.status !== "stop" && item.totalNetCharge) {
           // Valid rate → make it the override (the buy applies it over a fresh
           // re-fetch, so carrier/price/EDD + ship day all stay consistent).
@@ -2655,12 +2666,17 @@ export default function ShippingLabelsPage() {
           );
         }
 
-        const itemIds: string[] = planOrders.map((p) => p.id);
-        if (planId && itemIds.length > 0) {
-          setBuyMsg(`Buying ${itemIds.length} Amazon label(s)…`);
+        // Rows re-quoted one by one (package Save, ship-date change) live in
+        // their own single-order plans, so buy each plan's items under ITS
+        // planId — one /buy call per plan, each item still bought once.
+        const groups = groupBuyTargets(planOrders, planId);
+        const totalItems = groups.reduce((n, g) => n + g.items.length, 0);
+        if (totalItems > 0) setBuyMsg(`Buying ${totalItems} Amazon label(s)…`);
+        for (const group of groups) {
+          const itemIds: string[] = group.items.map((p) => p.id);
           // Map plan item → the row's manual rate override, if any.
           const overridesByItemId: Record<string, RateOverride> = {};
-          for (const planOrder of planOrders) {
+          for (const planOrder of group.items) {
             const oid = orderIdByNumber.get(planOrder.orderNumber);
             const ov = oid ? rateOverrides[oid] : undefined;
             if (ov) overridesByItemId[planOrder.id] = ov;
@@ -2669,7 +2685,7 @@ export default function ShippingLabelsPage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              planId,
+              planId: group.planId,
               itemIds,
               overrides: overridesByItemId,
               // Walmart orders buy via Walmart by default. The Veeqo buy path
@@ -3015,8 +3031,14 @@ export default function ShippingLabelsPage() {
       const buyable = (p: { orderNumber: string; status: string }) =>
         p.orderNumber === o.orderNumber &&
         (p.status === "pending" || (!!ov && p.status === "stop"));
-      let planId = plan?.planId ?? null;
-      let planItemId = plan?.orders.find(buyable)?.id ?? null;
+      // The item's OWN plan when it came from a per-order re-quote (after a
+      // package Save or ship-date change) — sending the batch planId with
+      // that item's id made the buy find nothing and come back with zeros.
+      const planned = plan?.orders.find(buyable) ?? null;
+      let planId = planned
+        ? (groupBuyTargets([planned], plan?.planId)[0]?.planId ?? null)
+        : null;
+      let planItemId = planned?.id ?? null;
       if (!planId || !planItemId) {
         const r = await fetch(
           `/api/shipping/plan?orderIds=${encodeURIComponent(o.orderId)}`
@@ -4835,8 +4857,20 @@ function OrderRow({
               · {order.storeName}
             </span>
             {order.shipBy && (
-              <span className="text-[length:var(--ship-date)] text-ink-3">
+              <span
+                className="text-[length:var(--ship-date)] text-ink-3"
+                title={
+                  order.shipByEstimated
+                    ? "Our deadline: order date + 2 days. The marketplace gave no ship-by for this order."
+                    : undefined
+                }
+              >
                 · Ship by {fmtDate(order.shipBy)}
+                {order.shipByEstimated && (
+                  <span className="ml-1 rounded border border-rule px-1 text-[length:var(--ship-badge)] text-ink-3">
+                    our deadline
+                  </span>
+                )}
               </span>
             )}
             {/* Shipping recipient — name + city/state — so the operator can

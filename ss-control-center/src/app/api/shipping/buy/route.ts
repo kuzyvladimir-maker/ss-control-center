@@ -212,6 +212,13 @@ export async function POST(request: NextRequest) {
     if (itemIds && itemIds.length > 0) {
       itemsToBuy = itemsToBuy.filter((i) => itemIds.includes(i.id));
     }
+    // An item id the caller asked for that isn't a buyable item of THIS plan
+    // used to vanish silently: the response said total 0, bought 0, errors 0
+    // and the operator saw a Buy that "did nothing" with zeros. Name it.
+    const requestedIds: string[] = Array.isArray(itemIds) ? itemIds : [];
+    const missingIds = requestedIds.filter(
+      (id) => !itemsToBuy.some((i) => i.id === id),
+    );
 
     const results = {
       bought: [] as {
@@ -243,8 +250,18 @@ export async function POST(request: NextRequest) {
         driveFileId: string | null;
       }[],
       errors: [] as { orderNumber: string; error: string; itemId: string }[],
-      total: itemsToBuy.length,
+      total: itemsToBuy.length + missingIds.length,
     };
+    for (const id of missingIds) {
+      const stale = plan.items.find((i) => i.id === id);
+      results.errors.push({
+        orderNumber: stale?.orderNumber ?? "",
+        error: stale
+          ? `This order's rate is no longer buyable (status: ${stale.status}). Press Refresh and try again.`
+          : "This order's rate belongs to a different plan — press Refresh and try again. Nothing was bought.",
+        itemId: id,
+      });
+    }
 
     // Buy the selected orders concurrently. This used to be a plain
     // sequential loop, so a five-label bulk buy cost the SUM of five ~10-15s
