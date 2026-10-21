@@ -404,6 +404,17 @@ export async function GET(request: NextRequest) {
       orderBy: { startedAt: "desc" },
       select: { status: true, error: true, startedAt: true },
     });
+    // Last known-good run — used to report how long the feed has ACTUALLY
+    // been down when the latest attempt errored (latestOrdersAttempt.startedAt
+    // is misleadingly recent since the cron keeps retrying on schedule).
+    const lastOrdersSuccess =
+      latestOrdersAttempt?.status === "error"
+        ? await prisma.syncLog.findFirst({
+            where: { jobName: "orders-amazon", status: "done" },
+            orderBy: { startedAt: "desc" },
+            select: { startedAt: true },
+          })
+        : null;
 
     const ordersByStore = ordersByStoreRaw
       .filter((r) => r.storeIndex != null)
@@ -461,11 +472,16 @@ export async function GET(request: NextRequest) {
     const ordersSyncAgeMs = latestOrdersAttempt
       ? now.getTime() - latestOrdersAttempt.startedAt.getTime()
       : Infinity;
-    const ordersStale = ordersSyncAgeMs > ORDERS_STALE_MS;
+    // Age alone isn't enough: the cron retries every 2h on schedule, so a
+    // persistent failure (e.g. invalid_client for 30h straight, 2026-10-21)
+    // always has a FRESH "latest attempt" timestamp even though every single
+    // attempt errored — age-only never crossed the threshold and the banner
+    // never fired. An error status is itself stale regardless of how recent.
+    const ordersStale = ordersSyncAgeMs > ORDERS_STALE_MS || latestOrdersAttempt?.status === "error";
     if (ordersStale) {
       dataIssues.push(
         latestOrdersAttempt?.status === "error"
-          ? `Amazon orders sync failing since ${fmtDay(latestOrdersAttempt.startedAt)}: ${latestOrdersAttempt.error ?? "unknown error"}.`
+          ? `Amazon orders sync failing since ${fmtDay(lastOrdersSuccess?.startedAt ?? latestOrdersAttempt.startedAt)}: ${latestOrdersAttempt.error ?? "unknown error"}.`
           : `Amazon orders sync: no run${latestOrdersAttempt ? ` since ${fmtDay(latestOrdersAttempt.startedAt)}` : ""} — Sales/Awaiting ship may be stale.`
       );
     }

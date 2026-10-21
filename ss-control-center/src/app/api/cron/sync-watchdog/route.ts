@@ -34,7 +34,13 @@ export async function GET(request: NextRequest) {
     orderBy: { startedAt: "desc" },
   });
   const age = latest ? Date.now() - latest.startedAt.getTime() : Infinity;
-  if (age <= STALE_MS) {
+  // Age-only is not enough: the 2-hourly cron keeps a FRESH "latest attempt"
+  // timestamp even while every single attempt errors (2026-10-21: invalid_client
+  // for 30h straight never tripped this check because age never exceeded 2h
+  // between ticks). A latest attempt that itself errored is stale regardless
+  // of how recently it ran.
+  const erroring = latest?.status === "error";
+  if (age <= STALE_MS && !erroring) {
     return NextResponse.json({ ok: true, stale: false, ageMs: age === Infinity ? null : age });
   }
 
@@ -85,7 +91,17 @@ export async function GET(request: NextRequest) {
   });
   let telegramSent = false;
   if (!recentAlert) {
-    const hours = (age / 3600000).toFixed(1);
+    // `age` is time since the latest ATTEMPT, which is misleadingly small
+    // while a persistent failure keeps retrying on schedule — report time
+    // since the last actual SUCCESS instead so the alert states the real
+    // outage duration (e.g. "30.1h", not "0.1h").
+    const lastSuccess = await prisma.syncLog.findFirst({
+      where: { jobName: "orders-amazon", status: "done" },
+      orderBy: { startedAt: "desc" },
+      select: { startedAt: true },
+    });
+    const outageMs = lastSuccess ? Date.now() - lastSuccess.startedAt.getTime() : age;
+    const hours = (outageMs / 3600000).toFixed(1);
     const errorText = results.find((r) => !r.success)?.error ?? "unknown error";
     const store = await prisma.store.findFirst({
       where: { channel: "Amazon", active: true },

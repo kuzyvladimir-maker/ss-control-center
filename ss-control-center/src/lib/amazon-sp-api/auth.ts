@@ -4,6 +4,20 @@
  * Falls back to shared AMAZON_SP_CLIENT_ID / AMAZON_SP_CLIENT_SECRET if per-store not set
  */
 
+// Some deploy platforms (incl. Vercel) return env values wrapped in literal
+// quote characters in certain runtime paths (same issue already worked
+// around in lib/prisma.ts and amazon-sp-api/client.ts). Left unstripped here,
+// a wrapped AMAZON_SP_CLIENT_SECRET_STORE{N} makes LWA reject it as
+// `invalid_client` — this is what caused the store1 orders-amazon sync to
+// fail silently for 32h on 2026-10-21: whichever runtime happened to serve
+// the cron got a corrupted secret, while other paths (e.g. an interactive
+// request) got the clean one, so the failure looked intermittent/transient
+// instead of a fixable code bug.
+function cleanEnv(value: string | undefined): string | undefined {
+  if (!value) return value;
+  return value.trim().replace(/^['"]|['"]$/g, "");
+}
+
 const LWA_ENDPOINT = "https://api.amazon.com/auth/o2/token";
 
 const tokenCache = new Map<string, { token: string; expiresAt: number }>();
@@ -17,16 +31,15 @@ interface StoreCredentials {
 /** Get credentials for a store index (1-5). Per-store vars take priority over shared. */
 export function getStoreCredentials(storeIndex: number): StoreCredentials | null {
   const n = storeIndex;
-  const refreshToken =
-    process.env[`AMAZON_SP_REFRESH_TOKEN_STORE${n}`];
+  const refreshToken = cleanEnv(process.env[`AMAZON_SP_REFRESH_TOKEN_STORE${n}`]);
   if (!refreshToken) return null;
 
   const clientId =
-    process.env[`AMAZON_SP_CLIENT_ID_STORE${n}`] ||
-    process.env.AMAZON_SP_CLIENT_ID;
+    cleanEnv(process.env[`AMAZON_SP_CLIENT_ID_STORE${n}`]) ||
+    cleanEnv(process.env.AMAZON_SP_CLIENT_ID);
   const clientSecret =
-    process.env[`AMAZON_SP_CLIENT_SECRET_STORE${n}`] ||
-    process.env.AMAZON_SP_CLIENT_SECRET;
+    cleanEnv(process.env[`AMAZON_SP_CLIENT_SECRET_STORE${n}`]) ||
+    cleanEnv(process.env.AMAZON_SP_CLIENT_SECRET);
 
   if (!clientId || !clientSecret) return null;
 
