@@ -97,6 +97,14 @@ function startOfTodayET(now: Date): Date {
 // 2026-06-30, Customer Hub no message since 2026-05-30 — both read "0").
 const STALE_MS = 2 * 86400000;
 
+// The Amazon orders feed is on a 2-hourly cron (plus an on-page-load quick
+// sync, see /api/sync/quick) — anything older than this means both the cron
+// AND the last page view failed to refresh it. Same threshold the
+// sync-watchdog cron pages on (2026-10-21: orders-amazon failed silently for
+// 32h with `invalid_client` — an expired Amazon LWA client secret for
+// store1 — before anyone noticed because this tile had no stale state).
+const ORDERS_STALE_MS = 2 * 3600000;
+
 function fmtDay(d: Date): string {
   return d.toLocaleDateString("en-US", {
     month: "short",
@@ -385,6 +393,18 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    // Most recent orders-amazon attempt of ANY outcome (done or error) — used
+    // to surface a credential/auth failure even when a last-success exists
+    // from hours ago (2026-10-21: `invalid_client` on every run for 32h,
+    // every cron wrote a SyncLog "error" row, but the data-issues banner only
+    // looked at ReportSyncJob 403s, so the dead orders feed was invisible —
+    // Sales/Awaiting tiles kept rendering stale numbers with no stale flag).
+    const latestOrdersAttempt = await prisma.syncLog.findFirst({
+      where: { jobName: "orders-amazon" },
+      orderBy: { startedAt: "desc" },
+      select: { status: true, error: true, startedAt: true },
+    });
+
     const ordersByStore = ordersByStoreRaw
       .filter((r) => r.storeIndex != null)
       .map((r) => ({
@@ -432,6 +452,22 @@ export async function GET(request: NextRequest) {
       if (r.lastOrderAt && now.getTime() - new Date(r.lastOrderAt).getTime() > 3 * 86400000) {
         dataIssues.push(`${label}: no new orders since ${fmtDay(new Date(r.lastOrderAt))}.`);
       }
+    }
+    // Orders feed itself — catches auth failures (LWA invalid_client,
+    // refresh token revoked) that never produce an HTTP 403 and so were
+    // invisible to the check above. Keyed off the latest attempt of ANY
+    // outcome so a string of `error` rows (every cron tick failing the
+    // same way) is reported even though the last *success* may be recent.
+    const ordersSyncAgeMs = latestOrdersAttempt
+      ? now.getTime() - latestOrdersAttempt.startedAt.getTime()
+      : Infinity;
+    const ordersStale = ordersSyncAgeMs > ORDERS_STALE_MS;
+    if (ordersStale) {
+      dataIssues.push(
+        latestOrdersAttempt?.status === "error"
+          ? `Amazon orders sync failing since ${fmtDay(latestOrdersAttempt.startedAt)}: ${latestOrdersAttempt.error ?? "unknown error"}.`
+          : `Amazon orders sync: no run${latestOrdersAttempt ? ` since ${fmtDay(latestOrdersAttempt.startedAt)}` : ""} — Sales/Awaiting ship may be stale.`
+      );
     }
     const healthStale =
       !latestSnapshot || now.getTime() - latestSnapshot.createdAt.getTime() > STALE_MS;
@@ -563,6 +599,11 @@ export async function GET(request: NextRequest) {
       },
       walmart: walmartPayload,
       syncedAt,
+      sync: {
+        ordersStale,
+        ordersLastAttemptAt: latestOrdersAttempt?.startedAt.toISOString() ?? null,
+        ordersLastError: latestOrdersAttempt?.status === "error" ? latestOrdersAttempt.error : null,
+      },
     });
   } catch (error) {
     console.error("[dashboard/summary] GET failed:", error);
@@ -594,5 +635,6 @@ function emptyResponse() {
     adjustments: { monthlyTotal: 0, unreviewed: 0 },
     walmart: null,
     syncedAt: new Date().toISOString(),
+    sync: { ordersStale: false, ordersLastAttemptAt: null, ordersLastError: null },
   };
 }

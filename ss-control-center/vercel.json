@@ -19,6 +19,10 @@
       "schedule": "0 */2 * * *"
     },
     {
+      "path": "/api/cron/sync-watchdog",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/frozen-analysis",
       "schedule": "0 8 * * *"
     },

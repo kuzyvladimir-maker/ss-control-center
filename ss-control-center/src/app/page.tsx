@@ -68,6 +68,11 @@ interface DashboardData {
     healthStatus: "no-data" | "healthy" | "warning" | "critical";
   } | null;
   syncedAt: string;
+  sync?: {
+    ordersStale: boolean;
+    ordersLastAttemptAt: string | null;
+    ordersLastError: string | null;
+  };
   error?: string;
 }
 
@@ -195,6 +200,20 @@ export default function DashboardPage() {
         );
       })
       .catch(() => setLiveAwaiting(null));
+    // Every page load/refresh pulls a fresh Amazon orders window (not just
+    // the 2-hourly cron) so Sales/Awaiting reflect what changed since the
+    // last view. Debounced server-side (SyncLog lock, ~45s) so rapid repeat
+    // loads don't hammer SP-API; capped client-side at 9s so a slow/stuck
+    // call never blocks the tiles from rendering with whatever's already
+    // in the DB.
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 9000);
+      await fetch("/api/sync/quick", { method: "POST", signal: ctrl.signal }).catch(() => null);
+      clearTimeout(timeout);
+    } catch {
+      // ignore — summary below still loads whatever's in the DB
+    }
     try {
       const summaryQs = toQueryString();
       // Selected store names so we can ask Veeqo for only those marketplaces.
@@ -214,7 +233,13 @@ export default function DashboardPage() {
         )
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
-        fetch("/api/customer-hub/messages?limit=4&status=active")
+        // limit=50, not 4: the API sorts active cases oldest-first (closest
+        // to the reply deadline), so a tiny limit can return only ancient
+        // abandoned messages that the 30-day filter below then drops to
+        // zero — the panel read "No open cases" while the tile next to it
+        // said "Cases open 9" (2026-10-21). Filter+slice(0,4) below still
+        // caps what's rendered.
+        fetch("/api/customer-hub/messages?limit=50&status=active")
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
       ]);
@@ -387,7 +412,11 @@ export default function DashboardPage() {
     <div className="space-y-5">
       <PageHead
         title="Dashboard"
-        syncChip={data?.syncedAt && <SyncChip when={data.syncedAt} />}
+        syncChip={
+          data?.syncedAt && (
+            <SyncChip when={data.syncedAt} stale={data.sync?.ordersStale} />
+          )
+        }
         subtitle={
           <>
             <span>{dateString}</span>
@@ -835,7 +864,13 @@ export default function DashboardPage() {
           <Panel>
             <PanelHeader
               title="Customer queue"
-              count={data?.customerService.openCases ?? cases.length}
+              // Count of what this panel actually lists (recent, live-channel
+              // cases) — NOT the "Cases open" KPI tile's count, which also
+              // includes cases older than 30 days. The two used to both read
+              // from `openCases`, so the header said "9" over a list that
+              // rendered "No open cases" whenever the oldest 4 of those 9
+              // were all stale backlog (2026-10-21).
+              count={cases.length}
               right={
                 <Link
                   href="/customer-hub"

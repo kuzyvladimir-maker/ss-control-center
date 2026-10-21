@@ -76,8 +76,18 @@ function getServerMinuteBucket(): number {
   return NEVER;
 }
 
-/** Last-sync chip — green-soft pill with mono text. */
-export function SyncChip({ when }: { when: string | Date | null | undefined }) {
+/** Last-sync chip — green-soft pill with mono text; amber + "Stale" when the
+ *  caller knows the underlying feed failed to refresh (see `stale` prop). */
+export function SyncChip({
+  when,
+  stale,
+}: {
+  when: string | Date | null | undefined;
+  /** Caller-known staleness (e.g. the orders sync has been failing) —
+   *  renders the pill as a warning even though `when` is a real timestamp,
+   *  because a real-but-old timestamp still reads as "fine" at a glance. */
+  stale?: boolean;
+}) {
   const minuteBucket = useSyncExternalStore(
     subscribeMinute,
     getMinuteBucket,
@@ -94,16 +104,18 @@ export function SyncChip({ when }: { when: string | Date | null | undefined }) {
     0,
     Math.round((minuteBucket * 60_000 - date.getTime()) / 60000)
   );
-  const label =
-    minsAgo === 0
-      ? "Synced just now"
-      : minsAgo < 60
-        ? `Synced ${minsAgo}m ago`
-        : `Synced ${Math.round(minsAgo / 60)}h ago`;
+  const timeLabel =
+    minsAgo === 0 ? "just now" : minsAgo < 60 ? `${minsAgo}m ago` : `${Math.round(minsAgo / 60)}h ago`;
+  const label = stale ? `Stale · updated ${timeLabel}` : `Updated ${timeLabel}`;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded bg-green-soft px-2 py-0.5 text-[11px] font-mono text-green-ink">
-      <span className="live-dot" /> {label}
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-mono",
+        stale ? "bg-amber-100 text-amber-900" : "bg-green-soft text-green-ink"
+      )}
+    >
+      <span className={stale ? "h-1.5 w-1.5 rounded-full bg-amber-600" : "live-dot"} /> {label}
     </span>
   );
 }
