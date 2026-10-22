@@ -1,0 +1,5 @@
+command=["/opt/homebrew/Cellar/node@24/24.18.0/bin/node","node_modules/eslint/bin/eslint.js","scripts/verify-and-run-walmart-listing-integrity-control.mjs","scripts/freeze-walmart-listing-integrity-control-release.mjs","scripts/walmart-listing-integrity-successor-worker.ts","scripts/walmart-listing-integrity-catalog.mjs","scripts/walmart-listing-integrity-control-worker.ts","scripts/__tests__/walmart-listing-integrity-control-worker.test.ts","scripts/__tests__/walmart-listing-integrity-successor-worker.test.ts","scripts/__tests__/verify-and-run-walmart-listing-integrity-control.test.mjs","src/lib/walmart/listing-integrity-production-cycle.server.ts","src/lib/walmart/listing-integrity-production-diagnosis.server.ts","src/lib/walmart/listing-integrity-production-remediation.server.ts","src/lib/walmart/listing-integrity-single-clean-qualification.server.ts"]
+exit=0
+stdout:
+
+stderr:

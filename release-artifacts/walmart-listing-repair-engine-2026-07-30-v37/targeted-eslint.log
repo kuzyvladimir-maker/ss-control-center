@@ -1,0 +1,5 @@
+command=["/opt/homebrew/Cellar/node@24/24.18.0/bin/node","node_modules/eslint/bin/eslint.js","scripts/verify-and-run-walmart-listing-full-surface.mjs","scripts/walmart-listing-full-surface-operator.ts","scripts/walmart-listing-full-surface-owner-signer.mjs","scripts/capture-walmart-full-surface-baseline.ts","scripts/build-maruchan-roast-chicken-assets.ts","scripts/freeze-walmart-listing-full-surface-release.mjs","src/lib/walmart/listing-integrity-full-surface-authority.ts","src/lib/walmart/listing-integrity-full-surface-ledger.ts","src/lib/walmart/listing-integrity-full-surface-transport.ts","src/lib/walmart/listing-integrity-full-surface.ts","src/lib/walmart/maruchan-roast-chicken-repair.ts","src/lib/walmart/__tests__/listing-integrity-full-surface-authority.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface-ledger.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface-transport.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface.test.ts","src/lib/walmart/__tests__/maruchan-roast-chicken-repair.test.ts"]
+exit=0
+stdout:
+
+stderr:

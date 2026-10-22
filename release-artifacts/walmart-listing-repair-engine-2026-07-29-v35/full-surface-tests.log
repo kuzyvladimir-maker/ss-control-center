@@ -1,0 +1,38 @@
+command=["/opt/homebrew/Cellar/node@24/24.18.0/bin/node","--import","tsx","--test","src/lib/walmart/__tests__/listing-integrity-full-surface-authority.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface-ledger.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface-transport.test.ts","src/lib/walmart/__tests__/listing-integrity-full-surface.test.ts","src/lib/walmart/__tests__/maruchan-roast-chicken-repair.test.ts"]
+exit=0
+stdout:
+✔ verifies one exact domain-separated operation permit (5.919333ms)
+✔ rejects plan, operation, account, payload and ledger substitution (1.511208ms)
+✔ rejects expired, incorrectly signed and cross-domain signatures (0.893083ms)
+✔ durably burns an authorization before the mutation and rejects replay (26.799375ms)
+✔ unknown mutation outcome becomes terminal and can never replay (17.445292ms)
+✔ accepted feed permits GET-only resume and success requires readback (22.418208ms)
+✔ reopening the same custody preserves identity and consumed state (15.842084ms)
+✔ sends one exact mutation, reuses one token for readback and never retries (23.786125ms)
+✔ classifies a mutation network exception as unknown and does not retry (0.437209ms)
+✔ capability registry covers item, commercial, availability, fulfillment and lifecycle planes (1.116ms)
+✔ builds a sealed three-SKU group item repair followed by exact price writes (8.843667ms)
+✔ rejects an operation scoped to an unreviewed SKU (0.2995ms)
+✔ rejects a non-canonical operation order (0.134333ms)
+✔ retirement needs its own exact irreversible decision (0.09325ms)
+✔ outcome state machine advances only after exact readback success (0.39475ms)
+✔ unknown result stops the plan and cannot replay the request (0.221375ms)
+✔ feed evaluation preserves exact Walmart item-level failure codes (0.167916ms)
+✔ feed evaluation accepts only an exact all-SKU success set (0.083625ms)
+✔ compiles exact Roast Chicken identity and correct Walmart count semantics (0.606583ms)
+✔ splits text, image and variant planes without mutating brand (0.301042ms)
+✔ prices meet the exact 30% contribution-margin floor (0.767291ms)
+✔ builds a free four-state template from Walmart's exact region taxonomy (0.349583ms)
+✔ national weight rate preserves 30% margin at observed worst-case quotes (0.081ms)
+✔ binds all three exact SKUs to one template and one warehouse (0.07075ms)
+✔ catalog identity requires the exact sealed SKU, UPC and item ID set (0.522334ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 380.6925
+
+stderr:

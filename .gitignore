@@ -52,3 +52,24 @@ release-artifacts/**
 !release-artifacts/*/resolution.json
 !release-artifacts/*/*.log
 .claude/settings.local.json
+
+# Local artifacts — swept into the index by a `git add -A` (cleaned 2026-10-22).
+# Files stay on disk, never committed (AGENTS.md §3–4).
+ss-control-center/data/audits/
+ss-control-center/data/batch200/waves/
+ss-control-center/data/batch300/
+ss-control-center/data/adjustments-audit/
+ss-control-center/data/adjustments_*.json
+# Buyer names/messages — customer data, never in git.
+ss-control-center/data/customer-hub-owner-replies.json
+ss-control-center/.tmp/
+ss-control-center/.tmp_*.json
+owner-review/walmart-new-sku-preview-gallery/
+*.bak-*
+# One-off agent handoff notes at the repo root (already tracked ones stay tracked).
+/HANDOFF_*.md
+/SUMMARY_*.md
+# Scratch scripts (tsconfig already excludes them from the build).
+ss-control-center/scripts/_*.ts
+ss-control-center/data/batch200/
+/data/audits/

@@ -1,0 +1,24 @@
+command=["/opt/homebrew/Cellar/node@24/24.18.0/bin/node","--experimental-strip-types","--test","src/lib/walmart/__tests__/listing-integrity-catalog-orchestrator.test.mjs"]
+exit=0
+stdout:
+(node:14816) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///private/tmp/wli-control-v10-snapshot.nZsaVO/src/lib/walmart/listing-integrity-catalog-orchestrator.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /private/tmp/wli-control-v10-snapshot.nZsaVO/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ full catalog is reconciled exactly once and every SKU gets a disposition (2.943584ms)
+✔ title/content quantity conflict is deterministic and never becomes PASS (0.274833ms)
+✔ scan plan is exhaustive for reusable assets, bounded, and exactly rebuildable (2.512333ms)
+✔ partition boundaries never split the images of one listing (1.316417ms)
+✔ duplicate catalog SKU and non-atomic mirror fail closed (0.251375ms)
+✔ authoritative census binds exact ITEM_CATALOG provenance and expires closed (0.208125ms)
+✔ authoritative census rejects report/mirror count or timestamp mismatch (0.103625ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.086291
+
+stderr:

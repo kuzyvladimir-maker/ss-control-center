@@ -2,6 +2,120 @@
   "_comment": "СГЕНЕРИРОВАНО scripts/release-pins.mjs — не редактировать руками. Источник истины: содержимое release-artifacts/ на диске.",
   "generatedFrom": "release-artifacts/",
   "releases": {
+    "walmart-listing-integrity-control-2026-08-01-v1": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v1",
+      "manifestSha256": "16740713a68faee45dc0731fcb35c250bf9cac248253eed8751a6dbd4754c1e7",
+      "claimedSha256": "16740713a68faee45dc0731fcb35c250bf9cac248253eed8751a6dbd4754c1e7",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v10": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v10",
+      "manifestSha256": "33f6e53ff6bbede1c7ed880f946d8548fd0402b6daab24dc609e3ac5570fe8a5",
+      "claimedSha256": "33f6e53ff6bbede1c7ed880f946d8548fd0402b6daab24dc609e3ac5570fe8a5",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v11": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v11",
+      "manifestSha256": "a4aaeb51a4b167bc9bfdf9c1ca95f93898a03c9c02d48f61ead656017f069eb3",
+      "claimedSha256": "a4aaeb51a4b167bc9bfdf9c1ca95f93898a03c9c02d48f61ead656017f069eb3",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v12": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v12",
+      "manifestSha256": "795b75dd2ecdce6d55065d0a885babe00a72279f25cbafe610f73965e5b68926",
+      "claimedSha256": "795b75dd2ecdce6d55065d0a885babe00a72279f25cbafe610f73965e5b68926",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v13": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v13",
+      "manifestSha256": "3856350a5a61172ffd692468e2047ccece239d24f64381bded95d382b102c869",
+      "claimedSha256": "3856350a5a61172ffd692468e2047ccece239d24f64381bded95d382b102c869",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v14": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v14",
+      "manifestSha256": "1373d2a5772153732d66ca4eb961ece3370c05d67ce23e01a3eaa35fb0d392b9",
+      "claimedSha256": "1373d2a5772153732d66ca4eb961ece3370c05d67ce23e01a3eaa35fb0d392b9",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v15": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v15",
+      "manifestSha256": "b15d684503ad8baeaf1543f33c8fb2e1f1cfb6a541bbd3a2bbec86633e258e19",
+      "claimedSha256": "b15d684503ad8baeaf1543f33c8fb2e1f1cfb6a541bbd3a2bbec86633e258e19",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v16": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v16",
+      "manifestSha256": "adfe475fe5c52085a4dd29b5d9f0bb53b8b6a45b12d16ad08b16b7bf458dba3b",
+      "claimedSha256": "adfe475fe5c52085a4dd29b5d9f0bb53b8b6a45b12d16ad08b16b7bf458dba3b",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v17": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v17",
+      "manifestSha256": "86c91ce5664cf55050e195b9a2c5ad21ee62e85dd8dea8722d5fcfed414e03ce",
+      "claimedSha256": "86c91ce5664cf55050e195b9a2c5ad21ee62e85dd8dea8722d5fcfed414e03ce",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v2": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v2",
+      "manifestSha256": "f9a255bcfefad3f0f4e5a5887a967daae8b4e282e100619c9329f15cfb42a402",
+      "claimedSha256": "f9a255bcfefad3f0f4e5a5887a967daae8b4e282e100619c9329f15cfb42a402",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v3": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v3",
+      "manifestSha256": "14b2befd9214ba88199feb542bf6af2ae976a1d512bf004e817852bb1bec1194",
+      "claimedSha256": "14b2befd9214ba88199feb542bf6af2ae976a1d512bf004e817852bb1bec1194",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v4": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v4",
+      "manifestSha256": "5a8d3fbf84cf92ec1694f01315517a96a5ebd7a9df0f9ecdc71c0ad49c7f10c5",
+      "claimedSha256": "5a8d3fbf84cf92ec1694f01315517a96a5ebd7a9df0f9ecdc71c0ad49c7f10c5",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v5": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v5",
+      "manifestSha256": "daef082fb30f885e66293899d1562c6eff92ef2b61ca852f61ac17d9a1709831",
+      "claimedSha256": "daef082fb30f885e66293899d1562c6eff92ef2b61ca852f61ac17d9a1709831",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v6": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v6",
+      "manifestSha256": "355078398c2ffe0192700585c3ce36190d4ea87ab9598a9c038551f2086b83f7",
+      "claimedSha256": "355078398c2ffe0192700585c3ce36190d4ea87ab9598a9c038551f2086b83f7",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v7": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v7",
+      "manifestSha256": "67bb90377866df74712a51c79961098f38a66ed580b271003f48f9b83ba71a7c",
+      "claimedSha256": "67bb90377866df74712a51c79961098f38a66ed580b271003f48f9b83ba71a7c",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v8": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v8",
+      "manifestSha256": "81ac0087e7d60b7cc056089dbc08fe7124b1ff046fa083c79d7a3c5484d78875",
+      "claimedSha256": "81ac0087e7d60b7cc056089dbc08fe7124b1ff046fa083c79d7a3c5484d78875",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-01-v9": {
+      "release": "walmart-listing-integrity-control-2026-08-01-v9",
+      "manifestSha256": "6ff23d0e976f18cc67b43721a139d1befb9113102cfda895a80c2737672ad0d9",
+      "claimedSha256": "6ff23d0e976f18cc67b43721a139d1befb9113102cfda895a80c2737672ad0d9",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-02-v18": {
+      "release": "walmart-listing-integrity-control-2026-08-02-v18",
+      "manifestSha256": "46c62544a76e8f40a39ad6be8d08cc8780e919774d0acaddbebfeb001d4fe0f0",
+      "claimedSha256": "46c62544a76e8f40a39ad6be8d08cc8780e919774d0acaddbebfeb001d4fe0f0",
+      "claimMatches": true
+    },
+    "walmart-listing-integrity-control-2026-08-02-v19": {
+      "release": "walmart-listing-integrity-control-2026-08-02-v19",
+      "manifestSha256": "3007bb154d3a4422e0d92f667911fe32e23070acac615dc053b0aab6edb97fa9",
+      "claimedSha256": "3007bb154d3a4422e0d92f667911fe32e23070acac615dc053b0aab6edb97fa9",
+      "claimMatches": true
+    },
     "walmart-listing-repair-engine-2026-07-28-v31": {
       "release": "walmart-listing-repair-engine-2026-07-28-v31",
       "manifestSha256": "01469d9e64a1d41df0a64b3b38a22e7741d579c2910760afae94c72223712c1d",
@@ -18,6 +132,102 @@
       "release": "walmart-listing-repair-engine-2026-07-29-v33",
       "manifestSha256": "cf31377403c4036b0f81a60b9084f71ee9ebb2cb49f9ef589c247ced44a398cb",
       "claimedSha256": "cf31377403c4036b0f81a60b9084f71ee9ebb2cb49f9ef589c247ced44a398cb",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-07-29-v35": {
+      "release": "walmart-listing-repair-engine-2026-07-29-v35",
+      "manifestSha256": "b13deeda53f8bc22a407ef40bfa7d115048350d496ccd3ca84e20d0cf8ece510",
+      "claimedSha256": "b13deeda53f8bc22a407ef40bfa7d115048350d496ccd3ca84e20d0cf8ece510",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-07-29-v36": {
+      "release": "walmart-listing-repair-engine-2026-07-29-v36",
+      "manifestSha256": "c569826d7773643281762fadff2078f2680f4b48242825c16590db43c56cce05",
+      "claimedSha256": "c569826d7773643281762fadff2078f2680f4b48242825c16590db43c56cce05",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-07-30-v37": {
+      "release": "walmart-listing-repair-engine-2026-07-30-v37",
+      "manifestSha256": "2271ab7d5082cbfbfcb2c5f0cbb6670c635aae703087a2715a4e694e4c6fd7d4",
+      "claimedSha256": "2271ab7d5082cbfbfcb2c5f0cbb6670c635aae703087a2715a4e694e4c6fd7d4",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v38": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v38",
+      "manifestSha256": "f7b6d96c61d4f51314b9411520b21753cfee77bdd6c947c3d89731c9112541f2",
+      "claimedSha256": "f7b6d96c61d4f51314b9411520b21753cfee77bdd6c947c3d89731c9112541f2",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v39": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v39",
+      "manifestSha256": "8b31432b7d8b8d65651aae17d3e246a290dfbf2f9412aecb715aca32dfa9acd2",
+      "claimedSha256": "8b31432b7d8b8d65651aae17d3e246a290dfbf2f9412aecb715aca32dfa9acd2",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v40": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v40",
+      "manifestSha256": "60626344ba3aa162ca1799efa16b34259331ccb82a00ea7ee4de53a9f6ab698f",
+      "claimedSha256": "60626344ba3aa162ca1799efa16b34259331ccb82a00ea7ee4de53a9f6ab698f",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v41": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v41",
+      "manifestSha256": "e0bba95aa54cdda6f77e6ef3a50551d009629cd721ad110c19483f9d2672e682",
+      "claimedSha256": "e0bba95aa54cdda6f77e6ef3a50551d009629cd721ad110c19483f9d2672e682",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v42": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v42",
+      "manifestSha256": "0c9f4ea3b6b58429bf565116aadbdf637c2e654194dd55c5f95ebd471448eee8",
+      "claimedSha256": "0c9f4ea3b6b58429bf565116aadbdf637c2e654194dd55c5f95ebd471448eee8",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v43": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v43",
+      "manifestSha256": "91fd9b0513fbdf54b8b2fec27e448b47ddbdd6c6b7cfb16e4f0e38f0ee07e9c6",
+      "claimedSha256": "91fd9b0513fbdf54b8b2fec27e448b47ddbdd6c6b7cfb16e4f0e38f0ee07e9c6",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v44": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v44",
+      "manifestSha256": "ed79bf4d129747373ca2bb2a4f9fe298701c646d99fbc3195ec75d6f19d18084",
+      "claimedSha256": "ed79bf4d129747373ca2bb2a4f9fe298701c646d99fbc3195ec75d6f19d18084",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v45": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v45",
+      "manifestSha256": "3a09386a491076b097b23a7a9fda7ac59eec1a9bdd1d55f5101a3e8dc615994e",
+      "claimedSha256": "3a09386a491076b097b23a7a9fda7ac59eec1a9bdd1d55f5101a3e8dc615994e",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v46": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v46",
+      "manifestSha256": "ee69e14954e868baa51cc1a22d5b8e6ab40cec1ed8f95110cda693680152c945",
+      "claimedSha256": "ee69e14954e868baa51cc1a22d5b8e6ab40cec1ed8f95110cda693680152c945",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v47": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v47",
+      "manifestSha256": "56fd6b3df340da7b57da4b99cbd246e1879fe4319d4833f714fa1780c14692db",
+      "claimedSha256": "56fd6b3df340da7b57da4b99cbd246e1879fe4319d4833f714fa1780c14692db",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v48": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v48",
+      "manifestSha256": "c77c68a109d38ec914fe5c5d14529198cc11fd7982def9c7426fad048f2e4413",
+      "claimedSha256": "c77c68a109d38ec914fe5c5d14529198cc11fd7982def9c7426fad048f2e4413",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v49": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v49",
+      "manifestSha256": "8979ab02c104620ff51eeb50f790521d59f64ebf40de768494a0fcc30b88b141",
+      "claimedSha256": "8979ab02c104620ff51eeb50f790521d59f64ebf40de768494a0fcc30b88b141",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-08-01-v50": {
+      "release": "walmart-listing-repair-engine-2026-08-01-v50",
+      "manifestSha256": "65f6fff8599a8001a5a3b1dfcdaca149aae2f0456c90cc41a6b164a6ec953aff",
+      "claimedSha256": "65f6fff8599a8001a5a3b1dfcdaca149aae2f0456c90cc41a6b164a6ec953aff",
       "claimMatches": true
     },
     "walmart-new-sku-pilot-engine-2026-07-29-v33": {

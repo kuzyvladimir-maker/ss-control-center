@@ -1,0 +1,30 @@
+command=["/opt/homebrew/Cellar/node@24/24.18.0/bin/node","--import","tsx","--test","src/lib/walmart/__tests__/listing-integrity-remediation-ledger.test.mjs"]
+exit=0
+stdout:
+✔ bootstrap pins exact custody identity, 0700/0400 modes, and honest threat claims (20.196958ms)
+✔ REQUESTING durably burns one permit and binds exact manifest/payload before network (71.396375ms)
+✔ definite accepted POST is durable and permits only GET-only continuation (111.938875ms)
+✔ Walmart feed IDs containing @ survive ACCEPTED and terminal rereads (129.171209ms)
+✔ SUCCEEDED requires ACCEPTED plus exact feed-status evidence and cumulative head (140.76525ms)
+✔ SUCCEEDED cannot skip ACCEPTED and terminal may occur after permit expiry elsewhere (108.0685ms)
+✔ zero-call FAILED burns permit without claiming marketplace evidence (106.679625ms)
+✔ unknown one-call outcome becomes AMBIGUOUS and can never replay (109.862792ms)
+✔ CLAIMED crash state is permanently consumed and cannot be claimed again (76.178792ms)
+✔ split claim→REQUESTING enforces exact durable claim and request hashes (56.501ms)
+✔ deleted event file is detected by cumulative head and cannot reopen (90.513458ms)
+✔ restoring an older head after a later event is detected as rollback (84.913083ms)
+✔ self-consistent forged head with a missing exact event is rejected (88.234459ms)
+✔ unexpected extra file and incomplete operation lock fail closed (27.122167ms)
+✔ world-accessible directory, symlink path, and hardlinked artifact are rejected (39.39625ms)
+✔ concurrent claims cannot both pass the single-custody operation fence (50.528375ms)
+✔ terminal evidence pair and outcome truth constraints fail closed (89.506917ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1569.512875
+
+stderr:
