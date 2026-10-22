@@ -7,11 +7,13 @@ import {
   getShippingRates,
   extractVasFromRate,
   updateAllocationPackage,
+  veeqoFetch,
 } from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
-import { todayNY } from "@/lib/shipping/dates";
+import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
+import { matchLiveRate } from "@/lib/shipping/requote-match";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
@@ -453,60 +455,91 @@ export async function POST(request: NextRequest) {
         // operator, but the modal is, so we surface the diagnostic
         // straight through the UI for one-shot debugging.
         let rateDiagnostic = "";
-        try {
-          const liveResp = await stage(stageTotals, "veeqoRateRequote", () =>
-            getShippingRates(item.allocationId!),
-          );
-          const liveRates: Record<string, unknown>[] =
-            (liveResp?.available as Record<string, unknown>[]) || [];
-          // CRITICAL: match by `name` (= the per-service UUID), NOT by
-          // `remote_shipment_id`. The latter is the same value for ALL
-          // rates within one allocation (Veeqo verified 2026-05-15:
-          // 16 different rates on one allocation, all rsi=prb1fd6e1be),
-          // so find() by rsi returns whichever rate is FIRST in the
-          // array — almost always FedEx Ground Economy (SmartPost) —
-          // regardless of which carrier we actually picked. This caused
-          // every buy to send the SmartPost VAS contract (or lack
-          // thereof) to Veeqo, hitting INVALID_VALUE_ADDED_SERVICES on
-          // every UPS Ground Saver, FedEx Home Delivery, etc.
-          // Frozen orders are now SELECTED via the new Rate Shopping API
-          // (getRatesForShipDate), whose per-quote `rate_id` is stored in
-          // item.serviceType. That id will NOT exist in this OLD allocation-
-          // rates pool, so the name match fails and we fall back to matching
-          // the SERVICE (carrier + title). The label we buy is the correct
-          // service — the new API was only used to pick which service + which
-          // physical ship day; the physical label itself is bought through the
-          // allocation flow. Title is compared case-insensitively because the
-          // two endpoints differ in casing (new: "Fedex 2Day® One Rate", old:
-          // "FedEx 2Day® One Rate") — an exact compare would wrongly refuse
-          // every FedEx frozen buy.
-          const svcTitleLow = (item.service ?? "").trim().toLowerCase();
-          const match =
-            liveRates.find((r) => String(r.name) === item.serviceType) ??
-            liveRates.find(
-              (r) =>
-                String(r.sub_carrier_id) === item.subCarrierId &&
-                String(r.title).trim().toLowerCase() === svcTitleLow
+        // Operator-facing reason + alternatives when the planned service
+        // isn't in the live pool.
+        let rateNotFound = "";
+        // Set when we moved Veeqo's dispatch_date to re-quote; put back if
+        // nothing gets bought, so the order keeps its real ship-by.
+        let dispatchToRestore: string | null = null;
+        const restoreDispatch = async () => {
+          if (!dispatchToRestore) return;
+          try {
+            await updateOrderDispatchDate(item.orderId, dispatchToRestore);
+          } catch (e) {
+            console.warn(
+              `[buy] could not restore dispatch_date for ${item.orderId}:`,
+              e instanceof Error ? e.message : e,
             );
-          if (match) {
-            freshRate = match;
-            liveVas = extractVasFromRate(match);
-            // Capture every field whose name might hint at VAS or rate
-            // requirements — the extractor uses `value_added_service*`
-            // by convention, but Veeqo may have moved/renamed it.
+          }
+        };
+        try {
+          // Matching rules (quote id → carrier+title → carrier+base title with
+          // an EDD and price guard) live in requote-match.ts — see there for
+          // why an exact title compare refused "(Saturday)" variants.
+          // CRITICAL: never match by remote_shipment_id — it is the same value
+          // for ALL rates within one allocation (Veeqo verified 2026-05-15).
+          const want = {
+            serviceType: item.serviceType,
+            service: item.service,
+            subCarrierId: item.subCarrierId,
+            price:
+              item.price ??
+              (Number.isFinite(parseFloat(item.totalNetCharge))
+                ? parseFloat(item.totalNetCharge)
+                : null),
+            edd: item.edd,
+          };
+          const requote = async () => {
+            const liveResp = await stage(stageTotals, "veeqoRateRequote", () =>
+              getShippingRates(item.allocationId!),
+            );
+            return ((liveResp?.available as Record<string, unknown>[]) ||
+              []) as Record<string, unknown>[];
+          };
+          let liveRates = await requote();
+          let m = matchLiveRate(liveRates, want);
+          // The allocation pool's EDDs (and date-bound variants such as
+          // "(Saturday)") are anchored to the order's Veeqo dispatch_date —
+          // the marketplace ship-by, often days later than the day we ship.
+          // The plan quoted the PHYSICAL ship day. When the service isn't in
+          // the pool, re-anchor dispatch_date to the physical ship day and
+          // re-quote once. (The trick path above already did this.)
+          if (!m.rate && !trickApplies) {
+            const ord = (await veeqoFetch(`/orders/${item.orderId}`)) as {
+              dispatch_date?: string | null;
+            };
+            const current = ord?.dispatch_date ?? null;
+            if (current && utcToPacificYMD(current) !== physicalShipDate) {
+              await updateOrderDispatchDate(
+                item.orderId,
+                `${physicalShipDate}T06:59:59.000Z`,
+              );
+              dispatchToRestore = current;
+              liveRates = await requote();
+              m = matchLiveRate(liveRates, want);
+            }
+          }
+          if (m.rate) {
+            freshRate = m.rate;
+            liveVas = extractVasFromRate(m.rate);
             // Lightweight diagnostic kept ONLY for the error messages below
-            // (spliced into the thrown error when Veeqo rejects the buy). The
-            // old code also built a full `suspiciousFields` scan of every rate
-            // key and logged it on EVERY successful buy — pure happy-path
-            // noise/CPU, removed.
+            // (spliced into the thrown error when Veeqo rejects the buy).
             rateDiagnostic =
-              `rateKeys=[${Object.keys(match).join(",")}] · ` +
+              `match=${m.tier} · rateKeys=[${Object.keys(m.rate).join(",")}] · ` +
               `extracted=${JSON.stringify(liveVas)}`;
           } else {
+            rateNotFound = [
+              m.reason,
+              m.alternatives.length > 0
+                ? `Closest live options: ${m.alternatives.join("; ")}. Pick one with the Carrier button, then Buy.`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" ");
             rateDiagnostic =
-              `no rate match for remote_shipment_id=${item.remoteShipmentId}, ` +
-              `service=${item.serviceType}, ` +
-              `liveRatesCount=${liveRates.length}`;
+              `no rate match for service=${item.service} (${item.serviceType}), ` +
+              `liveRatesCount=${liveRates.length}` +
+              (dispatchToRestore ? `, re-anchored to ${physicalShipDate}` : "");
             console.warn(
               `[buy] no live rate match for ${item.orderNumber} (${rateDiagnostic})`
             );
@@ -553,11 +586,13 @@ export async function POST(request: NextRequest) {
         // package. A refused buy is recoverable (operator hits Refresh and
         // retries); a wrong label isn't.
         if (!freshRate) {
+          await restoreDispatch();
           throw new Error(
-            `Could not re-quote "${item.service ?? item.serviceType}" at the ` +
-              `current package size — label NOT bought to avoid wrong ` +
-              `dimensions/price. Refresh the list and try again. ` +
-              `DIAG: ${rateDiagnostic}`,
+            `Could not re-quote "${item.service ?? item.serviceType}" — ` +
+              `label NOT bought. ` +
+              (rateNotFound ||
+                "Refresh the list and try again.") +
+              ` DIAG: ${rateDiagnostic}`,
           );
         }
 
@@ -611,6 +646,7 @@ export async function POST(request: NextRequest) {
             }),
           );
         } catch (buyErr) {
+          await restoreDispatch();
           const baseMsg =
             buyErr instanceof Error ? buyErr.message : String(buyErr);
           throw new Error(`${baseMsg} || DIAG: ${rateDiagnostic}`);

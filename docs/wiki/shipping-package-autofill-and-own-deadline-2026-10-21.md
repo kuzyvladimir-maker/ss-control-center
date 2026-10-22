@@ -62,3 +62,30 @@ tooltip says the date is ours, not the marketplace's. The default filter is
 unchanged.
 
 Tests: `npm run test:shipping`.
+
+## 4. Buy refused a "(Saturday)" frozen rate — "no rate match, remote_shipment_id=null" (2026-10-22)
+
+Order 111-5099040-5027461 was planned with "Fedex 2Day® One Rate (Saturday)"
+for shipping that day. The quote came from the Rate Shopping API, so it has
+no `remote_shipment_id` and its `rate_id` never exists in the allocation pool.
+Both of those are normal.
+
+At buy time, the re-quote (`GET /shipping/rates/{allocation}`) is anchored to
+the order's Veeqo `dispatch_date`, which is the later Amazon ship-by. From that
+date, 2Day doesn't land on a Saturday, so the "(Saturday)" variant wasn't in the
+23 live rates. The exact title compare failed and the buy was refused.
+
+**Fix.**
+- `src/lib/shipping/requote-match.ts` matches the live rate in tiers:
+  1. same quote id;
+  2. same carrier + title (ignoring case, ® and spacing);
+  3. same carrier + base title with the "(…)" suffix dropped, but only if it
+     arrives no later than the planned EDD.
+- Tiers 2 and 3 must pass a price guard: at most max($1, 5%) above the plan.
+- If the service is missing, the buy route re-anchors `dispatch_date` to the
+  physical ship day once and re-quotes. If nothing is bought, it restores the
+  original `dispatch_date`.
+- If the service is still missing, or it is now pricier, nothing is bought. The
+  error names the reason and up to 3 closest live options.
+
+Test: `requote-match.test.ts`.
