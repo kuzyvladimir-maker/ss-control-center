@@ -4,7 +4,8 @@
 /**
  * Loopback-only operator bridge for the catalog triage runner.
  * Reads the worker token from the existing root-only .env, calls only /health
- * or /analyze-claude on 127.0.0.1, and returns a base64 response envelope.
+ * or one explicit vision endpoint on 127.0.0.1, and returns a base64 response
+ * envelope. Provider selection is never implicit.
  */
 
 // Worker sources are CommonJS because server.js is deployed directly by Node.
@@ -45,8 +46,8 @@ async function readStdin() {
 
 async function main() {
   const action = process.argv[2];
-  if (action !== "health" && action !== "health-summary" && action !== "analyze") {
-    throw new Error("argument must be health, health-summary, or analyze");
+  if (!["health", "health-summary", "analyze", "analyze-codex"].includes(action)) {
+    throw new Error("argument must be health, health-summary, analyze, or analyze-codex");
   }
   const env = parseEnv(fs.readFileSync(ENV_PATH));
   const token = String(env.CODEX_IMAGE_WORKER_TOKEN || "").trim();
@@ -54,18 +55,22 @@ async function main() {
   if (!token || !Number.isSafeInteger(port) || port < 1 || port > 65535) {
     throw new Error("worker token/port is unavailable");
   }
-  const body = action === "analyze" ? await readStdin() : Buffer.alloc(0);
-  if (action === "analyze") JSON.parse(body.toString("utf8"));
+  const isAnalyze = action === "analyze" || action === "analyze-codex";
+  const body = isAnalyze ? await readStdin() : Buffer.alloc(0);
+  if (isAnalyze) JSON.parse(body.toString("utf8"));
+  const endpoint = action === "analyze-codex"
+    ? "analyze"
+    : action === "analyze" ? "analyze-claude" : "health";
   const response = await fetch(
-    `http://127.0.0.1:${port}/${action === "analyze" ? "analyze-claude" : "health"}`,
+    `http://127.0.0.1:${port}/${endpoint}`,
     {
-      method: action === "analyze" ? "POST" : "GET",
+      method: isAnalyze ? "POST" : "GET",
       headers: {
         authorization: `Bearer ${token}`,
-        ...(action === "analyze" ? { "content-type": "application/json" } : {}),
+        ...(isAnalyze ? { "content-type": "application/json" } : {}),
       },
-      ...(action === "analyze" ? { body } : {}),
-      signal: AbortSignal.timeout(action === "analyze" ? 360_000 : 30_000),
+      ...(isAnalyze ? { body } : {}),
+      signal: AbortSignal.timeout(isAnalyze ? 360_000 : 30_000),
     },
   );
   const responseBytes = Buffer.from(await response.arrayBuffer());
