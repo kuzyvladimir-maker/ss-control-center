@@ -86,13 +86,37 @@ Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,
 ## 3. Product Title
 
 Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,%20imagery,%20and%20media/Product-Detail-Page:-overview
+Source: https://marketplace.walmart.com/wp-content/uploads/2020/09/WMP_listing_quality_optimization_guide.pdf
+Directional current formula (Canada-specific, not a substitute for the U.S.
+Product Type spec):
+https://marketplacelearn.walmart.com/ca/guides/Item%20setup/Item%20content%2C%20imagery%2C%20and%20media/avoid-keyword-stuffing
 
-- **Hard limit: ≤ 150 characters.** (The keyword guide separately flags titles
-  **> 200 chars** as "excessively long" — treat 150 as the enforced cap.)
-- **Structure:** brief, clear, descriptive, front-loaded with relevant **attribute
-  values** (size, count, weight). No single canonical formula is published; the
-  recommended shape is **Brand + defining features/attributes + product name**,
-  built from real attribute values.
+> **Reverified 2026-07-26 for the U.S. Walmart Listing Integrity workflow.**
+> Walmart's public U.S. optimization guide recommends a clean, concise
+> **50–75-character** title and relevant keywords. The exact current U.S.
+> Product Type Get Spec / Style Guide owns the enforceable field boundary and
+> category-specific sequence; do not turn the 50–75 optimization target into a
+> universal hard reject.
+
+- **Optimization target:** 50–75 characters unless the exact current Product
+  Type spec requires another range.
+- **Standard grocery/multipack order:** **Brand + exact Item/Product Type +
+  Model/Style/Variant + key attributes + single-unit size/count + outer Pack
+  Count**.
+- Put the searchable product identity before quantity. A standard grocery title
+  must not begin with `Pack of N`, `N-Pack` or `N Count`; pack count remains
+  explicit but appears after the product/variant identity. Category-mandated
+  prefixes are exceptions only when the exact current Style Guide requires one.
+- Build left to right from the information that identifies the item to details
+  that refine it. Current official Walmart Canada guidance publishes this
+  principle and puts Pack Count near the end. The public U.S. guide publishes
+  the same end placement in its Fashion example; the exact U.S. grocery order
+  must still be checked against the current Product Type spec.
+- **No unsupported ranking claim:** Walmart does not publicly disclose a numeric
+  weighting formula for the first characters. We can say that relevant title
+  keywords improve findability and that Walmart recommends clean ordering; we
+  cannot claim that the first N characters receive a known percentage of search
+  weight.
 - **Proper capitalization** required (title case).
 - **Prohibited in titles:**
   - ALL CAPS
@@ -111,7 +135,9 @@ Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,
 
 Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,%20imagery,%20and%20media/Product-Detail-Page:-overview
 
-- **Minimum length: ≥ 150 words** (category-specific variations exist; 150 is the floor).
+- **General U.S. optimization guidance: about 150 words.** The public guide says
+  the word-count requirement varies by product category; the fresh exact Product
+  Type spec is authoritative and 150 must not be treated as a universal hard floor.
 - **Content:** feature + benefit focus; include product name, brand, and searchable
   keywords woven naturally.
 - **Prohibited in descriptions:**
@@ -133,9 +159,12 @@ Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,
 
 Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content,%20imagery,%20and%20media/Product-Detail-Page:-overview
 
-- **Count: 3–10** of the most important benefits/features.
-- **Per-feature limit: ≤ 80 characters** (spaces included). Anything over 80 is
-  rejected/flagged.
+- **Count: 3–10** of the most important benefits/features in the public U.S.
+  optimization guide.
+- **Length:** concise and factual. The exact current U.S. Product Type spec owns
+  the enforceable per-feature limit. `≤80 characters` is published in current
+  Walmart Canada guidance and is a useful brevity target, but is not encoded as
+  a universal U.S. hard reject.
 - **Format:** short phrases, no keyword repetition.
 - **Prohibited:** same set as descriptions — competitor-exclusivity, retailer names,
   promotional claims, URLs, emojis, special characters, HTML/numbered-list
@@ -293,9 +322,9 @@ Source: https://marketplacelearn.walmart.com/guides/Item%20setup/Variant%20manag
 
 | Field | Rule |
 |---|---|
-| Title | ≤ 150 chars, title-case, no ALL-CAPS/promo/special-chars/URLs/repeat words |
-| Description | ≥ 150 words, prose (no bullets), no emojis/promo/URLs/repeat words |
-| Key features | 3–10 bullets, ≤ 80 chars each (spaces incl.), no HTML/emojis |
+| Title | Exact current Product Type spec owns hard boundary; optimize for 50–75 chars; Brand + exact product identity before variant/attributes and Pack Count; no ALL-CAPS/promo/special-chars/URLs/repeat words |
+| Description | Detailed prose; ~150 words is general U.S. guidance, exact Product Type spec owns category requirement; no bullets/emojis/promo/URLs/repeat words |
+| Key features | 3–10 in public U.S. guide; concise, exact Product Type spec owns hard length; no HTML/emojis |
 | Main image | 2200×2200 px, 1:1, white RGB 255/255/255, JPEG/PNG/BMP, ≤ 5 MB |
 | Zoom image min | 1500×1500 px |
 | Swatch | 100×100 px |

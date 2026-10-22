@@ -875,11 +875,36 @@ G7 закончен как диагностический production canary, н�
   append-only rows и `3 FACT` для `RizwanX-2686/2687/2688`. Full readiness
   `c85b9555…cba2` подтверждает `5935/5935`, Unit Economics
   `28 FACT / 3 ESTIMATE / 730 UNSOURCEABLE / 5174 MISSING`, Procurement `28`;
-- ⬜ следующий крупный этап — убрать ручное агентское участие из повторяемого
-  one-target цикла: проверить и довести безопасный sales-ranked
-  standing-authority wave orchestrator в Command Center, сохранив
-  concurrency `1`, one-attempt/no-retry, immutable artifacts, provider ledger
-  и отдельную materialization/readiness границу.
+- ✅ manual one-target repetition заменён certified sales-ranked
+  standing-authority wave orchestrator. Первая production wave
+  `ptsw-20260729t181145z` закрыла пять targets (`3 COMPLETED / 2 AMBIGUOUS`),
+  израсходовала `25/30` units, retry `0`, mutations `0`; report
+  `531500a1…50798`. Три exact prices дали `9 FACT`, а full readiness
+  `c227ab17…b5e5` подтверждает `5935/5935`,
+  `37 FACT / 3 ESTIMATE / 721 UNSOURCEABLE / 5174 MISSING`, Procurement `37`.
+- ✅ permanent Command Center control plane выпущен commit `56a12b397`:
+  authenticated durable queue, immutable request/result custody,
+  clean-checkout worker, one active wave, lease/heartbeat и fail-closed
+  `START|RESUME`; certification `589/589`, TypeScript/ESLint/build PASS.
+- ✅ exact successor SSCC control migration применена: все `51/85/347`
+  command/artifact/event rows сохранены byte-equivalent, FK violations `0`;
+  apply receipt `f8387d6c…7bde7`;
+- ✅ production deployment `dpl_2K8Mwr5uYLDWWKbhrWrZ7tEkdowB`, exact release
+  `56a12b397` и оба clean pinned workers verified. Generic/standing claims =
+  `200/IDLE`, Catalog status = `ACTIVE/READY`; activation receipt
+  `c0218492…b48b6`;
+- ✅ первый web-triggered successor incident закрыт без replay: command
+  `ptswc-46aa…214b` terminal `AMBIGUOUS` после lease expiry; доказан только
+  Unwrangle balance probe `2.5` units, execution receipt/artifact и Product
+  Truth business rows отсутствуют. Incident proof `817e4f8f…6fd5`;
+- ✅ heartbeat-resilient release r3 `699f4353f` / tree `b8f91f62…bed9`
+  сертифицирован `594/594` и развёрнут deployment
+  `dpl_98pWm5AUdFokr9wZEb5rdqFp6bsu`. Transient control timeout больше не
+  убивает runner, start/complete идемпотентны, lease expiry завершает всю
+  process group. Activation receipt `a10c6d31…575d`;
+- 🔄 следующая новая bounded wave выполняется только через r3 permanent
+  Command Center lane. Старый ambiguous command не resume/replay; Product Truth
+  business schema и marketplace actions deployment не расширяет.
 
 Статус 2026-07-28 после исправления:
 

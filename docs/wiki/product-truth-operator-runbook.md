@@ -731,36 +731,63 @@ settled или ambiguous detail call никогда не повторяется.
 owner identity attestation не используется. Его единственная цель — безопасно закрыть
 один exact Product Truth gap; он никогда не публикует Walmart listing.
 
-### Canary
+### Standing-policy waves
 
-Первый внешний прогон — отдельный `CANARY` на 5–10 exact listings с concurrency 1.
-Набор должен включать single, multipack, mixed bundle, dry и frozen там, где они есть
-в authoritative scope. Clubs выключены. После canary владелец вручную проверяет:
+Canary принят, а повторный chat approval заменён pinned
+[[product-truth-standing-authority]]. Текущий wave contract не использует старую
+лестницу `25 → 50 → 100`: один sealed plan содержит максимум `5` независимых
+donor targets и не более `100` связанных listings, исполняет их строго с
+concurrency `1`, one attempt, retry `0`, provider ceiling `30` units и
+Unwrangle reserve floor `15000`.
 
-- отсутствие wrong-variant content;
-- exact provenance и first-party offers;
-- FACT/ESTIMATE/UNSOURCEABLE без подмены статусов;
-- content completeness и terminal gaps;
-- фактический spend против ceilings/reserve floor;
-- отсутствие повторных paid attempts;
-- plan/report/artifact hashes и event-chain integrity.
+Каждая новая wave всё равно является новым независимым run и получает:
 
-Canary не даёт автоматического разрешения на wave. Переход требует отдельного owner
-gate.
+- новый `waveId`, request/plan bytes и `plan.sha256`;
+- fresh balance evidence и автоматически созданные approval/permit/confirmation
+  для каждого target;
+- отдельные immutable target directories;
+- zero-paid COGS plan/preflight/apply только для сохранённых exact price
+  observations;
+- полный `5935`-denominator readiness report;
+- wave report/index с фактическими units, retries и mutation claims.
 
-### Waves
+Terminal `AMBIGUOUS` target остаётся в отчёте и никогда не replay автоматически.
+Следующая wave ranking исключает уже attempted target. Content и price axes
+независимы: сохранённый exact price может дать FACT COGS даже при terminal content
+gap, но partial content не становится content truth.
 
-После принятого canary: 25 → 50 → 100 → controlled remainder. **Каждая новая wave —
-новый независимый run** и требует:
+### Постоянный Command Center worker
 
-- новый `runId` и exact request;
-- новый `plan` directory и `plan.sha256`;
-- новый автоматически созданный `approvalId`, balance evidence и confirmation;
-- новый execution artifact directory;
-- отдельную сверку spend/quality до следующей wave.
+Commit `56a12b397` добавляет default-OFF control lane. Browser может только
+создать immutable `START|RESUME` command; он не имеет provider credentials и не
+запускает process. Отдельный worker:
 
-Нельзя переиспользовать canary approval или увеличивать старый target set. В v1 один
-plan не содержит больше 100 targets; controlled remainder разбивается на новые waves.
+- аутентифицируется dedicated bearer token;
+- до claim доказывает exact clean checkout/release/tree/executable digest;
+- сверяет exact production fingerprint, Phase 1 manifest и обе standing
+  policies;
+- вызывает только sealed standing-wave runner через `spawn`, `shell=false`;
+- heartbeat-ит lease и передаёт только bounded sealed result artifacts.
+
+Claude Code не запускает `product-truth:standing-wave-worker`, не подделывает
+web command и не вызывает external worker routes вручную. Это постоянный SSCC
+service, а не операторская команда чата. Successor activation доказана
+2026-07-29: deployment `dpl_2K8Mwr5uYLDWWKbhrWrZ7tEkdowB`, exact clean release
+`56a12b397`, Catalog `ACTIVE/READY`, обе worker claim routes `200/IDLE`,
+activation receipt `c0218492…b48b6`.
+
+Текущий production pin после heartbeat incident — release r3:
+commit `699f4353ff8fff3df23d9480c7f0a4d18977b965`, tree
+`b8f91f629f5311daeac4fa20216fe20a6a0cbed9`, executable digest
+`b010f6e196d0f4496a9c5b44ed5d63bfe5853564b0d783f84562849452c0331e`,
+deployment `dpl_98pWm5AUdFokr9wZEb5rdqFp6bsu`, activation receipt
+`a10c6d31…575d`. Один transient heartbeat timeout теперь не прекращает runner;
+start/complete можно безопасно повторить только с тем же lease и exact result
+bytes. При фактическом истечении authority worker завершает всю detached
+process group и fail-closed оставляет command terminal `AMBIGUOUS`.
+Predecessor `ptswc-46aa…214b` не resume/replay: доказан лишь balance probe
+`2.5` units, execution receipt/artifact отсутствует, incident proof
+`817e4f8f…6fd5`.
 
 ## 6. Terminal states и правило no replay
 
@@ -777,6 +804,14 @@ plan не содержит больше 100 targets; controlled remainder раз
 однозначно. Запрещены и `execute`, и `resume`, и новый план на те же targets до ручной
 ledger/provider reconciliation и явного owner disposition. Принцип: лучше оставить
 видимый gap, чем дважды списать кредит или записать противоречивую truth.
+
+Узкое исключение существует только для Command Center **worker-lease**
+`AMBIGUOUS`, а не для terminal provider/matcher outcome. Новый web `RESUME`
+command может продолжить тот же immutable workspace лишь при exact
+release/target/manifest/policy binding. Runner переиспользует только complete
+sealed stages и fail-closed останавливается на partial stage до нового provider
+call. Такой `RESUME` не создаётся автоматически; обычный provider
+`AMBIGUOUS` по-прежнему не replay.
 
 ## 7. Stop conditions
 

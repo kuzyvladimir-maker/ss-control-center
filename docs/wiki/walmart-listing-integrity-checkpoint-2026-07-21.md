@@ -1,5 +1,47 @@
 # Walmart Listing Integrity — execution checkpoint 2026-07-21
 
+## 2026-08-01 v39 / current one-SKU checkpoint
+
+- `FaisalX-1140` завершён с fresh buyer-facing Qualification `PASS`; factual
+  gallery и controlled successor pool существуют.
+- `FaisalX-1228` исправлен ровно одним POST и закрыт terminal feed
+  `SUCCEEDED` + fresh buyer-facing Qualification `PASS` на всех 14 facets.
+  Изменились только `description` и `bullets`: Pack of 6 и
+  `6 × 24 oz = 144 oz` теперь однозначны. Product-first title, mapped/opaque
+  attributes, MAIN, gallery, price, inventory, publication и indexing сохранены.
+- Frozen v39 checkout seals the one-SKU runtime plus product-first gallery fix at
+  commit `020b31006b3ccc8b2a7624dbd561e7ecb6e50a92` and tree
+  `d9200e1e0e8b1e71f44ad72b66d28c28f579a9f7`. Release ID
+  `b4e0cf033328fb1bb34bfc801d904d0b0f572b11b8ac48e5702b58adb4d3d8fb`,
+  manifest SHA
+  `8b31432b7d8b8d65651aae17d3e246a290dfbf2f9412aecb715aca32dfa9acd2`,
+  clean checkout `196/196 PASS`, targeted ESLint and diff-check PASS. Both
+  owner-package and verified-wrapper doctors return `READY`.
+- Review proposal file SHA
+  `4e81c7cae683cdffaa4c977f0fa01dd769e2bae6b98a2a9ba29c337ef3d6e58f`;
+  pre-write Qualification is `PASS`, exact images are unchanged, Walmart writes
+  were `0` before execute. The explicit owner direction was consumed without a
+  second confirmation ceremony. One exact payload was accepted as feed
+  `18C7B0B16C0E5053A9C8EEBF2458A509@AX8BBgA`; POST count is `1`, retry/reapply
+  is `0`. Terminal resume receipt SHA is `d7339632…569af`; Qualification receipt
+  SHA is `1516677a…92b5`.
+- Factual `До → После` gallery is `23/23 PASS`, body SHA `b0ecc010…8826b`,
+  HTML SHA `962cb411…4f2df`. Successor pool `controlled-pool-185264f5a6a7cb304e6e`
+  excludes `FaisalX-1228`, contains 10 next SKU and reports 328 repair-ready
+  candidates; pool file SHA `641a7bd0…ee2cb`, Walmart/model/DB writes `0`.
+- Exact Maruchan `FaisalX-1433/1434/1435` reread confirms that current MAIN
+  already shows ordinary Chicken and exactly `24/60/120` cups, while Seller
+  prices remain `$52.83/$111.39/$197.49`. Optional clearer `2/5/10` carton
+  MAIN candidates are staged under manifest SHA `7c2c6ba1…ce13`, but were not
+  sent. Remaining Roast text/attributes and `1435` title are still catalog-
+  ownership blocked after terminal `QARTH`; same payload replay is forbidden.
+- Current exact SKU is `RizwanX-2168`. Fresh intake is complete with five image
+  bytes and no source blockers. Its signed blind observation attempted no
+  inference because Claude returned weekly-limit HTTP 429 with zero usage; the
+  limit resets 2026-08-03 12:00 America/New_York. The failed call is not retried
+  or disguised as a new intake. Resume starts with one fresh, non-replayed
+  observation only after the external limit is available.
+
 ## 2026-07-22 Phase 6A source update
 
 - Fresh exact-window ITEM v6 read-only evidence is independently verified as
@@ -26,9 +68,43 @@
 > **Status:** phases 0–6 are complete. Three separately authorized one-SKU live
 > repairs (`FaisalX-1183`, `FaisalX-1181`, `FaisalX-1148`) have fresh
 > Qualification PASS and factual galleries. The fourth controlled SKU
-> `FaisalX-2768` has a terminal successful attribute-only feed and is waiting
-> only for buyer-surface propagation; its first fresh Qualification is honestly
-> `PENDING_PROPAGATION`. Phase 7 permanent operations is in progress.
+> `FaisalX-2768` proved that neither the earlier ordinary attribute-only payload
+> nor frozen v22's group-aware payload published the four target attributes
+> after their full six-hour SLA. V22 feed
+> `18C646C459EA512FA3901FDEDE289A71@AX8BBgA` was terminal `PROCESSED` with
+> `1/1 SUCCESS`, but the final fresh Qualification at
+> `2026-07-28T04:45:10Z` is `FAIL`. No factual gallery exists because the repair
+> did not succeed. The listing is sealed as `QUARANTINED_UNRESOLVED`;
+> same-payload replay is forbidden and its next action is Content Ownership/
+> Walmart Support followed by a new plan. A fresh read-only census after the
+> `2026-07-28T06:00:01Z` sync contains `3566` exact SKU / `2644 PUBLISHED` /
+> `3471 ACTIVE`. Fresh pool `controlled-pool-c2a1c74507029bf12380` excludes the
+> quarantined listing, starts with `FaisalX-1140` and grants zero write authority.
+> The `FaisalX-1140` content/image feed and its separately authorized
+> `Total count=4` recovery feed are both terminal `SUCCEEDED`, each with one
+> accepted SKU and zero item errors. Frozen v31 release `b413a185…2aa9a0`,
+> manifest `bcd1f41d…109ba`, passed `193/193` clean-checkout tests, ESLint and
+> diff-check. It removes a false gallery failure caused by Walmart alternating
+> JPEG encodings behind the same exact reviewed ASR URL while preserving exact
+> bytes for gallery-changing repairs, and makes factual-gallery Total Count
+> verification prefer `Total count` over unrelated `Piece count`. Latest fresh
+> read-only Qualification at
+> `2026-07-28T23:26:17.570Z` passes identity, publication/indexing,
+> product/variant, Pack of 4, title, description, bullets, MAIN and gallery.
+> It remains `PENDING_PROPAGATION` only because buyer PDP has not yet exposed
+> `Total count`; every continuation is GET-only and a second POST is forbidden.
+> The exact Walmart `Breads & Buns` MP_MAINTENANCE schema independently confirms
+> that `count` is Total Count and `countPerPack` is Count Per Pack, with
+> `multipackQuantity × countPerPack = count`; the submitted `4 × 1 = 4`
+> mapping is therefore correct. Four focused compiler/payload/Qualification
+> suites pass `43/43`; the v31 release suite passes `193/193`. A bounded
+> no-write monitor is scheduled for
+> `2026-07-29T01:15:48.586Z` and immediately after the exact six-hour boundary
+> at `2026-07-29T04:16:30Z`; it stops early on terminal PASS/FAIL and cannot
+> execute a Walmart content POST. On PASS it creates the factual gallery and
+> successor pool; on FAIL it seals terminal quarantine and creates the successor
+> pool without replay.
+> Phase 7 permanent operations is in progress.
 > Automatic/mass apply remains
 > **NO-GO**. This is an
 > operational checkpoint, not a replacement for
@@ -329,28 +405,127 @@ pause, so subscription usage and remaining work are visible to the owner.
           PASS. It accepts v18 only as the historical source for Qualification,
           corrects the false two-hour failure gate to Walmart's published
           six-hour catalog-availability SLA and adds no POST authority;
-        - [ ] fresh v20 `2026-07-27T17:41:44Z` buyer reread still exposes
-          `Flavor=qty 4`, `Count=1` and no multipack quantity. Qualification is
-          `PENDING_PROPAGATION`, receipt SHA `f71371a1…f9d22`, all unchanged
-          text/image/publication facets PASS; exact failure boundary is
-          `2026-07-27T22:35:24.791Z`. Perform only sparse fresh no-write rereads
-          until PASS or that six-hour Walmart catalog-availability SLA boundary;
+        - [x] seal v21 `0378f158…df56a`, manifest `e088c575…1a84c4`,
+          clean certification `157/157`, ESLint/diff-check PASS. The ordinary
+          one-SKU attribute compiler now rejects a mapped field that is also an
+          active `variantGroupInfo.groupingAttributes` key, and rejects
+          incomplete variant-group evidence with
+          `VARIANT_GROUP_REPAIR_REQUIRED`; it cannot invent a group repair;
+        - [x] seal v22 `5af7bc87…5846b81`, manifest `b3961fca…216e33`,
+          clean certification `162/162`, ESLint/diff-check PASS and production
+          doctor `READY`. Its optional group-aware path derives exact
+          single-member evidence from all `5236` ITEM v6 rows plus the same
+          fresh seller/Get Spec bytes used by the request, emits a complete
+          one-member group with exactly one primary, and still permits only one
+          SKU / one POST / zero retry;
+        - [x] final v21 reread at `2026-07-27T22:40:10Z`, after the exact
+          six-hour boundary, still exposed `Flavor=qty 4`, `Count=1` and no
+          multipack quantity. Qualification therefore closed the old payload
+          as `FAIL`, receipt file SHA `b4d18e6a…453c2`; title, description,
+          bullets, all images, publication and indexing remained PASS;
+        - [x] v22 rebuilt fresh live/spec/group evidence and emitted exact
+          group-aware payload `e29c3947…353a`: the same four Product Truth
+          attributes plus `variantGroupId=campCondGoldMush`,
+          `variantAttributeNames=["flavor"]` and exactly one
+          `isPrimaryVariant=Yes`. Text, images, price, inventory and status are
+          absent. One bounded POST created feed
+          `18C646C459EA512FA3901FDEDE289A71@AX8BBgA`; terminal status is
+          `PROCESSED`, `1 received / 1 succeeded / 0 failed`, retry `0`;
+        - [x] first v22 fresh Qualification at `2026-07-27T22:43:48Z` was
+          correctly `PENDING_PROPAGATION`, receipt file SHA
+          `247148a8…1675`. Exact failure-not-before is
+          `2026-07-28T04:42:52.181Z`. The first scheduled reread at
+          `23:00:10Z` remains `PENDING_PROPAGATION`; receipt SHA
+          `aeaf3e1e…1ff00c`, while all non-attribute facets remained PASS;
+        - [x] final v22 Qualification at `2026-07-28T04:45:10Z`, after the
+          exact SLA boundary, is `FAIL`: `Count=1` remains visible and Flavor,
+          Count per pack and Multipack quantity are still absent. Receipt SHA
+          `c8a6110a…add53f`, body `890d5f51…725f8`; title, description, bullets,
+          MAIN, gallery, publication and indexing are all PASS. Next action is
+          `OWNER_REVIEW_REPLAN`; no factual gallery was created because the
+          listing was not repaired;
+        - [x] seal terminal disposition
+          `failure-disposition-829cd4d5ffe9a977ae297eba` as
+          `QUARANTINED_UNRESOLVED`, body `5b007cfa…915539`, file
+          `e5f1de0e…3e665`. Same-payload replay is false, repair-complete is
+          false, and other SKU may advance while this listing waits for Content
+          Ownership/Walmart Support and a new plan;
+        - [x] freeze v23 `b2852a34…3f5826a`, manifest
+          `041f4a5a…f99d94`: clean checkout `178/178`, targeted ESLint and
+          diff-check PASS. The release includes All Items-bound group evidence,
+          terminal quarantine, idempotent monitor lifecycle and deterministic
+          operations/UI fixtures;
+        - [x] freeze v25 `7f418e7c…63aaf81`, manifest
+          `5b75b429…f42749a`: clean checkout `184/184`, targeted ESLint and
+          diff-check PASS. It adds exact reviewed full image-set
+          (`description`, `bullets`, `MAIN`, `gallery`) compilation and fixes
+          the runtime capture defect that the first real v24 owner-package
+          attempt caught before any Walmart write;
+        - [x] freeze v26 `e5e8bfbb…250ae91`, manifest
+          `a5be535c…b22e3ec`: clean checkout `186/186`, targeted ESLint and
+          diff-check PASS. It adds the previously missing full image-set live
+          Qualification and factual-gallery verifier, accepts only v25 as its
+          predecessor and proves fail-closed rejection of gallery drift;
+        - [x] close the v25 feed and freeze v27 `288410ef…edae76`: clean
+          checkout `188/188`; fresh buyer rereads prove the corrected
+          description, bullets, MAIN, Pack of 4, publication and indexing, but
+          also prove Walmart removed buyer-visible `Total count`;
+        - [x] freeze v28 `dda4f38a…edae5`, manifest `e41bc9fe…b0b0b54`:
+          clean checkout `189/189`; add exact `Total count` projection,
+          attribute-only recovery compilation and buyer-snapshot binary
+          verification. One signed payload containing only `count=4` and
+          `countPerPack=1` was accepted once as feed
+          `18C693DEE51E5DD8A2D5A0A65924E778@AX8BBgA`, terminal `SUCCEEDED`,
+          retry `0`;
+        - [x] freeze v29 `d5a0f347…e0d08e`, manifest
+          `da660142…5fd9c7`: clean checkout `189/189`; remove the redundant
+          literal marketing-text identity gate after exact buyer attributes
+          already match, and accept only v28 as the live-Qualification
+          predecessor;
+        - [ ] finish v25 canary `FaisalX-1140`: one exact POST is already
+          terminal `SUCCEEDED`, and the exact attribute-recovery POST is also
+          terminal `SUCCEEDED`. Current v29 Qualification is
+          `PENDING_PROPAGATION`: every independent facet except attributes
+          passes; buyer PDP has not yet exposed
+          `Total count`. Latest fresh v30 reread at
+          `2026-07-28T23:26:17.570Z` has gallery `PASS`; only attributes and
+          their dependent aggregate facets remain blocked. The exact product
+          schema verifies the submitted quantity mapping `4 × 1 = 4`, and the
+          focused compiler/payload/Qualification regression is `43/43 PASS`.
+          A bounded no-write monitor will reread at `01:15:48Z` and just after
+          the six-hour boundary at `04:16:30Z`, stopping early on PASS/FAIL.
+          Continue only with fresh GET-only Qualification, then publish the
+          factual `До → После` gallery. No second SKU may start before PASS or
+          terminal quarantine;
+        - [x] remove the completed monitor's erroneous launchd keepalive job
+          after it began local EEXIST restart churn. The redundant starts failed
+          on the already-sealed monitor receipt before a new Qualification
+          could run; the job is removed. The sealed monitor receipt SHA is
+          `6d530c56…6006e`; Walmart content writes remained `0`;
   - [x] 7.3 wire the complete factual post-canary `До → После`, fresh
     Qualification and published/indexing status into the persistent Command
-    Center screen. Both final galleries are served through exact-SKU internal
-    routes, the screen shows `18/18 PASS` for each canary and the ten-row pool,
+    Center screen. Three final galleries are served through exact-SKU internal
+    routes, the screen shows Qualification PASS and the ten-row pool,
     and contains no mutation form. The factual gallery verifier now accepts
     only the two compiler-authorized shapes (`description/bullets` or
     `description/bullets/MAIN`), proves unchanged title and gallery slots,
     and requires fresh Qualification `main=PASS` for a changed MAIN; the
-    text-only regression is `20/20 PASS`. Operations/route/UI focused tests
-    `9/9`, TypeScript, targeted ESLint and production build PASS.
+    text-only regression is `20/20 PASS`. Operations/route/UI tests now use
+    local sealed fixtures and do not depend on whichever mutable pool is newest.
+  - [x] 7.4 refresh the immutable census/plan/controlled pool after the
+    `2026-07-28T06:00:01Z` catalog sync. Census file SHA
+    `f5b08a01…92226d`, plan file SHA `74ed37e7…19f0b7`; totals are `3566`
+    SKU / `2644 PUBLISHED` / `3471 ACTIVE`, visual triage `1298`, scan tasks
+    `1738`. Pool `controlled-pool-c2a1c74507029bf12380`, file SHA
+    `99cd89b2…e72a9`, contains `14 repair-ready` / `1190 source-required` from
+    `1204` candidates, ten queued rows beginning with `FaisalX-1140`, and one
+    unresolved quarantine. Walmart/model/paid-provider writes are zero;
 
 ## Phase 0–5 verification
 
 - combined remediation authority/payload/writer/ledger/custody/image/apply/
   qualification/closed-loop/native-transport/operator/wrapper suite:
-  **136/136 PASS**, **0 failed** in both the working projection and the clean checkout;
+  **193/193 PASS**, **0 failed** in the v31 clean checkout;
 - targeted ESLint: **PASS**;
 - `git diff --check`: **PASS**;
 - independent final audit: **0 Critical, 0 High and 0 Medium** findings for the

@@ -641,6 +641,87 @@ Gate consumed 2026-07-28. Exact r5 evidence и остающиеся закрыт
 
 Каждый stage имеет отдельный activation artifact. Переход не автоматический.
 
+### Successor standing-wave lane — 2026-07-29
+
+Обычный generic web control выше остаётся no-spend и не получает произвольного
+`execute`. Для уже принятой [[product-truth-standing-authority]] выпущен отдельный
+узкий lane с единственным command kind `STANDING_WAVE` и gate class
+`STANDING_METERED_EXECUTE`:
+
+- release commit `56a12b39785ca298bcaa7b6165e2d8f24e0fb4a3`, tree
+  `dd01b66e0e254e62cd448cf321d087ee63421b2a`, executable-tree SHA-256
+  `a9b21d722855888dad59e0086e219534eef3a59bf858dc37f57c95a2d6302358`;
+- successor SSCC control migration SHA-256
+  `db6604bf0e0f401950d6520f60d3568056f93a852a2eb2793004bc38b8de3668`;
+- fixed ceilings: `5` targets, `100` linked listings, `30` provider units,
+  concurrency `1`, one attempt, retry `0`, lifetime `24h`;
+- request bytes bind exact production target, Phase 1 manifest, engine
+  release/tree/executable digest and both standing policy hashes;
+- browser endpoint only admits immutable `START|RESUME`; process spawn,
+  provider credentials and provider calls do not exist in the web runtime;
+- external routes require the dedicated hashed worker bearer both in proxy and
+  route handler. Worker proves a clean pinned checkout before its first claim,
+  uses `spawn(..., shell=false)` and uploads only bounded sealed artifacts;
+- DB trigger permits only one active standing wave. Expired pre-boundary lease
+  returns to `ADMITTED` only with immutable zero-attempt evidence; uncertainty
+  after execution boundary becomes terminal `AMBIGUOUS` and is never replayed
+  automatically;
+- a new `RESUME` command may reference only the same immutable workspace and
+  exact current release/target/manifest/policies. The underlying runner reuses
+  complete sealed stages and fails closed on a partial provider stage;
+- completed result cross-checks plan/report/index/readiness bytes, sidecars,
+  per-target totals, provider units and zero mutation/retry claims.
+
+Migration integration applies the exact original Stage A SQL, seeds existing
+command/artifact/event custody, applies the successor and proves all rows plus
+foreign keys survive. Certification on exact release bytes: Product Truth
+`589/589`, TypeScript, targeted ESLint, diff-check and production build `PASS`.
+
+The underlying CLI already completed production wave
+`ptsw-20260729t181145z`: plan `418b7fe3…9a745`, report
+`531500a1…50798`, `3 COMPLETED / 2 AMBIGUOUS`, `25/30` provider units,
+retry/mutations `0`; readiness `c227ab17…b5e5` is `5935/5935`.
+
+Код сам по себе не считался deployment evidence. Фактическая activation
+завершена 2026-07-29:
+
+- successor migration применена с exact SHA `db6604bf…3668`; `51` commands,
+  `85` artifacts и `347` events имеют одинаковые row hashes до/после,
+  foreign-key violations `0`; apply receipt `f8387d6c…7bde7`;
+- exact release `56a12b397` развёрнут как production deployment
+  `dpl_2K8Mwr5uYLDWWKbhrWrZ7tEkdowB`;
+- generic и standing workers запущены из clean checkout с exact manifest и
+  policy hashes; обе claim routes дают `200/IDLE`;
+- authenticated Catalog status даёт `ACTIVE/READY`, active command отсутствует;
+  activation receipt `c0218492…b48b6`.
+
+Первый web-triggered production command обнаружил transport-control gap:
+единичный 30-second heartbeat timeout завершал непосредственный runner, но мог
+оставить descendant provider process без владельца. Command `ptswc-46aa…214b`
+после exact lease expiry terminalized `AMBIGUOUS`; replay/resume не выполнялся.
+Immutable DB/workspace audit доказывает только balance probe `2.5` Unwrangle
+units, ноль execution receipts, ноль canonical/business rows и отсутствие
+execution directory; proof `817e4f8f…6fd5`.
+
+Release r3 закрывает этот gap:
+
+- commit `699f4353f`, tree `b8f91f62…bed9`, executable digest
+  `b010f6e1…331e`;
+- transient control errors повторяются только внутри действующей lease и не
+  прекращают runner;
+- start/complete идемпотентны для того же lease и exact immutable result;
+- polling переживает временную недоступность API;
+- реальная потеря authority сигналит всей detached process group;
+- focused `6/6`, полный Product Truth `594/594`, TypeScript, ESLint и build
+  `PASS`;
+- production deployment `dpl_98pWm5AUdFokr9wZEb5rdqFp6bsu` READY, оба
+  workers работают из clean pinned checkout; activation receipt
+  `a10c6d31…575d`.
+
+Activation разрешает только уже bounded standing-wave lane. Она не расширяет
+marketplace, price/inventory, delisting, procurement, consumer ENFORCED или
+harvest-cron authority.
+
 ## 11. Acceptance gates
 
 Фаза 4 не может стать `✅`, пока тестами не доказано всё:

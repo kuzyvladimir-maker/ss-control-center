@@ -710,3 +710,67 @@ npx tsx --env-file=.env --env-file=.env.local -e "…/studio/generate"
 Живой прогон 2026-08-08: 4 задания → 2 настоящих смешанных черновика
 ($48.86 и $39.26, по 2 составляющих), 1 упал по картинке, 1 по длине заголовка
 (уже исправлено).
+
+---
+
+## 2026-08-08 · Codex → Claude Code: независимое ревью завершено
+
+Отчёт: [независимое ревью mixed Walmart listings](./walmart-mixed-listings-independent-review-2026-08-08.md).
+
+Короткий вывод: mixed work items, draft economics, mixed copy и grid-image
+работают, но сквозная публикация ещё не безопасна. Promotion/evidence и
+duplicate identity сводят смесь к первому товару; homogeneous seal не защищает
+component evidence; contradictory composition молча деградирует; batch-submit
+неатомарен и не подключён к UI queue; title fallback всё ещё может упасть на
+длинном bullet. Код не исправлялся и не коммитился.
+
+---
+
+## 2026-08-08 · Codex → Claude Code: повторное ревью исправлений `06177b2`
+
+Отчёт: [повторное ревью mixed Walmart fixes](./walmart-mixed-listings-fix-rereview-2026-08-08.md).
+
+Подпись теперь закрыта правильно; также подтверждены parser blocker,
+ready/draft keys, `MIXED_FLAVOR`, полный duplicate key и short-label length.
+Но promotion всё ещё суммирует уже упакованные per-component estimates:
+4×10.5 + 4×18.8 даёт 146.8 oz / 9×6×6 вместо 140.8 oz / 10×8×6 по той же
+формуле одной коробки. Evidence дополнительных компонентов не содержит и не
+валидирует их content/price chains. UI `Interpret request → Use this` удаляет
+composition из prompt и способен снова сделать single-flavor Pack of 8. В
+batch transport закрыт composer leak, но partial REQUESTING и partial ACCEPTED
+остались; transport не подключён и живым feed не проверен. Код не исправлялся,
+коммиты и marketplace-записи не выполнялись.
+
+---
+
+## 2026-08-08 · Codex → Claude Code: третье ревью исправлений `4b543a6ba`
+
+Отчёт: [третье ревью mixed Walmart fixes](./walmart-mixed-listings-third-review-2026-08-08.md).
+
+Формула одной общей коробки, ранний запрет разных retail sizes, хранение полных
+component evidence chains и атомарные локальные batch-переходы подтверждены.
+Однако общий `WalmartClient.requestRaw()` повторяет `POST /feeds` после network
+error, 429 и 5xx; это воспроизведено локально как два POST из одного вызова.
+Кроме того, MP_ITEM `feedId` записывается только после отдельного shipping POST,
+поэтому существует окно успешного внешнего POST без durable feed ID. UI `Use
+this` пишет `4 of each`, которое deterministic parser не распознаёт, а
+противоречивый model interpretation можно применить и превратить в
+single-flavor. Builder хранит chains всех вкусов, но Product Truth validator
+проверяет только top-level первый вкус. Код не исправлялся, живой Walmart feed
+и production-записи не выполнялись.
+
+---
+
+## 2026-08-09 · Codex: живой контракт Walmart SKU_TEMPLATE_MAP установлен
+
+Отчёт: [Walmart SKU_TEMPLATE_MAP — подтверждённый живой контракт](./walmart-sku-template-map-live-contract-2026-08-09.md).
+
+Причина всех прежних `ERR_INT_DATA_01010092` найдена в официальном US sample:
+платформа отправляет плоский `ItemFeed`, а Walmart требует
+`Item[].PreciseDelivery`. Выполнен один POST без retry для `AU-WMKW-CATL`.
+Feed `18CA06A0F0905F1E8557C021FC9F6B6B@AX0BBgA` завершился `PROCESSED`:
+1 received, 1 succeeded, 0 failed; item ingestion `SUCCESS`. Через 93 минуты
+association readback ещё пуст, что пока находится внутри документированного
+окна распространения 30 минут–4 часа. Повторный feed не отправлять; следующая
+содержательная проверка — после `2026-08-09T07:51:31Z`. Код диагностической
+задачей не изменялся.

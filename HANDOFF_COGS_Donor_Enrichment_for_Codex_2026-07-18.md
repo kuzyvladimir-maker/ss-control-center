@@ -5,6 +5,46 @@
 **Дата:** 2026-07-18
 **Репозиторий:** `ss-control-center` (ветка `main`, деплой Vercel из main). Рантайм-БД = **Turso** (libsql), НЕ локальный dev.db.
 
+> **OWNER UPDATE 2026-07-18:** этот файл — технический snapshot выполненной COGS/
+> enrichment-работы, а не верхнеуровневый архитектурный канон. Перед продолжением
+> прочитать `docs/wiki/product-catalog-architecture.md` и
+> `docs/wiki/donor-catalog-execution-roadmap.md`. Они фиксируют четыре бизнес-
+> потребителя общего Product Truth Platform: Bundle Factory, Listing Improvement,
+> Unit Economics и Procurement; Phase 1 = весь текущий продаваемый Amazon+Walmart
+> ассортимент, Phase 2 = системное расширение по бренду/группе/ретейлеру. «Три
+> выхода» ниже — типы данных движка, а не количество бизнес-модулей.
+
+> **IMPLEMENTATION UPDATE 2026-07-19:** разделы ниже сохранены как исторический
+> snapshot и не являются текущим чек-листом готовности. Локально реализованы прежние
+> TODO по strict matcher и terminal harvest lifecycle, а также независимые content/
+> price axes, durable queue, immutable evidence/provenance, append-only cost history,
+> единый versioned read-contract и hard budget ledger. Добавлены trusted connected-
+> store census, authoritative manifest policy 1.1.0, offline matcher replay, owner-gated
+> migration/backfill и full-denominator four-consumer readiness CLI; legacy COGS/
+> enrichment/harvest mutation routes hard-retired. Migration→backfill bridge требует
+> canonical report/certificate sidecars и повторно сверяет live schema, обе ledgers и
+> immutable activation receipt. Полная glob-based Product Truth certification —
+> **361/361**. При этом
+> migrations не применены к Turso, backfill и consumer cutover не выполнены
+> (cutover **0 из 4**), paid calls и production/marketplace writes не совершались.
+> Текущий P0 — exact live-listing grain `(channel, positive storeIndex, raw SKU)` и
+> ledger integrity. Для Phase 1 всё ещё нужны authoritative Walmart/Amazon reports,
+> owner dispositions по store scopes и отдельные migration/budget/action gates.
+> Повтор raw SKU в разных exact scopes сохраняется раздельно и не является поводом
+> для автоматического merge/exclusion.
+
+> **WALMART SOURCE UPDATE 2026-07-19:** готовый one-shot ITEM v6 reissue engine
+> связывает retained `ABSENCE_ONLY`, account/store, новую session и полный request
+> manifest с externally owner-custodied permit. Gate проверяется до filesystem/OAuth,
+> reservation атомарна, максимум один POST в intact local session, retry/replay запрещены, legacy ITEM create
+> retired; expanded closure 131/131. Live replacement POST не выполнялся. Claude Code
+> только исполняет готовый CLI после передачи владельцем permit bytes, независимых
+> artifact/permit/release hashes и exact confirmation; он не пишет и не чинит движок.
+> Permit v1 hash-bound, но не является криптографической подписью владельца.
+> V1 также не является distributed consumption ledger: physical permit нельзя
+> копировать/перемещать между path/host, session/reservation нельзя удалять; утрата
+> custody требует fresh reconciliation и нового permit, старый replay запрещён.
+
 ---
 
 ## 0. Одной фразой
@@ -95,7 +135,7 @@ SKU (наш листинг Amazon/Walmart)
 
 **НЕТ Google-тира и НЕТ 3P-резельеров как источника цены** (это НЕ наша закупочная себестоимость; там и наш собственный STARFITSTORE вылезал). Правило: **first-party-or-UNSOURCEABLE.**
 
-Зона закупки: **Clearwater FL, ZIP 33765.** Приоритет магазинов: Walmart → Publix/BJ's → Target → Sam's → Costco (+edge Amazon/Whole Foods/Aldi). Frozen покупается в магазине (Publix), не онлайн.
+Зона закупки: **Clearwater FL, ZIP 33765.** Приоритет магазинов: Walmart → Publix → Target → Sam's → Costco (+edge Amazon/Whole Foods/Aldi). Sam's/Costco требуют отдельный owner-approved club budget; **BJ's не использовать**. Frozen покупается в магазине (Publix), не онлайн.
 
 ---
 

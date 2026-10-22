@@ -1,0 +1,119 @@
+[
+  {
+    "sku": "FaisalX-5005",
+    "status": "costed",
+    "total": 63.32,
+    "methods": [
+      "line-price"
+    ],
+    "note": "target $15.83/u ×4 [line-price est] [COGS>=sale — check match or margin]",
+    "identity": {
+      "imagesUsed": 2,
+      "components": [],
+      "brand": "Bigelow",
+      "product_line": "Orange & Spice Herbal Tea",
+      "flavor": "Orange & Spice",
+      "size": "1.50 oz (20 count)",
+      "container_type": "box",
+      "base_unit": "Bigelow Orange & Spice Herbal Tea 20 ct box 1.50 oz",
+      "units_in_listing": 4,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "retail_search_query": "Bigelow Orange and Spice Herbal Tea 20 count box",
+      "confidence": 0.99,
+      "notes": "Photos clearly confirm Bigelow Orange & Spice Herbal Tea, 20 tea bags, NET WT 1.50 oz (42g) per box, caffeine free. Listing is Pack of 4 boxes, so 4 base units total."
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Bigelow Orange & Spice Herbal Tea 20 ct box 1.50 oz",
+        "product": "Orange & Spice Herbal Tea",
+        "flavor": "Orange & Spice",
+        "size": "1.50 oz (20 count)",
+        "qty": 4,
+        "isBundleComp": false,
+        "perUnit": 15.83,
+        "retailer": "target",
+        "matched": "Bigelow steep Tea English Breakfast 1.6 oz Tea Bag 20/Box",
+        "method": "line-price",
+        "linePrice": true,
+        "donorProductId": "e17d9011-7ac5-4923-9f33-26f24f8f906c"
+      }
+    ]
+  },
+  {
+    "sku": "FaisalX-5516",
+    "status": "no-price",
+    "identity": {
+      "imagesUsed": 2,
+      "components": [],
+      "brand": "Dove",
+      "product_line": "Promises Silky Smooth",
+      "flavor": "Milk Chocolate Tiramisu Flavored Caramel",
+      "size": "6.74 oz",
+      "container_type": "bag",
+      "base_unit": "Dove Promises Milk Chocolate Tiramisu Flavored Caramel 6.74 oz Bag",
+      "units_in_listing": 6,
+      "unit_basis": "bag",
+      "is_bundle": false,
+      "retail_search_query": "Dove Promises Milk Chocolate Tiramisu Caramel 6.74 oz",
+      "confidence": 0.95,
+      "notes": "Pack of 6 medium bags. Single flavor, not a variety pack. Photo clearly shows 'MEDIUM BAG' label and 6.74 OZ weight. Title confirms Pack of 6."
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Dove Promises Milk Chocolate Tiramisu Flavored Caramel 6.74 oz Bag",
+        "product": "Promises Silky Smooth",
+        "flavor": "Milk Chocolate Tiramisu Flavored Caramel",
+        "size": "6.74 oz",
+        "qty": 6,
+        "isBundleComp": false,
+        "perUnit": null,
+        "method": "unsourceable"
+      }
+    ]
+  },
+  {
+    "sku": "FaisalX-330",
+    "status": "costed",
+    "total": 29.76,
+    "methods": [
+      "line-price"
+    ],
+    "note": "walmart $7.44/u ×4 [line-price est]",
+    "identity": {
+      "imagesUsed": 2,
+      "components": [],
+      "brand": "Nature's Own",
+      "product_line": "Hot Dog Butter Buns",
+      "flavor": "Butter",
+      "size": "15 oz",
+      "container_type": "bag",
+      "base_unit": "Nature's Own Hot Dog Butter Buns 15 oz bag",
+      "units_in_listing": 4,
+      "unit_basis": "bag",
+      "is_bundle": false,
+      "retail_search_query": "Nature's Own Hot Dog Butter Buns 15 oz",
+      "confidence": 0.95,
+      "notes": "Pack of 4 identical bags. Photo 0 shows single 15 oz bag with nutrition label (130 calories, 3g total sugars, 3g sodium per serving) and 8 hot dog buns per bag. Title confirms 'Pack of 4' = 4 procurement units."
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Nature's Own Hot Dog Butter Buns 15 oz bag",
+        "product": "Hot Dog Butter Buns",
+        "flavor": "Butter",
+        "size": "15 oz",
+        "qty": 4,
+        "isBundleComp": false,
+        "perUnit": 7.44,
+        "retailer": "walmart",
+        "matched": "Nature's Own Butter Buns Hot Dog Buns, Non-GMO Hot Dog Buns, 8 Count",
+        "method": "line-price",
+        "linePrice": true,
+        "donorProductId": "3cc376a9-2719-4a03-af53-3725120b97fb"
+      }
+    ]
+  }
+]

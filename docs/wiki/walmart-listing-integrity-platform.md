@@ -163,9 +163,18 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
   заблокирован отсутствующими listing scope/current scoped cost. Execution package,
   Walmart write и mass run остаются закрыты до canonical business-data readiness.
   Эти три authority оси независимы; self-asserted `READY` без production
-  certification отвергается fail-closed. Постоянный
-  scheduler/API/state store ещё не подключены, поэтому
-  live canary, unattended и mass repair остаются `NO-GO`.
+  certification отвергается fail-closed. Постоянный operations API пока
+  остаётся read-only. Stage A durable control boundary теперь реализован
+  локально: sealed per-SKU lifecycle, strict sequence, maximum live apply `1`,
+  package/permit binding, terminal unknown-outcome fence, append-only SQL
+  event/artifact custody и Prisma models/migration. GET-only control status API
+  побайтово проверяет sealed item state, показывает active SKU/next decision и
+  честно возвращает `NOT_INSTALLED`, если migration отсутствует; все mutation
+  methods отвечают `405`. Эта же verified status-модель уже выведена отдельной
+  карточкой на вкладке Listing Integrity, чтобы owner видел реальный active SKU и
+  состояние runtime. Runtime в migration жёстко `OFF`; production migration,
+  trusted transition admission, activation и worker ещё не выполнены, поэтому
+  unattended и mass repair остаются `NO-GO`.
 - Для `FaisalX-1183` exact current MAIN и две gallery-картинки перенесены из
   временного capture в content-addressed custody. SHA-bound `canary-preview.json`
   фиксирует только один допустимый diff: MAIN `1 → 6`; title, description,
@@ -225,7 +234,9 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
    товарную правду и минимальный repair diff для выбранного SKU.
 4. **[SHADOW UI COMPLETE / RUNTIME PENDING]** Подключить тот же backend к вкладке
    Listing Integrity и resumable queue. Read-only evidence view уже реализован;
-   постоянные scheduler/API/state store остаются. Вкладка обязательно показывает
+   Stage A state contract, durable schema и GET-only verified control status API
+   готовы с hardcoded `OFF`; остаются production migration, trusted transition
+   admission/worker API, clean pinned worker и отдельная activation. Вкладка обязательно показывает
    фактическую галерею `До → После`, text/attribute diff, buyer reread,
    Qualification и published/indexing status каждого canary.
 5. Только после просмотра владельцем первых фактических `До → После` и отдельного

@@ -856,10 +856,217 @@ state machine; Claude Code остаётся release/emergency operator, не е�
 Три отдельно подтверждённых live canary закрыты fresh Qualification PASS;
 четвёртый exact SKU закрыт terminal Qualification `FAIL` и изолирован как
 `QUARANTINED_UNRESOLVED` до Content Ownership/Walmart Support и нового плана.
-Пятый exact canary `FaisalX-1140` принят Walmart одним POST и находится в
-`APPLIED_PROPAGATING / FEED_NOT_TERMINAL`; разрешены только GET-only
-continuations того же feed до fresh Qualification.
+Пятый exact canary `FaisalX-1140` и следующий `FaisalX-1228` закрыты fresh
+Qualification `PASS`. Для `FaisalX-1228` один exact payload изменил только
+description/bullets; feed `18C7B0B1…AX8BBgA` terminal `SUCCEEDED`, retry `0`,
+все 14 Qualification facets PASS. Product-first title, attributes, MAIN,
+gallery, price, inventory, publication и indexing сохранены. Фактическая
+галерея `До → После` — `23/23 PASS`, HTML SHA `962cb411…4f2df`. Current frozen
+v46 release `756d373c…49a0c7`, manifest `ee69e149…52c945`, clean `201/201`,
+поддерживает оба exact pinned Claude/Codex observer-контракта, field-scoped
+Product Truth readiness для image repair и отдельный password-free service key.
+Successor pool `controlled-pool-185264f5a6a7cb304e6e`
+исключает завершённый SKU, содержит 10 следующих и видит 328 repair-ready
+кандидатов; pool SHA `641a7bd0…ee2cb`, Walmart/model/DB writes `0`.
+Текущий exact SKU — `FaisalX-1144`: Product Truth = Pepperidge Farm Very Thin
+100% Whole Wheat Bread, 16 oz, outer Pack of 6. Fresh diagnosis доказал wrong
+MAIN (Farmhouse Butter Bread, 22 oz); deterministic six-pack MAIN прошла signed
+Codex Qualification `PASS`. Один exact payload меняет только description,
+bullets и MAIN. Walmart принял его один раз как feed
+`18C7B9727AC0538CA1F1E40C884D0BCD@AX8BBwA`; retry `0`, feed ещё nonterminal,
+продолжение только exact GET. Detached monitor проверен на живом feed: POST/
+`execute` capability отсутствует, текущий статус `APPLIED_PROPAGATING`; после
+terminal `SUCCEEDED` он сам выполняет fresh buyer reread, Qualification и строит
+фактическую галерею только при `PASS`. Его final output исправлен до canonical
+`walmart-listing-integrity-post-canary`, поэтому доказанный результат сразу
+появится в постоянной вкладке, а не останется только во временном controlled-pool.
+Шестой detached check в `2026-08-01T17:12:25Z` получил terminal
+`SUCCEEDED`, item failures `0`, continuation Walmart writes `0`. Первый fresh
+Qualification в `17:13:08Z` уже видит exact description/bullets и сохраняет
+publication/indexing, title, attributes, gallery и pack count, но buyer MAIN ещё
+показывает прежний wrong-product asset; verdict честно
+`PENDING_PROPAGATION`, следующий action только reread без write. Параллельный
+`FaisalX-1433` на check 28 в `17:12:55Z` остаётся
+`APPLIED_PROPAGATING` без нового POST.
+Второй independent buyer snapshot в `17:28:25Z` совпал с первым по live MAIN
+bytes: SHA `54826f…fa82c` всё ещё отличается от exact target `7ed4b0…aff7`
+(dHash distance `28`), при этом exact text и остальные PASS facets стабильны.
+Это остаётся propagation, а не permission на replay; следующий reread через
+15 минут, hard failure не раньше `23:12:25Z`.
+Третий independent snapshot в `17:43:36Z` снова получил те же old MAIN bytes,
+при этом description/bullets/title/attributes/gallery/quantity и
+publication/indexing остаются PASS. Continuation writes `0`; detached monitor
+продолжает 15-минутные fresh rereads до PASS либо разрешённого terminal
+disposition после `23:12:25Z`.
+Параллельный `FaisalX-1433` feed получил terminal `SUCCEEDED` в
+`17:26:59Z`; continuation writes `0`, fresh Qualification capture уже создан
+соседней owned-сессией. Cross-chat gate теперь ждёт Qualification/readback обоих
+SKU, а не terminal feed.
+V49 fresh Qualification `1433` в `17:38:15Z` = exact text-plan `PASS`: release
+корректно учитывает перевод Walmart opaque `Count=2` в mapped count claim. Но
+owner-signed target сам сохраняет live `Roasted chicken` / `Roasted` attributes,
+а fresh Product Truth projection = `SOURCE_REQUIRED`. Поэтому это не финальный
+full-listing integrity PASS: `1433` остаётся в full-surface backlog до
+authoritative Product Truth и нового attribute plan/permit; параллельная sequence
+может отдельно продолжить свои `1434/1435`.
+Параллельная вкладка владеет
+`FaisalX-1433/1434/1435`;
+общий advisory register находится в
+`ss-control-center/data/audits/walmart-listing-integrity-coordination/ACTIVE-RUNS-20260801.md`.
 Автоматический/mass run остаётся `NO-GO`.
+
+V50 закрывает обнаруженную cross-chat гонку не advisory-файлом, а атомарным
+global admission root. Clean release `729f5cc0…bdd6c`, manifest
+`65f6fff8…53aff`, `203/203 PASS`; wrapper doctor = `READY`, root identity
+`971d1209…32650`. Active legacy claim `FaisalX-1144` держит root `OCCUPIED`,
+пока `1144` и параллельный `1434` не завершат fresh Qualification/disposition.
+`1434` feed `18C7BF32…AX8BBgA` terminal `SUCCEEDED`; fresh Qualification в
+`19:11:10Z` = `PASS` по всем facets. Reporting-only outer-quantity defect первой
+галереи исправлен без Walmart вызовов: recovered factual gallery
+`LIVE_SURFACE_PASS`, `23/23`, body SHA `19669f55…5661`; старый error status
+сохранён отдельно по SHA-256. `1435` закрыт. Check 11 `1144` buyer reread в
+`19:45:05Z` снова видит old MAIN, остальные facets PASS, continuation writes `0`;
+failure/quarantine по Walmart SLA не раньше `23:12:25Z`.
+
+Phase 7.2c/Phase 12 больше не начинается с нуля: добавлены pure persistent-state
+contract и Stage A Prisma/SQL custody для Listing Integrity. Они закрепляют strict
+SKU order, один live apply глобально, exact package/owner-permit binding,
+unknown-outcome `MANUAL_REVIEW` без replay, terminal PASS/quarantine advancement и
+append-only event/artifact history. Stage A runtime жёстко `OFF`; additive migration
+проверена в production как `INSTALLED` с exact objects/triggers и checksum.
+Broad activation migration не добавляется. Добавлен GET-only durable control status:
+он валидирует SHA-sealed DB rows, показывает active SKU/next decision, возвращает
+`NOT_INSTALLED` при отсутствии migration и отклоняет POST/PUT/PATCH/DELETE с `405`.
+Verified status-card подключена к вкладке Walmart Growth → Listing Integrity.
+Trusted operator admission и transactional CAS persistence boundary теперь
+готовы: exact receipt допускается только в `ONE_SKU`, а состояние, evidence bytes
+и hash-chain event фиксируются одной транзакцией; stale replay не создаёт
+дубликаты. Process-local runtime authority не доверяет строке `ONE_SKU`: он заново
+проверяет уже существующий Ed25519 one-SKU permit, exact listing/state/release и
+не вводит второй owner approval или пароль. Clean shell-free process adapter
+вызывает только V50 wrapper для `execute|resume|qualify`, валидирует exact
+release/manifest/global-admission/package/confirmation и запрещает retry/replay;
+receipt возвращается в одну CAS/evidence/hash-chain transaction. Focused tests
+`71/71`, TypeScript/ESLint и diff-check PASS. SHA-pinned seed boundary создаёт
+только `DEFAULT_OFF` очередь и отвергает overlap с active predecessor. Read-only
+worker выполняет exact Product Truth manifest-bound capture, signed blind image
+observe и diagnosis по одному SKU. `CLEAN_CANDIDATE` теперь проходит отдельный
+source-aware no-write Qualification, проверяющий raw seller/catalog/PDP, exact image
+bytes, observer plan и signed receipts, и получает factual gallery `ДО = ПОСЛЕ`
+до `AUDITED_PASS`; `BAD` записывается как `ISSUE_PROVEN`, source/evidence gaps — quarantine;
+unknown observer call не replay. Exact repair-plan/package lane для
+`ISSUE_PROVEN` теперь готова: deterministic route допускает только
+description/bullets, optional MAIN и optional full gallery; candidate проходит
+собственную Qualification, package/permit выпускаются для одного SKU, frozen
+operator сохраняет receipt, а factual `До → После` становится обязательной частью
+terminal PASS. Gallery recovery не повторяет POST. Focused production/control/
+полный релевантный production regression `258/258`, full-project TypeScript,
+targeted ESLint и diff-check PASS. Исправлен exact snapshot asset root. На safe
+checkpoint successor был остановлен, затем отдельная control-plane release boundary
+закрыта: v2 `fa83b11e…3311`, manifest `f9a255bc…a402`, clean-snapshot
+`294/294 PASS`, tamper rejected. Successor v3 затем sealed-исключил cross-session
+reservation `FaisalX-1435` и прошёл `295/295`. LaunchAgent restart probe PASS.
+Read-only preview v3 (`controlled-pool-b35e998941cc96b5578a`, SHA
+`683d4a62c…d144`) исключает `1435` и имеет все writes `0`, но выявил следующий
+честный gate: v3 pins census от 28 июля и preview ещё содержит active predecessor
+`1144`. Поэтому successor LaunchAgent штатно выгружен на safe checkpoint; monitor
+`67459` и reconciliation `36838` остаются detached/GET-only/local-only. Следующий
+шаг после перезапуска — source-validated current population, fail-closed freshness
+gate и sealed v4; только затем successor продолжит максимум три SKU и публикует
+gallery до advancement. Оставшаяся platform-часть — последовательная обработка
+controlled pools/full catalog.
+V4 теперь закрыт и активирован: authoritative ITEM_CATALOG request
+`019fbe92…191a` дал `5235` exact rows / `3877 PUBLISHED`, census
+`056cc428…ede7c`, plan `b67cdf85…d6dd`. Release `8d3bd9b7…17e3c`, manifest
+`5a8d3fbf…f10c5`, clean `303/303`, tamper rejected; static catalog pins удалены,
+а runtime требует report ≤24h, snapshot ≤15m и exact report/mirror reconciliation.
+Read-only pool v8 (`59547692…38441a`, file `bb2acd72…df3b`) видит `66` ready /
+`1726` source-required, исключает `1144/1435`, все writes/model/paid calls `0`.
+LaunchAgent v4 снова active и fail-closed ждёт disposition `1144`.
+Controlled restart v4 также PASS: PIDs `56909/56911 → 57657/57658`, replacement
+status сохранил exact `1144` predecessor wait и writes `0`; receipt SHA
+`33a4648d…19bb`.
+Frozen v4 runtime затем независимо прошёл реальный динамический маршрут fresh
+census → Product Truth → pool: census `a5aac585…fe19`, plan `10c063c3…b184`,
+pool `5f06ceb6…2476d6` / file `164061b7…7840`; первый SKU `FaisalX-2554`,
+`1144/1435` исключены, external writes/model/paid calls `0`. Proof receipt SHA
+`88eb8396…17e9`.
+Safe restart checkpoint `2026-08-01T20:37:52Z`: новый SKU/POST не начат;
+detached monitor `1144` (PID `67459`) остаётся на Qualification check 14
+`PENDING_PROPAGATION`, reconciliation PID `36838` видит `1434=PASS/1144=WAIT`,
+а v4 LaunchAgent PIDs `57657/57658` ждут тот же predecessor с writes `0`.
+Процессы и durable status не зависят от VS Code; после перезапуска повторный POST
+запрещён, продолжение — только с terminal Qualification/disposition `1144`.
+Permanent Command Center live proof после restart показывает exact frozen v4
+denominator `5235/3877/5100`, pool `5f06ceb6…2476d6` (`66` ready / `1726`
+source-required, первый `FaisalX-2554`) и шесть final galleries. Старый pending
+owner review завершённого `FaisalX-1228` отсутствует. Обновлённый loader/API/UI
+regression `11/11`, TypeScript/ESLint/diff-check PASS; Walmart reads/writes `0/0`.
+Live runtime observability также больше не скрыта в локальных файлах: новый
+GET-only loader/API валидирует exact successor/monitor custody и показывает во
+вкладке active SKU, Qualification check/status и process liveness с refresh 15s.
+Текущий projection = `FaisalX-1144`, check 16 `PENDING_PROPAGATION`, blocking
+facet `main`, publication/indexing preserved, failure not before `23:12:25Z`, оба
+процесса running; mutation methods `405`, tampered nonzero-write wait отклоняется.
+Terminal FAIL отображается как `REQUIRES_DISPOSITION`. Combined regression
+`16/16`, TypeScript/ESLint/Next production build PASS; status-loader Walmart
+reads/writes `0/0`.
+Latest safe restart checkpoint `2026-08-01T21:06:11Z`: `1144` остаётся на check
+16 с единственным blocking facet `main`; monitor/reconciliation/LaunchAgent
+PIDs `67459/36838/57657/57658` живы с PPID 1, successor writes `0`, нового SKU
+или POST нет. Финальный runtime production build создан в `21:05Z`; после
+перезапуска продолжать только с durable terminal Qualification/disposition.
+Successor preflight затем закрыл два runtime gap до следующего SKU: service явно
+выбирает sealed Codex vision lane и authenticated `ssh-openclaw`, а не
+rate-limited Claude/default `/generate` URL. Новый plist SHA
+`bd756f2e…16ad18`; controlled restart PIDs `67025/67026` вернулся в тот же exact
+predecessor wait с writes/model calls `0/0`.
+Safe code checkpoint `2026-08-01T21:27Z`: `1144` остаётся на check 17
+`PENDING_PROPAGATION`; monitor/reconciliation/v4 successor PIDs
+`67459/36838/67025/67026` живы с PPID 1 и writes `0`. Новый fail-closed MAIN
+terminal-disposition/recovery path подготовлен в mutable source и прошёл targeted
+regression `24/24`, но намеренно ещё не включён в frozen release/LaunchAgent.
+Следующая точка — sealed control release с этим модулем и активация только на
+безопасной границе между SKU; повторный POST для `1144` запрещён.
+Frozen control v5 активирован `2026-08-01T21:35:33Z`: release
+`e06c8e33…d66d6f2`, manifest `daef082f…709831`, clean/tamper boundary и
+`308/308 PASS`. Оба terminal MAIN crash windows теперь восстанавливаются только
+из exact persisted receipt/disposition, без replay и без Walmart/model calls.
+LaunchAgent PIDs `75023/75025`, plist `4ade8ff6…4d7f4`, status = exact
+`1144` predecessor wait, writes `0`; activation receipt `d4b2cbd1…7a1fe6`.
+Legacy pre-Stage-A `1144` bridge больше не является PASS-only: exact final FAIL
+может пройти только frozen v5 post-SLA MAIN disposition при сохранённом PASS
+`1434`, после чего admission архивируется как quarantine без replay. LaunchAgent
+PID `77311`, script `09db3536…67cd5d`, plist `927ebdcf…82a13`; live pending и
+synthetic exact-receipt/tamper tests PASS, bridge receipt `3f34a93f…014db`.
+Frozen control v6 активирован после безопасного VS Code reload: release
+`d64ec0d7…96be4`, manifest `35507839…083f7`, clean commit `7ade36b`,
+`312/312 PASS`. Новый atomic `RUN_COMPLETED` boundary сохраняет terminal evidence
+и допускает только свежий десяти-SKU epoch; внутри epoch по-прежнему исполняется
+строго один SKU, PASS требует factual gallery. LaunchAgent PIDs `81916/81922`,
+plist `d8a1348c…e4a31`, status = exact `1144` predecessor wait, writes `0`;
+activation receipt `20b144c0…c58450`.
+Frozen control v7 закрыл end-of-catalog gap: durable terminal keys всех epoch
+исключаются из fresh pool; source-required-only pool становится bounded one-SKU
+diagnostic queue и не повторяется; честный empty pool возвращает
+`CATALOG_COMPLETE` для финального отчёта. Clean commit `404e6a9`, release
+`8a376d9f…9d150`, manifest `67bb9037…71a7c`, `314/314 PASS`. LaunchAgent
+PIDs `84829/84835`, plist `4d865687…8a23b`, exact `1144` wait, writes `0`;
+activation receipt `84abf4d3…7caf07`.
+Frozen control v8 исправил denominator: candidate scope теперь включает все
+active `PUBLISHED` ITEM_CATALOG rows с item ID/title. Для snapshot `5235` rows /
+`3877 PUBLISHED` прежние `1799` preliminary-signal candidates остаются первыми,
+но больше не являются границей аудита. Clean commit `10b915d`, release
+`17a9a38e…f4970`, manifest `81ac0087…78875`, `315/315 PASS`; LaunchAgent
+`86209/86214`, plist `c5c82380…7daa5`, exact `1144` wait, writes `0`, activation
+receipt `23dbbc76…b2f0e`.
+Frozen control v9 закрывает visual gap для `SOURCE_REQUIRED`: exact buyer/image
+capture, signed blind observation и live title/text/image self-consistency теперь
+выполняются до documented quarantine; contradictions сохраняются, но repair
+authority без Product Truth не возникает. Clean commit `adb402f`, release
+`111b01e9…7e65d0`, manifest `6ff23d0e…2ad0d9`, `315/315 PASS`; LaunchAgent
+`88750/88755`, plist `60f680fa…feb736`, exact `1144` wait, writes `0`, activation
+receipt `5a4b92fc…7e91a5`.
 
 **Главная цель (ствол):** исправить все Walmart-листинги так, чтобы фактически
 отгружаемый товар, вариант, размер, состав набора и количество полностью совпадали с
@@ -1151,6 +1358,30 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   SKU remain blocked on terminal feed status. Latest sealed local status/report
   both say `ACCEPTED → resume` (file SHA `5df350b5…b227c8e` and
   `5057ec04…13d84`). Mass/automatic run is `NO-GO`.
+- 🟡 **`FaisalX-1140` Total-count recovery + v31 Qualification
+  (2026-07-28)** — both the content/image feed and the separate attribute-only
+  recovery feed are terminal `SUCCEEDED`, one accepted SKU and zero item
+  failures. The recovery payload contains only `count=4` and `countPerPack=1`;
+  no text, image, price, inventory, status or delisting field is present.
+  Walmart still exposes `Multipack quantity=4` but not buyer-visible
+  `Total count`. Frozen v31 `b413a185…2aa9a0`, manifest
+  `bcd1f41d…109ba`, clean `193/193`, preserves the v30 fix for alternate JPEG
+  encodings behind the same exact reviewed ASR URL and additionally makes the
+  factual-gallery verifier prefer `Total count` over unrelated `Piece count`.
+  A changed URL still fails and a gallery-changing repair still requires exact
+  target bytes.
+  Latest fresh GET-only Qualification at `2026-07-28T23:26:17.570Z` passes
+  identity, publication/indexing, product/variant, Pack of 4, title,
+  description, bullets, MAIN and gallery; only attributes and dependent
+  aggregate facets remain blocked. The exact `Breads & Buns` schema confirms
+  `count=4` / `countPerPack=1` against live `multipackQuantity=4`, and four
+focused suites pass `43/43`; полный v31 clean-checkout suite — `193/193`.
+A bounded background monitor performs only fresh GET-only Qualification at
+`01:15:48Z` and `04:16:30Z`, stops early on PASS/FAIL and cannot perform a
+second content POST. На PASS он строит factual gallery и successor pool; на
+FAIL запечатывает terminal quarantine и строит successor pool без replay.
+Same-payload replay и второй SKU до terminal outcome остаются blocked; новый
+POST не выполнялся.
 - 🟢 **Reviewed MAIN engine v14 / `FaisalX-1148` canary завершён
   (2026-07-27)** — exact defect = ambiguous description/bullets plus current
   MAIN showing `8` packages for outer Pack of `2`; title, attributes, gallery,
@@ -1600,8 +1831,1036 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `9` append-only rows, `3 FACT` для `RizwanX-2686/2687/2688`. Full readiness
   `c85b9555…cba2`: `28 FACT / 3 ESTIMATE / 730 UNSOURCEABLE / 5174 MISSING`,
   Procurement `28`, denominator `5935/5935`.
-- [ ] ⬜ Следующий крупный этап: сертифицировать в Command Center
-  sales-ranked standing-authority wave orchestrator вместо ручного повторения
-  каждого target. Обязательные границы: concurrency `1`, one-attempt/no-retry,
-  immutable artifacts, exact provider ledger/reserve floor, независимые
-  content/price outcomes и отдельный zero-paid COGS/readiness checkpoint.
+- [x] ✅ Убрано ручное повторение one-target lifecycles: certified
+  sales-ranked standing-authority wave orchestrator выполняет
+  doctor/plan/balance/authorize/execute/COGS/readiness последовательно,
+  concurrency `1`, one-attempt/no-retry, с immutable artifacts и exact ledger.
+- [x] ✅ Первая bounded production wave `ptsw-20260729t181145z`: пять targets,
+  `3 COMPLETED / 2 AMBIGUOUS`, `25/30` units, retry `0`, mutations `0`;
+  report `531500a1…50798`. Три сохранённые exact prices материализовали `9`
+  новых `FACT`; readiness `c227ab17…b5e5`:
+  `5935/5935`, `37 FACT / 3 ESTIMATE / 721 UNSOURCEABLE / 5174 MISSING`,
+  Procurement `37`, content-ready `100`.
+- [x] ✅ Постоянный SS Command Center control plane выпущен commit
+  `56a12b397`: Catalog Operations panel, immutable web command/result
+  contracts, dedicated worker credential, clean-release pinning, durable
+  lease/heartbeat, exact one-active-wave SQL guard и fail-closed
+  cross-release/manifest/policy resume. Clean Product Truth `589/589`,
+  TypeScript, ESLint, diff-check и production build PASS.
+- [x] ✅ Successor control migration applied/verified: `51/85/347`
+  command/artifact/event rows byte-equivalent, FK `0`, receipt
+  `f8387d6c…7bde7`. Production deployment
+  `dpl_2K8Mwr5uYLDWWKbhrWrZ7tEkdowB` работает на exact release `56a12b397`;
+  оба clean pinned workers `running`, claims `200/IDLE`, Catalog
+  `ACTIVE/READY`. Activation receipt `c0218492…b48b6`.
+- [x] ✅ Predecessor incident `ptswc-46aa…214b` закрыт без replay: terminal
+  lease `AMBIGUOUS`, exact spend только `2.5` units balance probe, execution
+  receipt/artifact и business rows `0`; proof `817e4f8f…6fd5`.
+- [x] ✅ Heartbeat-resilient r3 `699f4353f` / `b8f91f62…bed9` прошёл focused
+  `6/6`, полный Product Truth `594/594`, TypeScript, ESLint, build; deployment
+  `dpl_98pWm5AUdFokr9wZEb5rdqFp6bsu` READY, оба workers pinned/running,
+  activation receipt `a10c6d31…575d`.
+- [ ] 🔄 Выполнить новую bounded wave через r3 permanent Command Center lane,
+  затем повторить full `5935/5935` readiness. Predecessor не resume/replay.
+
+---
+
+## Walmart Maruchan `FaisalX-1433`–`1435` repair — 2026-07-29
+
+Полный evidence, exact target surface и owner decision:
+[[walmart-maruchan-faisalx-1433-1435-repair]].
+
+- [x] ✅ Владелец разрешил exact three-SKU catalog/content/weight/price repair
+  и последующую live Walmart publication.
+- [x] ✅ Это поручение записано как consumed owner decision: повторные approval
+  phrase, confirmation string, SHA или permit ID у владельца не запрашиваются.
+- [x] ✅ Identity correction: authoritative listing titles, UPC/catalog truth
+  and external exact-product checks prove ordinary **Chicken Flavor**. A
+  conflicting Roast image is an image defect and must not relabel the product.
+- [x] ✅ Old Roast `item-text` failed correctly with
+  `ERR_EXT_DATA_0101119/QARTH`; this proves a bad identity payload, not missing
+  API authority. Old text and attribute payloads are forbidden.
+- [x] ✅ Catalog COGS values remain `$16.86 / $39.90 / $78.30`. The
+  superseded Roast recipe provenance is preserved only as immutable history.
+- [x] ✅ Prices were written once and read back:
+  `$52.83 / $111.39 / $197.49`. They must not be resent.
+- [x] ✅ Exact ordinary-Chicken main images and exact 12-cup Chicken carton
+  secondary image were byte-verified. Three separate one-SKU v36 image plans
+  are staged and contain no Roast identity fields.
+- [x] ✅ Wiki correction and identity rule are recorded in
+  [[walmart-maruchan-faisalx-1433-1435-repair]]; `wiki-brain` reports
+  `0` orphans and `0` broken links.
+- [x] ✅ Mistakenly accepted Roast image feed
+  `18C6F1DFA0C558199A667859246F4533@AX8BBgA` reached
+  `SUCCEEDED_AND_READ_BACK` through GET-only `resume`; it was not replayed.
+- [x] ✅ Chicken compensation for `1433`, feed
+  `18C6F6D0E08157FA8934D35991FBE3A0@AX8BBwA`, completed
+  `SUCCEEDED_AND_READ_BACK`; outcome SHA `c5568424…da817`.
+- [x] ✅ Chicken image feed for `1434`,
+  `18C6FB4C38E659D49E18EE32FC7B69B6@AX8BBgA`, completed
+  `SUCCEEDED_AND_READ_BACK`; outcome SHA `c2142793…7f268`.
+- [x] ✅ Final Chicken image feed for `1435`,
+  `18C700368B515287AB5E894022FF9380@AX8BBwA`, completed
+  `SUCCEEDED_AND_READ_BACK`; outcome SHA `7b076038…27c9e`. It was submitted
+  once and never replayed.
+- [x] ✅ Fresh buyer-surface reread proves ordinary-Chicken MAIN images with
+  correct 24/60/120 counts and the correct 2/5/10 variant options. It also
+  proves stale Roast bullets, stale Roast secondary images for `1433`/`1434`,
+  no exposed secondary for `1435`, and a stale Roast title for `1435`; the
+  listings are not yet fully coherent.
+- [x] ✅ Frozen v37 passed the full `25/25` release suite and sealed a
+  Chicken-only text plan for `1433`. The one submitted feed
+  `18C706C56A07515D9787E81F2353E3D8@AX8BBwA` became terminal
+  `ERR_EXT_DATA_0101119/QARTH`, `0/1` succeeded, outcome
+  `40a407e9…bdf`; it was not replayed.
+- [x] ✅ Because the correct Chicken payload also failed, the remaining content
+  boundary is Walmart unified-catalog ownership, not Roast/Chicken identity,
+  credentials, signature, transport or release version. No blind text or
+  attribute feeds were sent for `1434`/`1435`.
+- [ ] ⛔ Remaining title/bullets/description/attributes/weight need Maruchan
+  brand-owner/authorized-reseller privileges or a Walmart-reviewed catalog
+  correction. Seller Center uses the same content-priority model; the expired
+  VPS Chrome session is not the root cause.
+- [x] ✅ Canonical ordinary-Chicken Product Truth correction applied
+  append-only: exact plan `ptroc-01602321db0cb8ec116c6fd4`, `6` inserted rows,
+  `costRowsChanged=0`, apply SHA `e87b37e2…c719`, postflight
+  `ALREADY_APPLIED`. Independent production reread selected Chicken recipes
+  `24/60/120` and unchanged COGS; sealed readback SHA `31ec21a3…5a4`.
+- [x] ✅ Fresh 2026-08-01 read-only verification supersedes the historical
+  gallery finding: all three current MAIN images and the exposed 12-cup carton
+  secondary image are ordinary Chicken. Prices still read back as
+  `$52.83 / $111.39 / $197.49`; no price operation was replayed. Roast text
+  remains on all three surfaces, and `1435` still has a Roast title.
+- [x] ✅ Canonical exact-content acquisition was attempted once through the
+  listing-bound frozen Product Truth operator. It ended terminal `AMBIGUOUS`
+  before detail because `ramen noodles` were classified as unexplained title
+  tokens. Report `bfcec22a…38a`, combined spend `3.5` units, retry `0`, content
+  evidence/canonical writes `0`, `next_command=null`; no replay is allowed.
+- [ ] ⬜ Build and independently certify a successor exact-item admission that
+  handles this title-token equivalence without weakening exact variant checks.
+  The existing terminal run and mutable legacy donor content are not valid
+  shortcuts.
+- [x] ✅ Rechecked the owner's “only Roast images are wrong” hypothesis against
+  same-day Seller/catalog/PDP/image evidence. Images are already ordinary
+  Chicken. Remaining defects are Roast descriptions/bullets, mixed attributes
+  and the `1435` Roast title. No new feed was sent because the hypothesis was
+  false and the current write gate remains closed.
+- [x] ✅ Owner selected the clearer exact-carton MAIN candidates (`2×12`,
+  `5×12`, `10×12`) and directed the remaining Chicken correction to continue;
+  this direction is consumed without another approval ceremony.
+- [x] ✅ Exact Walmart Catalog Support package is ready under
+  `20260801T145116Z-maruchan-catalog-support-case-v1`, manifest SHA
+  `13ed522d…7b42`. It binds the target content, selected MAIN SHA values,
+  terminal QARTH evidence, fresh seller baseline and canonical Chicken/COGS
+  readback.
+- [ ] ⛔ Seller Center submission is waiting only for an authenticated managed
+  browser. Browser discovery returned an empty list; cases submitted `0`,
+  Walmart/price/inventory writes `0`, replay `0`. After browser connection,
+  submit the exact package, then wait for catalog arbitration before a new
+  frozen one-SKU Marketplace package.
+
+---
+
+## Product Truth Phase 1 recipe-repair scope — 2026-07-29
+
+- [x] ✅ r6 web-controlled wave is terminal: `4 COMPLETED / 1 AMBIGUOUS`,
+  `27.5/30` units, retry `0`, business mutations `0`; `12` listing-level
+  `FACT` outcomes added.
+- [x] ✅ Current exact denominator: `5935/5935`; recipes
+  `761 present / 5174 missing`; COGS
+  `52 FACT / 3 ESTIMATE / 706 UNSOURCEABLE / 5174 MISSING`.
+- [x] ✅ New read-only canonical scope builder and artifact
+  `product-truth-recipe-repair-scope/1.0.0`,
+  SHA `8dde8964…a3b67`, bind manifest/readiness/bridge/snapshot/historical
+  bytes without creating a parallel catalog or authorizing writes.
+- [x] ✅ Historical image state maps uniquely to `2712` current Walmart
+  listings; `2110` still need recipes, `602` already have recipes, `51` are
+  outside authoritative scope. Old statuses are evidence pointers only.
+- [x] ✅ No automatic materialization candidate remains: `84` listings have
+  at least one exact-identity-only component, but `0` are exact across every
+  component. Tests `5/5`, TypeScript and targeted ESLint pass.
+- [ ] 🔄 Build bounded exact identity adjudication + independent recipe
+  materialization from the new immutable queue; then reconcile saved prices
+  and rerun full readiness after every wave.
+- [ ] ⬜ Use paid providers only for residual evidence gaps proven
+  uncloseable from existing source bytes; do not replay ambiguous targets.
+- [x] ✅ Existing-evidence consensus reuse closed `51` additional recipes
+  without provider spend: current denominator is `812 present / 5123 missing`;
+  Unit Economics is `52 FACT / 3 ESTIMATE / 757 UNSOURCEABLE / 5123 MISSING`.
+- [x] ✅ Residual scope v4 is frozen at
+  `20260730T004804Z-full-denominator-v4` (`a672a84d…7bfc`); no further
+  collision-free existing-evidence candidate remains.
+- [x] ✅ Standing wave `ptsw-20260730t005213z` terminalized
+  `5 AMBIGUOUS`, consumed `17.5` units and created zero price/COGS/business
+  mutations; report `db90f936…4458`, readiness `0f97ee1c…2d0e`.
+- [x] ✅ Narrow `EXISTING_EXACT` Walmart `canned` comparison-title
+  normalization and hash-bound prefix/locality diagnostics pass focused
+  `79/79`, full Product Truth `616/616`, TypeScript and ESLint.
+  Bootstrap/variant strictness is unchanged.
+- [ ] 🔄 Build and inspect the next read-only bounded standing-wave plan,
+  while prioritizing scalable exact recipe identity recovery for the `5123`
+  missing listings over repeated price-only attempts.
+
+### Product Truth r8 / read-contract preservation checkpoint — 2026-07-30
+
+- [x] ✅ r8 terminalized `2 COMPLETED / 3 AMBIGUOUS`, consumed `22.5/30`
+  units, created two exact price observations and six listing-level `FACT`
+  outcomes, with retry/business mutations `0`. Plan SHA
+  `c64dfd99…c9396`; report SHA `f68c0f84…f822`.
+- [x] ✅ A post-wave `100 → 97` content-readiness regression was traced to
+  newest-only exact content selection: a newer partial observation hid an
+  older richer immutable observation for the same exact Progresso variant.
+  No source bytes or canonical history were lost.
+- [x] ✅ Commit `bdbc47a94` releases read-contract `4.0.1`, selecting valid
+  exact content by provenance, required-field completeness and then recency.
+  Certification: current worktree `617/617`, exact clean checkout `604/604`,
+  TypeScript and targeted ESLint pass.
+- [x] ✅ Fresh read-only readiness SHA `faeff8b3…deff` reconciles
+  `5935/5935`, restores content-ready `100`, and preserves
+  `58 FACT / 3 ESTIMATE / 751 UNSOURCEABLE / 5123 MISSING / 0 INVALID`;
+  provider calls and DB writes `0`.
+- [ ] 🔄 Close the remaining `5123` canonical recipes and typed COGS outcomes
+  via evidence-first exact identity materialization plus bounded provider
+  acquisition only for proven gaps; do not replay terminal ambiguous targets.
+- [ ] ⬜ Then run four-consumer SHADOW comparison and finish the permanent
+  Command Center/Phase 2 workflow; ENFORCED activation remains owner-gated.
+
+### Product Truth r9 / component-acquisition checkpoint — 2026-07-30
+
+- [x] ✅ Component-centric denominator compiled from exact immutable bytes:
+  `5123` missing recipes, `5878` component uses, `5341` valid canonical uses,
+  `3391` unique target variants.
+- [x] ✅ Acquisition scope v1.2 report SHA `94cfc6fe…52b7` partitions
+  `3188` acquisition-ready targets from `203` identity-recovery targets and
+  keeps catalog ambiguity/donor conflicts fail-closed.
+- [x] ✅ Existing catalog is reused globally: `7` exact canonical bindings and
+  `28` unique exact catalog candidates are explicit free-first lanes;
+  `3142` targets require bounded provider identity acquisition.
+- [x] ✅ Commits `a888acf18` and `b18ac8995` preserve the full
+  recipe-repair/consensus/component dependency closure. Exact detached checkout
+  passes TypeScript, targeted ESLint and Product Truth `619/619`, no skips or
+  untracked-artifact dependencies.
+- [x] ✅ Scope build/certification effects: DB/provider/paid/retailer/
+  marketplace/procurement/consumer activation all `0`.
+- [ ] 🔄 Build the component-acquisition executor plus exact all-components
+  recipe and typed-COGS materializer; consume existing evidence before any
+  provider route and never replay terminal ambiguity.
+- [ ] ⬜ Run bounded component waves and full-denominator readiness until every
+  one of `5935` scopes has a canonical recipe and typed COGS outcome.
+
+### Product Truth r10 / exact-content acquisition boundary — 2026-07-30
+
+- [x] ✅ Component scope v1.3 separates content exactness from price
+  comparability: equal units require equal printed amounts; `18.5 oz` versus
+  `18.6 oz` is no longer an exact content donor.
+- [x] ✅ Global collision analysis quarantines eight target claims sharing four
+  donors across different canonical variants before any database plan.
+- [x] ✅ Corrected final immutable scope report `383bc0d7…03a1` preserves the full
+  `5935` denominator and partitions targets as `7` existing bindings, `19`
+  collision-free catalog candidates, `3143` provider acquisitions, `6`
+  ambiguities, `13` donor conflicts and `203` identity recoveries.
+- [x] ✅ Focused `8/8`, TypeScript and targeted ESLint pass; DB/provider/
+  marketplace/procurement/consumer effects are all `0`.
+- [x] ✅ No-paid materializer commit `c96eab260` passes exact clean-checkout
+  Product Truth `625/625`, TypeScript, ESLint, Prisma and CLI smoke.
+
+### Product Truth r11 / no-paid component-resolution wave — 2026-07-30
+
+- [x] ✅ Fresh production preflight `READY_TO_APPLY` admitted exactly `19`
+  collision-free targets / at most `76` rows; plan SHA `62990d36…67fd`,
+  preflight SHA `329c3935…4dfd`.
+- [x] ✅ Atomic apply SHA `dc473977…8ee4` committed and read back all `76`
+  canonical rows with zero FK violations and zero provider/paid/retailer/
+  marketplace/price/inventory/delisting/procurement/consumer-activation effects.
+- [x] ✅ Post-wave component scope SHA `8d8f168b…2fdb` proves catalog reuse:
+  saved-catalog candidates `19 → 0`, canonical bindings `7 → 29`;
+  full readiness SHA `457a110a…5328` reconciles `5935/5935`.
+- [ ] 🔄 Materialize only all-components-exact listing recipes and reconcile
+  saved prices to typed COGS; content and price truth remain independent.
+- [ ] ⬜ Continue bounded provider acquisition/readiness waves without replaying
+  ambiguity or using clubs/BJ's.
+
+### Product Truth r12 / all-components recipe materialization — 2026-07-30
+
+- [x] ✅ All-components exact materializer is implemented with explicit
+  `1–50` listing scope, immutable source binding, atomic `≤100`-row apply,
+  typed initial COGS and legacy-donor-link exclusion. Full Product Truth
+  certification is `626/626`; TypeScript, ESLint, Prisma and CLI smoke pass
+  from exact detached commit `29a9153c4`.
+- [x] ✅ Production plan `193a185a…32f`, fresh preflight
+  `719d3a5a…1fe`, apply `818dbea8…d51` and idempotent postcheck
+  `b062a492…828` materialized `6` exact recipes / `30` rows with no paid calls
+  or business mutations.
+- [x] ✅ Saved-price reconciliation promoted two Chicken listings to `FACT`
+  (`be6c79f1…721` plan, `3adf4c2c…17c` apply,
+  `fb4ab6bf…c5ab` postcheck).
+- [x] ✅ Readiness `64f27c11…f81` reconciles `5935/5935`:
+  `818` recipes present, `5117` missing and
+  `60 FACT / 3 ESTIMATE / 755 UNSOURCEABLE / 5117 MISSING / 0 INVALID`.
+- [x] ✅ Residual scope `1f419a1e…e8d` proves zero remaining missing listing
+  can be closed entirely from current exact bindings. Free materialization is
+  exhausted; no second catalog was created.
+- [ ] 🔄 Execute impact-ranked bounded provider component acquisition, followed
+  by exact recipe/typed-COGS materialization and full readiness after every
+  terminal wave. No automatic retry, clubs/BJ's or marketplace mutations.
+- [ ] ⬜ Complete four-consumer SHADOW and permanent Command Center/Phase 2;
+  ENFORCED activation remains owner-gated.
+
+### Product Truth r13 / provider canary and content-price separation — 2026-07-30
+
+- [x] ✅ Pinned standing provider policy v2 SHA `07bb436f…39f4` allows bounded
+  Target search/detail without chat approval strings and retains no-retry,
+  no-club/BJ's and no-business-mutation gates. Commit `4ed2e67d6`; clean Product
+  Truth `627/627`.
+- [x] ✅ Pre-fix Target canary report `209efed6…73c` proved that
+  `content_only` incorrectly caused `FAILED`; it made no canonical truth write.
+  Commit `52be3aec7` fixes the independent content-vs-price outcome and passes
+  clean Product Truth `628/628`.
+- [x] ✅ Distinct post-fix Butterbread canary report `5460b654…d6f`
+  terminalized safely as `COMPLETED_WITH_GAPS` and appended one typed
+  `UNSOURCEABLE`/`NULL` cost only. No donor/content/offer row, retry, detail,
+  marketplace or procurement action occurred.
+- [x] ✅ Current readiness `193c9589…9305`: `5935/5935`,
+  `60 FACT / 3 ESTIMATE / 757 UNSOURCEABLE / 5115 MISSING / 0 INVALID`.
+- [ ] 🔄 Build the target-centric provider compiler: one acquisition attempt
+  per unique canonical component target across Walmart → Target → local Publix,
+  followed by exact donor fan-out to every dependent listing. Per-listing
+  duplicate provider spend is forbidden.
+- [ ] ⬜ Run bounded impact-ranked waves and materialize exact recipes/typed
+  COGS after each material batch; then complete four-consumer SHADOW and
+  Command Center/Phase 2.
+
+### Product Truth r14 / target-centric provider waves — 2026-07-30
+
+- [x] ✅ Target-centric compiler commit `5a5e8d7ef` selects one listing per
+  unique canonical component target, excludes terminal metered attempts and
+  keeps multi-target inference fail-closed. Exact clean checkout passes Product
+  Truth `631/631`, TypeScript, ESLint and Prisma.
+- [x] ✅ Wave 1 `ptca-20260730t043400z-target-wave-1` covered five unique
+  targets / `35` dependent listings; wave 2
+  `ptca-20260730t044630z-target-wave-2` covered five new targets / `28`
+  dependent listings.
+- [x] ✅ Both waves terminalized `5/5` honest gaps. Combined execution spend
+  was `35` provider units plus `5` units for two sealed balance probes; retry,
+  club/BJ's, donor/content/offer/recipe and marketplace/business mutations
+  were all `0`.
+- [x] ✅ Ten scoped `UNSOURCEABLE`/`NULL` costs were appended and all ten
+  targets are excluded from replay. Reports are `0b4aa6cc…a821` and
+  `93818fad…b627`.
+- [x] ✅ Readiness `af4677c1…5893` reconciles `5935/5935`:
+  `60 FACT / 3 ESTIMATE / 767 UNSOURCEABLE / 5105 MISSING / 0 INVALID`;
+  content-ready remains `100`, Procurement `60`.
+- [ ] 🔄 Pause identical general-search waves after the measured `0/10` yield.
+  Build offline candidate/query diagnostics and a stricter positive-yield
+  admission contract before spending on another unique-target batch.
+- [ ] ⬜ Resume bounded target waves only after that repair, then fan out exact
+  donors through the existing recipe/typed-COGS materializers and proceed to
+  four-consumer SHADOW. ENFORCED activation remains owner-gated.
+
+### Product Truth r15 / conservative legacy-catalog recovery — 2026-07-30
+
+- [x] ✅ Commit `12e570002` adds a closed fail-closed recovery layer above the
+  unchanged canonical matcher. Full exact clean-checkout certification is
+  `637/637`; TypeScript and targeted ESLint pass.
+- [x] ✅ Offline v1.4 scope SHA `faa02e53…51cad` recovered `7`
+  collision-free exact donors from the existing `8,544`-donor catalog while
+  leaving `6` ambiguities, `19` donor conflicts and adjacent variants blocked.
+- [x] ✅ Plan `d4632b31…c4e33`, fresh `READY_TO_APPLY` preflight
+  `e600afc3…6297`, apply `7d6b8541…8616` and idempotent postcheck
+  `22f577ab…e2b8f` materialized `7` exact bindings / `28` append-only rows.
+  Paid/provider/retailer and every marketplace/business effect were `0`.
+- [x] ✅ Post-wave bridge SHA `4da60c70…22a3` and residual scope
+  `8b87b1ae…4d56` prove bindings `26 → 33`, free candidates `7 → 0`, provider
+  targets `3127`. No listing became all-components-exact, so recipe and COGS
+  counts were not promoted.
+- [x] ✅ Post-wave readiness attempt remained read-only, produced no artifact
+  while waiting on Turso and was stopped. Last sealed full report
+  `af4677c1…5893` remains current because recipe/SkuCost did not change:
+  `5935/5935`, `60 FACT / 3 ESTIMATE / 767 UNSOURCEABLE /
+  5105 MISSING / 0 INVALID`.
+- [ ] 🔄 Build offline query/candidate diagnostics and a measurable
+  positive-yield admission contract before any further paid target wave.
+- [ ] ⬜ Resume bounded unique-target acquisition only after yield repair, then
+  fan out exact donors through existing recipe/typed-COGS materializers and
+  rerun full readiness.
+
+### Product Truth r16 / immutable provider-yield diagnostics — 2026-07-30
+
+- [x] ✅ Read-only audit proved the ten old terminal attempts preserve final
+  outcomes and metered receipts but not parsed candidates, query diagnostics or
+  rejection reasons. They cannot be honestly reconstructed or replayed
+  offline; no fabricated corpus was emitted.
+- [x] ✅ Commit `e00745ecd` adds the bounded, secret-free, SHA-bound
+  `product-truth-provider-yield-diagnostics/1.0.0` contract and operational
+  result/runner `1.1.0`.
+- [x] ✅ Future attempted sources retain query/target, source outcome, up to
+  `20` candidates per source / `60` total / `256,000` bytes, matcher and price
+  verdicts, admission reasons and receipt bindings. Raw bodies, descriptions,
+  features, images and secrets are excluded/redacted.
+- [x] ✅ Diagnostics terminalize inside immutable operational `resultJson`; a
+  failed donor persistence still returns the already-built packet. Exact clean
+  checkout `e00745ecdadc35370b6f7eba175e8bab82fe07b0` passes Product Truth
+  `640/640`, TypeScript, targeted ESLint and clean status.
+- [x] ✅ This repair used `0` provider calls, DB writes, marketplace mutations,
+  price/inventory changes, delisting, consumer activation or procurement.
+- [ ] 🔄 Build and certify the offline exact-title/adjacent-negative
+  search-query calibration corpus; admit only residual targets with measurable
+  query improvement.
+- [ ] ⬜ Compile—but do not execute—the next bounded unique-target plan after
+  calibration. Old terminal targets, retries, clubs/BJ's and marketplace
+  mutations remain excluded.
+
+### Product Truth r17 / offline query calibration and bound wave — 2026-07-30
+
+- [x] ✅ Commit `b77f010af` adds a pure offline calibration contract and binds
+  provider-target-wave `1.1.0` to the exact accepted target/query set.
+- [x] ✅ Calibration SHA `e12e33f…0e68f` evaluates `432` known-positive query
+  surfaces against `8,544` donors. Only `bag`, `bottle`, `can` pass:
+  top-1 `354 → 357`, MRR `0.878362493987 → 0.882606321148`, degradations `0`.
+- [x] ✅ `1,013/3,127` provider targets / `1,451` dependent listings are
+  admitted. `2,114` remain excluded rather than inheriting an unproven query.
+- [x] ✅ Fresh no-spend wave SHA `508268cc…2f151` selects five exact targets /
+  `23` dependent listings, binds request `cd2bf218…f9d87` and terminal capture
+  `a19c1b34…5c93e`, and authorizes no execution by itself.
+- [x] ✅ Exact detached checkout
+  `b77f010af07d5e97dd47363608c35888405e32dd` passes Product Truth `645/645`,
+  TypeScript, targeted ESLint and clean tracked status.
+- [x] ✅ The exact canary spent one `2.5`-unit balance probe plus `17.5`
+  execution units, made no retry/business mutation and retained bounded
+  diagnostics for all five terminal gaps.
+- [x] ✅ Diagnostics proved the operational request discarded the calibrated
+  query and COGS sent the old no-form query. The run is diagnostic only; its
+  terminal targets remain non-replayable.
+- [ ] 🔄 Seal target variant/hash/query through request → plan → runner → COGS
+  and certify the repaired runtime before another paid target.
+- [ ] ⬜ Materialize every recovered exact donor into existing recipes and
+  typed COGS, then rerun the complete `5935/5935` readiness denominator.
+
+### Product Truth r18 / sealed provider-query delivery — 2026-07-30
+
+- [x] ✅ Operational request/plan `1.1.0` now seal listing key, canonical
+  variant, identity hash, calibrated query version and exact query bytes.
+- [x] ✅ COGS recomputes the runtime canonical variant and uses the sealed query
+  only for one exact component; identity/hash/version/bundle drift fails before
+  provider I/O.
+- [x] ✅ Standing policy v3 SHA `cfd78218…751e0` pins plan `1.1.0` without
+  expanding the existing `100 listings / 100 units / 15,000 reserve`,
+  no-retry/no-club/no-business-mutation authority.
+- [x] ✅ Strict matcher `1.2.1` remains unchanged. Missing packaging evidence
+  is not globally ignored; any residual gap must use exact source-detail
+  verification.
+- [x] ✅ Product Truth `646/646`, TypeScript and focused `52/52` are green;
+  implementation/certification used `0` provider calls and `0` writes.
+- [x] ✅ Exact commit `6f0e86003f5455d57ebd7e6229fc5a811ae52591`,
+  tree `2148712044f9d8bd5d2eeb4806bd7a38d6e6ba88`, passes detached
+  clean-checkout Product Truth `646/646`, TypeScript and targeted ESLint with
+  zero errors.
+- [ ] 🔄 Compile a fresh calibrated wave excluding every prior terminal target,
+  then execute only after standing preflight and verify diagnostics contain the
+  exact sealed query.
+
+### Product Truth r19 / exact source-detail identity — 2026-07-30
+
+- [x] ✅ Fresh five-target / `20`-listing canary excluded nine prior terminal
+  targets and proved byte-identical calibrated queries through wave, request
+  and plan. It used `20` total provider units including the balance probe,
+  retry/business mutations `0`; report SHA `53980aef…73477`.
+- [x] ✅ Diagnostics proved the right products were retrieved but short
+  retailer search copy omitted `bag` or contained two bounded full
+  merchandising phrases. Lay's Jalapeño remained genuinely third-party-only.
+  The same packet exposed `248` false future-time rejections.
+- [x] ✅ Release `1b43bf8103798644a12c1bd39ad1fa3cfebf80ce`, tree
+  `8189656696541cb652bc101bc317736658a9e1bf`, samples evaluation time only
+  after provider response and adds strict same-retailer-item detail proof for a
+  structured container form. Brand/flavor/size/pack drift remains fail-closed.
+- [x] ✅ Exact content may persist independently from a rejected/NULL price;
+  the detail receipt and source lifecycle prevent a second paid harvest of the
+  same response. Detached clean checkout passes Product Truth `653/653`,
+  TypeScript and clean tracked status; repair/certification effects were `0`.
+- [x] ✅ Fresh r19 canary
+  `ptca-20260730t065826z-r19-source-detail-canary` excluded all fourteen prior
+  terminals, selected five new targets / `18` listings and preserved exact
+  wave→request→plan acquisition bytes. Wave SHA `e3e6ff4e…c730`, request SHA
+  `c1365eef…3d07`, plan SHA `3cd947d8…fb5d`.
+- [x] ✅ Standing preflight was `READY_TO_APPLY`; execution used `21.5`
+  provider units, one attempt per target, retry/clubs/BJ's/business mutations
+  `0`. Report SHA `1947f7c5…114d`, artifact-index SHA `52b906f9…4e7a`.
+- [x] ✅ Post-response clock repair is proven on production evidence:
+  `FETCHED_AT_IN_FUTURE` count is `0`. Two detail calls timed out, one
+  successful detail failed strict `bag` identity proof, one target had no
+  narrow detail candidate and one lacked authoritative listing input.
+  Consequently all five are honest terminal gaps and canonical writes are
+  `0`; read-only inspection confirms no r19 variant/content/offer/harvest rows
+  were fabricated.
+- [ ] 🔄 Use retained diagnostics to tighten positive-yield admission for a
+  fresh source-detail candidate without weakening matcher `1.2.1`. The
+  nineteen terminal targets remain excluded and retry remains forbidden.
+- [ ] ⬜ After one positive exact-detail proof, offline-verify saved
+  content/NULL-price/lifecycle evidence, fan it through existing recipe and
+  typed COGS materializers, and reseal full `5935/5935` readiness before
+  scaling.
+
+### Product Truth r20 / saved-evidence materialization — 2026-07-30
+
+- [x] ✅ Fresh read-only baseline `894eed7a…82e1` reconciled `5935/5935`:
+  `60 FACT / 3 ESTIMATE / 781 UNSOURCEABLE / 5091 MISSING`.
+- [x] ✅ Fresh bridge/scope artifacts prove `0` remaining direct legacy or
+  existing-catalog exact candidates and identify thirteen missing listings
+  whose full component graphs already have exact canonical bindings.
+- [x] ✅ Plan `6e485b4c…afb5`, preflight `20043913…ba6` and apply
+  `2d4d1197…ae96` materialized `13` recipes and typed UNSOURCEABLE outcomes,
+  `65/65` append-only rows, with zero collisions, paid calls or business
+  mutations.
+- [x] ✅ Saved-price audit found exactly three complete FACT graphs.
+  Plan `899ae8fc…fa6c`, preflight `ea22c855…60cc` and apply
+  `367b6d15…0a7e` promoted `FaisalX-4500/4501/4502` to FACT and inserted
+  `9/9` rows without provider access.
+- [x] ✅ Final readiness `efd3bd88…f757`: recipes `831`,
+  `63 FACT / 3 ESTIMATE / 791 UNSOURCEABLE / 5078 MISSING / 0 INVALID`;
+  Procurement-ready `63`, Unit-Economics-ready `66`, content-ready `100`.
+- [ ] 🔄 Build the next positive-yield residual-target cohort by immediate
+  closure impact and exact source-detail plus first-party-price capability.
+  Exclude all nineteen terminal targets, retry, clubs/BJ's and marketplace
+  mutations.
+- [ ] ⬜ Materialize each positive donor immediately, rerun full readiness
+  after every material batch, then proceed to four-consumer SHADOW.
+
+### Product Truth r21 / fail-closed source-detail admission — 2026-07-30
+
+- [x] ✅ Paid retailer detail is now unreachable unless the free search row
+  already proves exact size, outer pack `1`, direct first-party item binding
+  and no competing container/URL-size contradiction. Focused tests are `9/9`
+  and TypeScript is clean; paid calls and writes were `0`.
+- [x] ✅ Fresh r20-bound calibration SHA `4a9e0517…45df` admits
+  `1013/3127` targets with zero positive-case degradation.
+- [x] ✅ Source-detail admission v1.1 SHA `6584e603…13f3` reduces that cohort
+  to `52` unique exact target↔item candidates affecting `68` listings after
+  `35,505` offline comparisons. It does not authorize execution.
+- [ ] 🔄 Require this exact admission artifact in the provider-wave compiler,
+  then intersect it with the fresh terminal-attempt capture.
+- [ ] ⬜ Execute only the smallest resulting positive-yield canary under the
+  existing budget/reserve/no-retry/no-club/no-business-mutation boundaries,
+  materialize exact results and rerun full `5935/5935` readiness.
+
+### Product Truth r22-r24 / exact item pin and terminal canary — 2026-07-30
+
+- [x] ✅ Provider wave/request/plan `1.2.0` seal source-detail admission
+  `6584e603…13f3` plus exact retailer/item/URL through the runtime boundary.
+  Legacy `1.1.0` plans cannot acquire new detail without that pin.
+- [x] ✅ Standing policy v4 SHA `bbf132b5…c6f1` admits only the hardened
+  operational schema under the unchanged `100 listings / 100 units / 15,000
+  reserve`, no-retry/no-club/no-business-mutation limits.
+- [x] ✅ Focused suites pass `56/56` and TypeScript is clean. Runtime requires
+  the current search to return the exact sealed retailer item and uses the
+  sealed URL; adjacent or unpinned items cannot consume detail.
+- [x] ✅ r22/r23 exposed and preserved two independent negatives without
+  replay: detail identity remained non-exact, and a disabled Publix route was
+  incorrectly treated as execution failure. New waves now state only the
+  executable Walmart+Target routes.
+- [x] ✅ r24 completed with one typed `UNSOURCEABLE` COGS outcome, retry `0`,
+  `6` execution units, report `3bff75cd…abf9`, artifact index
+  `e9504f93…bec8`, and zero marketplace/business mutations.
+- [ ] 🔄 Build a no-provider authoritative listing-image/UPC ↔ existing-donor
+  evidence gate before scaling the remaining `49` candidates; measured exact
+  source-detail yield is currently `0/3`.
+- [ ] ⬜ Execute only the positive-yield cohort, fan out exact donors through
+  the existing catalog/recipe/COGS lanes, then rerun `5935/5935` readiness.
+
+### Product Truth r25 / saved exact-item reuse and URL-form proof — 2026-07-30
+
+- [x] ✅ Three fresh exact-item targets were executed once under plan
+  `d68e8b10…bd35`; working spend was `15.5` units plus one `2.5` balance
+  probe, retry/business mutations `0`. All terminalized honestly; report
+  `279ef225…ae7e`, artifact index `ba6b9420…91da`.
+- [x] ✅ Two exact details exposed missing structured package fields while
+  their first-party URLs explicitly contained `Bag`; the third exact admitted
+  item disappeared from the transient search result before detail.
+- [x] ✅ Detail identity `1.2.0` allows an exact same-item URL to supply only
+  the one missing form token and blocks a competing container. The canonical
+  matcher and every other identity dimension remain strict.
+- [x] ✅ A transient search miss can now reuse only the byte-matching saved
+  first-party retailer/item/URL row after the same strict admission check.
+  Its old price timestamp is preserved independently from the new detail
+  identity timestamp.
+- [x] ✅ Focused suites pass `36/36` and `30/30`; TypeScript is clean. Repair
+  effects were `0` provider calls and `0` production/business writes.
+- [ ] 🔄 Run full Product Truth certification, compile a fresh
+  terminal-excluding wave and inspect the smallest unattempted explicit-form
+  candidate before any paid execution.
+- [ ] ⬜ Persist and independently verify the first exact donor, fan it out
+  through existing recipe/typed-COGS materializers, then reseal full
+  `5935/5935` readiness.
+
+### Product Truth r26-r28 / truthful detail diagnostics and GTIN gate — 2026-07-30
+
+- [x] ✅ Exact canary selection is now canonical-variant-bound and excludes
+  absent, terminal, inadmissible or unrepresentable targets. Complete
+  certification is `666/666`; TypeScript passes.
+- [x] ✅ r26-r28 each executed once, with retry `0` and no business mutation:
+  Progresso Walmart `15240722`, Hunt's Walmart `14359004585`, Green Giant
+  Target `94992028`. Total execution spend was `18` units plus `7.5` balance
+  units. All three terminalized honestly; no target is replayable.
+- [x] ✅ Detail-reject diagnostics now preserve the exact observed/evidence
+  title and matcher tokens. Hunt's proved the old preflight hid extra variant
+  tokens behind an earlier missing-form return.
+- [x] ✅ Escalation admission `1.2.0` audits the whole title remainder before
+  paid detail. New immutable admission `003a6230…59fc` shrinks `52 → 18`
+  targets and `68 → 22` dependent listings; terminal exclusion leaves `17`.
+- [x] ✅ Green Giant proved the remaining boundary: same-item Target detail
+  may return no package type at all. Such a row remains exact-item evidence
+  but cannot become exact product identity from title alone.
+- [ ] 🔄 Build the offline/connected-read-only authoritative listing
+  GTIN/UPC ↔ exact retailer-item evidence gate. Preserve independent
+  content-versus-price roles and require exact bytes; no title inference,
+  proxy promotion or paid replay.
+- [ ] ⬜ Execute the smallest GTIN/form-proven canary, verify canonical donor,
+  content, offer and lifecycle rows, materialize dependent recipe/typed COGS
+  rows and rerun full `5935/5935` readiness before any scale-up.
+
+### Product Truth r29 / authoritative listing-form bridge — 2026-08-01
+
+- [x] ✅ Immutable bridge `e28374f5…be1c` recompiles the r28 source bytes and
+  admits `6/18` exact targets. Walmart seller multipack GTIN remains outer-offer
+  evidence only; the twelve non-proven rows stay excluded.
+- [x] ✅ Separate component materialization plan `1.1.0` preserves the legacy
+  plan path and revalidates the complete listing/scope/donor/offer proof before
+  any transaction. Production plan `95ee013e…75dd`, preflight
+  `39ac1829…6a4d` and apply `c265afb1…18d` inserted `24/24` canonical
+  operations for six donors with zero collisions or foreign-key violations.
+- [x] ✅ Fresh source rebuild identified exactly six newly closable Walmart
+  recipes. Plan `10f5fa3b…adf2`, preflight `4f39b9ea…b600` and apply
+  `6e83afbb…d14e` inserted `30/30` recipe, component, evidence, initial typed
+  COGS and scope-link rows.
+- [x] ✅ Each saved-price probe failed closed on `SAVED_PRICE_MISSING`, so all
+  six COGS outcomes remain honestly `UNSOURCEABLE`. r29 used zero provider,
+  paid, retailer, marketplace, procurement or consumer-activation effects.
+  Full Product Truth `673/673`, TypeScript and ESLint pass.
+- [x] ✅ r30 removed the repeated remote schema-gate cost; full readiness now
+  runs one schema audit and one shared read transaction and sealed `5935/5935`.
+- [x] ✅ Refreshed the residual terminal-excluding set from current production
+  state and recorded exact remaining blocker counts with zero paid calls.
+- [ ] 🔄 Continue only from independently observed package-form/GTIN proof;
+  no blind paid scale-up, retry, clubs/BJ's or business mutations.
+
+### Product Truth r30 / retailer container form and bounded readiness — 2026-08-01
+
+- [x] ✅ Bridge `1.1.0` admits exact first-party retailer `Container type`
+  evidence and fails closed on a contradictory form. Focused bridge
+  `69b02afa…ae9d` admitted one exact Snack Factory 5 oz target and rejected the
+  known Mueller's `bag ↔ Box` contradiction.
+- [x] ✅ Identity apply `76025a80…5984` inserted `4/4` canonical rows; recipe
+  apply `92bf2e27…5407` inserted `5/5` rows for
+  `walmart:1:FaisalX-4043`. Saved-price reconciliation found no exact price, so
+  typed COGS remains honestly `UNSOURCEABLE`.
+- [x] ✅ Product Truth certification `675/675`, TypeScript and ESLint pass.
+  Readiness `5fc6733a…024a1` reconciles `5935/5935` and reports
+  `63 FACT / 0 ESTIMATE / 805 UNSOURCEABLE / 5064 MISSING / 3 INVALID`;
+  Bundle/Listing content-ready `100`, Procurement-ready `0` under the current
+  24-hour price-freshness policy.
+- [x] ✅ Final wave `dbcfe845…62ab` leaves exactly three strict admissions and
+  four dependent listings; final bridge `ffdab65c…2de2` classifies one missing
+  GTIN, one explicit form contradiction and one missing authoritative form.
+- [x] ✅ Closed by r31: all three residual identities and their four dependent
+  recipes were resolved from byte-bound first-party evidence with zero paid
+  calls; exact results and next workset are recorded below.
+
+### Product Truth r31 / byte-bound target correction and final four recipes — 2026-08-01
+
+- [x] ✅ New permanent retailer identity evidence + target-resolution contracts
+  bind raw Walmart/Target HTML, exact item/URL, manufacturer GTIN and explicit
+  package form. Titles cannot supply form. Resolution `295689cc…dd65` covers
+  exactly S'mores 30 oz, Mueller's Wide 12 oz and Ridged Jumbo Elbows 16 oz.
+- [x] ✅ Canonical identity apply `1f11663d…db13` inserted `12/12` rows;
+  postflight `f5bf6d75…d779` proved `12/12 exact`, with no collision/FK issue.
+- [x] ✅ The recipe writer now consumes the immutable resolution only when its
+  dependency graph and persisted canonical decision evidence match. Recipe apply
+  `64b0bf2e…82f6` inserted `20/20` rows for four listings; postflight
+  `ccf7621a…a7e` proved exact idempotent state. COGS is honestly
+  `UNSOURCEABLE`, never fabricated from a stale or proxy offer.
+- [x] ✅ Final readiness `a45abe0c…e35e` reconciles `5935/5935` and reports
+  `63 FACT / 0 ESTIMATE / 809 UNSOURCEABLE / 5060 MISSING / 3 INVALID`;
+  content-ready `100`, Procurement-ready `0` at 24-hour freshness. Full Product
+  Truth certification `682/682`, TypeScript and ESLint pass; provider/paid and
+  all marketplace/business mutations are zero.
+- [ ] 🔄 Rebuild and partition the remaining Phase 1 denominator into free
+  saved-catalog/content work versus truly metered identity/content/price work.
+  Prepare the smallest positive-yield immutable paid cohort and exact budget;
+  do not execute it without its roadmap owner gate, and never include retry,
+  clubs/BJ's or marketplace/business mutation.
+
+### Product Truth r32 / exhausted free exact-binding reuse — 2026-08-01
+
+- [x] ✅ Fresh residual artifacts found and closed one last zero-acquisition
+  recipe, `walmart:1:RizwanX-2475`. Apply `0cd9d044…6043` inserted `5/5`;
+  postflight `07363929…e62` read back `5/5 exact`, with zero provider/paid or
+  business effects.
+- [x] ✅ Final readiness `b13f5dc3…f23e` is `5935/5935` and reports
+  `63 FACT / 0 ESTIMATE / 810 UNSOURCEABLE / 5059 MISSING / 3 INVALID`.
+  Recipe state is `843 present / 5092 missing`.
+- [x] ✅ Final component scope `f3d08098…427d8` proves no remaining missing
+  listing has all components already canonical-bound; the immediately free
+  exact-binding recipe denominator is `0`.
+- [ ] 🔄 Work the free structural partitions first (`708` listing identity,
+  `368` component graph, `464` integrity conflicts, `718` donor links), while
+  compiling the separately gated metered denominator (`3116` provider targets,
+  `203` target-identity recovery, `6` ambiguous, `19` donor conflicts) into a
+  positive-yield immutable cohort. No paid execution is authorized by this row.
+- [x] ✅ Four-ASIN Amazon Catalog Items probe completed read-only, retry `0`:
+  rich attributes/images were available for all four and identifiers for two.
+  Any returned UPC/EAN remains outer Amazon catalog-item evidence, never an
+  automatic base-unit/manufacturer identity.
+- [ ] 🔄 Build the permanent manifest-bound Amazon Catalog evidence and strict
+  listing-decomposition lane for the `577` Amazon listing-identity gaps; only
+  exact unique outcomes may materialize, all other rows stay quarantined.
+
+### Product Truth r33 / permanent Amazon Catalog evidence lane — 2026-08-01
+
+- [x] ✅ Implemented the manifest/residual-scope-bound Amazon Catalog plan,
+  connected GET-only capture and offline evidence compiler. Scope is explicit
+  (`1–50` listings), concurrency `1`, one physical attempt per ASIN, and no
+  implicit/all-scope execution path.
+- [x] ✅ Four-target canary completed `4/4` with retry `0`: plan
+  `8876e878…239a6`, capture `1d323caf…42a06`, compiled evidence
+  `b3c6d3ed…cbb1c`. Rich structured attributes/images exist for all four;
+  outer identifiers exist for two and are never treated as base-unit truth.
+- [x] ✅ Focused `3/3`, TypeScript, ESLint and full Product Truth `685/685`
+  pass. Provider/paid, DB/canonical writes and every marketplace/business
+  mutation are `0`.
+- [ ] 🔄 Build the strict decomposition and existing-catalog candidate
+  compiler. It must expose house-brand/count/size contradictions and remain
+  non-authoritative until a unique exact component graph is independently
+  proven; ambiguous rows stay quarantined.
+
+### Product Truth r34 / strict Amazon decomposition canary — 2026-08-01
+
+- [x] ✅ Offline compiler `40230fb6…e5b13` binds r33 evidence to the current
+  legacy donor snapshot, extracts structured/count signals and searches only
+  allowed direct first-party existing donors. Clubs/BJ's, flavor/form drift
+  and explicit count mismatches are excluded.
+- [x] ✅ Canary result is honestly zero exact closures: one contradictory
+  Mott's row, three rows with no allowed exact-pack candidate, zero proven
+  component identities and zero write-authorized materializations. No adjacent
+  package was promoted to content truth.
+- [x] ✅ Focused tests `6/6`, TypeScript and ESLint pass; decomposition has
+  zero network/provider/paid/DB/marketplace/business effects.
+- [ ] 🔄 Build immutable Amazon image capture and local barcode/OCR evidence;
+  only visible exact variant/count proof may advance a component graph.
+
+### Product Truth r35 / byte-bound Amazon image assessment — 2026-08-01
+
+- [x] ✅ Permanent gallery plan/capture/verifier/assessment lane is implemented.
+  Plan `ab86b152…6629`, capture `69734cb7…0869`, verification
+  `f6dce8ae…8ce4` and assessment `696f8fd5…73d8` are mutually byte-bound.
+- [x] ✅ `15/15` Amazon CDN images were captured once, retry `0`; local OCR
+  observed text on `14`, native barcode observations are `0`. Every image byte,
+  MIME signature and plan/listing/ASIN binding passes offline verification.
+- [x] ✅ Visible package facts were retained as observations only. Final canary
+  classification is `3` retailer-acquisition-required / `1` contradiction
+  quarantine / `0` exact component graphs / `0` canonical writes. Adjacent
+  package sizes remain price/acquisition evidence, never content donors.
+- [x] ✅ Complete certification passes `697/697`; TypeScript, ESLint and diff
+  checks pass. Wiki-Brain reports `1020` articles / `1576` links / `0` orphans /
+  `0` broken links.
+- [ ] 🔄 Select the next exact bounded Amazon structural cohort from the same
+  Phase-1 queue and reseal readiness; no paid calls, BJ's/clubs or
+  marketplace/business mutations are authorized by r35.
+
+### Product Truth r36 / Amazon component graph adjudication and first recipe — 2026-08-01
+
+- [x] ✅ Added the offline Amazon component-graph compiler and legacy-bridge
+  source binding. It recompiles all Catalog/raw/image/direct-retailer bytes and
+  permits only identity/quantity recovery; `IDENTITY_ONLY` content projection
+  strips every unadjudicated descriptive, nutrition, ingredient, storage,
+  allergen and gallery field.
+- [x] ✅ Ten-listing batch completed `10/10` Catalog GETs and `53/53` image
+  captures with retry/provider/paid/marketplace effects `0`. Six rows require
+  acquisition, two are contradictory and two reached exact adjudication.
+  Hungry-Man is deliberately held because Amazon shows a `26g` package while
+  current Walmart copy identifies a `27g` revision.
+- [x] ✅ Uncrustables `amazon:1:4D-7Z1N-8091` is proven as
+  `2 × 15-count carton` from Amazon outer-count/total-count structure, reviewed
+  image bytes and first-party Walmart item `196027434`, GTIN
+  `00051500029275`, form `Carton`. Evidence row `37f8eacb…f7222f` / artifact
+  `b4f959b7…c3146` binds the existing donor and offer, not a new catalog.
+- [x] ✅ Fresh plan/preflight/apply SHAs are `e6e73b84…d2d3`,
+  `24356be1…98b5`, `124525cb…2c93e`. The standing-policy wave inserted `9/9`
+  canonical rows with no collisions/FK errors; repeated preflight
+  `3a613ab6…4404` is `ALREADY_APPLIED`.
+- [x] ✅ Readiness `5cdc9ed3…1b96` is `5935/5935`: content-ready `100`, Unit
+  Economics `63 FACT / 0 ESTIMATE / 811 UNSOURCEABLE / 5058 MISSING /
+  3 INVALID`, Procurement `0`. Full certification is `701/701`; TypeScript and
+  ESLint pass.
+- [ ] 🔄 Continue bounded free Amazon structural evidence from the remaining
+  Phase-1 missing-recipe scope; preserve revision conflicts in quarantine and
+  prepare, but do not execute, any genuinely paid acquisition gate.
+
+### Product Truth r37 / mixed Amazon variety graph and canonical reuse — 2026-08-01
+
+- [x] ✅ Explicit r37 batch completed `10/10` Amazon Catalog reads and `77/77`
+  verified image captures, retry/provider/paid/marketplace effects `0`. Six
+  structural contradictions stayed quarantined; four entered exact retailer
+  acquisition review.
+- [x] ✅ Eleven existing Uncrustables variants were revalidated from direct
+  first-party pages (`10` Walmart / `1` Target). Three apparent listing graphs
+  were rejected for title/image/flavor/count disagreement. Only
+  `amazon:1:ZI-OOJH-O3JP` proved all six distinct `4-count` components at four
+  cartons each, reconciling structured outer `24` and total `96`.
+- [x] ✅ Added fail-closed mixed-component graph compilation and offline
+  direct-retailer evidence rebind. Exact flavor-set, title/OCR labels and all
+  count equations are mandatory. Existing canonical donor bindings are reused
+  instead of creating refined duplicate variants; content remains
+  `IDENTITY_ONLY`.
+- [x] ✅ Final graph `ad426c65…a405`, plan `5d7fefe2…8d71`, fresh preflight
+  `410b34c2…528c` and apply `dbe3141f…3d2b` inserted `24` rows, reused five
+  canonical variants and created one missing Honey donor transition with zero
+  FK violations. Idempotency preflight `e1fe6e4a…72dd` is `ALREADY_APPLIED`.
+- [x] ✅ Fresh self-audit is `822` canonical listings / `877` components.
+  Recipe scope `758bc477…a58c` is `845` present / `5090` missing; Amazon is
+  `20/2044`. Readiness `83ff4c15…330f` reports Unit Economics
+  `63 FACT / 0 ESTIMATE / 812 UNSOURCEABLE / 5057 MISSING / 3 INVALID`.
+  Full certification passes `704/704`; TypeScript and ESLint pass.
+- [x] ✅ r37 completed; bounded Amazon structural work continued without
+  changing its fail-closed identity or complete-graph rules.
+
+### Product Truth r38–r40 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r38/r39/r40 completed `30/30` explicit Amazon Catalog GETs and
+  `173/173` byte-verified images with retry/provider/paid/marketplace effects
+  `0`. All contradictions and acquisition gaps stayed quarantined. r39's
+  Raspberry title/images versus Grape structured flavor conflict was not
+  materialized.
+- [x] ✅ r40 proved only `amazon:1:VY-DG31-67FN`: seven exact existing
+  Chocolate Flavored Hazelnut Spread `4-count` cartons, total `28`. The
+  package-form resolver admits explicit reviewed `Carton` only when canonical
+  and retailer evidence do not conflict; missing/conflicting form fails closed.
+- [x] ✅ Preflight `c71b819d…26ab`, apply `16c7c05b…7012` and idempotency
+  `fa7a35a4…1b85` inserted six rows, reused one canonical variant/decision and
+  ended `ALREADY_APPLIED` with zero FK violations. No parallel catalog or
+  business/consumer mutation was created.
+- [x] ✅ Fresh audit is `823` canonical listings / `878` components. Scope
+  `74426c86…205e` is `846` recipes present / `5089` missing; Amazon is
+  `21/2044`. Readiness `8a9a3cda…cab5` reports
+  `63 FACT / 0 ESTIMATE / 813 UNSOURCEABLE / 5056 MISSING / 3 INVALID`.
+  Certification passes `706/706`; TypeScript and scoped ESLint pass.
+- [x] ✅ r40 completed; the priority-ordered free Amazon lane continued from its
+  fresh sealed scope.
+
+### Product Truth r41 / second exact mixed Amazon graph — 2026-08-01
+
+- [x] ✅ r41 captured `10/10` Catalog records and `45/45` verified images with
+  zero retries or provider/paid/marketplace effects. Nine non-provable listings
+  stayed quarantined/acquisition-required.
+- [x] ✅ `amazon:1:V2-049D-3EGU` proved a complete `12 × 4 = 48` graph: two
+  cartons each across the same six r37 Uncrustables variants. Graph
+  `bc3363a1…4b5f` reused all canonical donor identities.
+- [x] ✅ Preflight `5f6423c1…f693`, apply `1f354926…a3f9` and idempotency
+  `0e1fea35…e361` inserted `21` rows, reused six variants/decisions and ended
+  `ALREADY_APPLIED` with zero FK violations.
+- [x] ✅ Fresh audit is `824` canonical listings / `884` components. Scope
+  `bf18b695…b5f7` is `847` recipes present / `5088` missing; Amazon is
+  `22/2044`. Readiness `75812a22…9377` reports
+  `63 FACT / 0 ESTIMATE / 814 UNSOURCEABLE / 5055 MISSING / 3 INVALID`.
+- [x] ✅ r41 closed and handed its fresh sealed scope to the next bounded wave.
+
+### Product Truth r42 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r42 processed Amazon priorities `5024..5015`: plan
+  `dff1f81c…f880`, Catalog capture `a1640357…96d9`, evidence
+  `33c9b0ae…717d` and decomposition `e828c7dd…53d9`; ten exact GETs, no retry,
+  paid/provider call or marketplace mutation.
+- [x] ✅ Image artifacts `3b34929d…d76c` / `0368a0e8…8feb` /
+  `3eeeda5f…520e` / `33d3dc5c…6eae` verified `50/50` images. Six listings are
+  contradictory and four require explicit retailer acquisition.
+- [x] ✅ No exact graph was proved and no canonical row was written. Existing
+  Product Truth counts remain `824` listings / `884` components; quarantine
+  and the independent content/COGS boundaries were preserved.
+- [x] ✅ r42 closed and the bounded free lane continued to r43.
+
+### Product Truth r43 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r43 captured `10/10` Catalog records and verified `41/41` images:
+  plan `52269cb2…a212`, capture `761ff10c…2bee`, evidence
+  `151d7e00…99c6`, decomposition `6b87b685…f175`, image assessment
+  `667b7b99…2096`. No retries, provider/paid calls or marketplace effects.
+- [x] ✅ Five contradictions and three acquisition-required listings remained
+  quarantined. Jimmy Dean lacks exact component proof; Uncrustables visually
+  proves Raspberry while structured Catalog says Grape, so the Grape candidate
+  was rejected and no matcher rule was weakened.
+- [x] ✅ Exact graphs/materializations are zero; canonical counts remain
+  `824` listings / `884` components with no DB write.
+- [x] ✅ r43 closed and handed its sealed scope to r44.
+
+### Product Truth r44–r47 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r44–r47 processed `40/40` priority-ordered Amazon listings and
+  verified `217/217` images with zero retries, provider/paid calls or
+  marketplace mutations. Non-provable candidates remained quarantined.
+- [x] ✅ r44 proved one exact graph: `amazon:1:SV-2ZYX-WRHI` =
+  `3 × Uncrustables Peanut Butter & Honey Spread 10-count`. Graph
+  `8304715e…9f74`; preflight `f9a3df7c…5785` is `READY_TO_APPLY` for six absent
+  rows plus one exact reuse, with zero violations and a seven-row ceiling.
+- [x] ✅ r45 authorized no graph; r46's Jimmy Dean candidate lacked exact
+  component proof; r47 rejected Strawberry title/images versus structured
+  Grape. Full Product Truth certification is `706/706`.
+- [x] ✅ Apply `9334b242…094a` inserted six rows and reused one canonical
+  variant/decision; repeated preflight `a6bef63b…6cec` is `ALREADY_APPLIED`
+  with seven exact rows and zero violations.
+- [x] ✅ Fresh audit is `825` canonical listings / `885` components. Readiness
+  `72122116…7f44` reports `63 FACT / 815 UNSOURCEABLE / 5054 MISSING /
+  3 INVALID`; scope `d9afea99…8b2c` is `848` recipes present / `5087`
+  missing, Amazon `23/2021`.
+- [x] ✅ r44–r47 closed and handed fresh scope `d9afea99…8b2c` to r48.
+
+### Product Truth r48 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r48 processed Amazon priorities `4964..4955`: plan
+  `2a7250f5…7d6e`, Catalog capture `7786f55f…72ee`, decomposition
+  `d9f6ba3e…ceef` and image assessment `d39e8aaf…b9ce`; ten records and
+  `47/47` images, zero retry/provider/paid/marketplace effects.
+- [x] ✅ Four contradictions and six acquisition-required listings stayed
+  quarantined. Exact graphs/materializations are zero; canonical counts remain
+  `825` listings / `885` components.
+- [x] ✅ r48 closed and handed the sealed residual scope to r49.
+
+### Product Truth r49 / exact Amazon 45-count Uncrustables graph — 2026-08-01
+
+- [x] ✅ Ten explicit Amazon Catalog reads and `57/57` gallery captures
+  completed without retry, provider spend or marketplace mutation. Structural
+  artifacts are `452fc4e6…b1c0`, `b6f1ce46…9f79`, `26039f99…29ec`,
+  `c7d2e718…ebf0` and image assessment `6f5fde82…a12f`.
+- [x] ✅ Only `amazon:1:NP-DBF3-4Q53` passed complete graph proof as
+  `3 × 15-count` Uncrustables Peanut Butter & Grape Jelly, total `45`, using
+  the existing exact Walmart donor/item/GTIN/form evidence. Graph artifact is
+  `354d4e7f…74bc`; no parallel donor catalog or content promotion was created.
+- [x] ✅ Plan `0342bedf…249e`, preflight `de365edd…a5fc`, apply
+  `2fc00970…9116` and idempotency `8ba7aebc…55bf` inserted six rows and reused
+  one canonical variant/decision with zero FK violations.
+- [x] ✅ Fresh audit is `826` canonical listings / `886` components; scope
+  `2ff8364b…140e` is `849` present / `5086` missing, Amazon `24/2020`.
+  Readiness `7d4757c2…cde53` reports `63 FACT / 816 UNSOURCEABLE / 5053
+  MISSING / 3 INVALID`. Certification passes `706/706`.
+- [x] ✅ r49 closed and handed its fresh sealed scope to r50.
+
+### Product Truth r50 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r50 processed priorities `4944..4935`: Catalog plan/capture/evidence
+  `5df0a58d…1f9c` / `15b2485a…6e4b` / `333e5187…1638`, decomposition
+  `dc581f7d…243e`; ten GETs and zero retries or provider/marketplace effects.
+- [x] ✅ Image assessment `76879849…53fb` verified `57/57` bytes. Six rows are
+  contradictory and four require explicit retailer acquisition; exact graphs
+  and canonical materializations are zero.
+- [x] ✅ No database state changed; `826` canonical listings / `886`
+  components and scope `2ff8364b…140e` remain authoritative.
+- [x] ✅ r50 closed without a canonical write and handed its scope to r51.
+
+### Product Truth r51 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r51 processed priorities `4934..4925`: structural plan/capture/
+  evidence/decomposition `f5b0075b…3250` / `cdeb4d01…df48` /
+  `35dcb548…0cbd` / `602763d7…75e6`, with ten GETs and zero retries.
+- [x] ✅ Image assessment `1313d1d9…3fec` verified `49/49` bytes. Eight rows
+  are contradictory and two require exact retailer acquisition; exact graphs
+  and canonical writes are zero.
+- [x] ✅ r51 closed and handed unchanged scope `2ff8364b…140e` to r52.
+
+### Product Truth r52 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r52 structural artifacts for priorities `4924..4915` are
+  `f9825459…c0a2`, `050a1a67…e6ab`, `90ae3417…83c1` and
+  `0da5211c…0006`.
+- [x] ✅ Initial gallery transport timed out atomically with no retained output;
+  one unchanged-plan retry captured and verified `44/44`. Assessment
+  `9a6f860d…d07f` records five contradictions and five acquisition-required
+  rows, with no exact graph or DB write.
+- [x] ✅ r52 closed without a canonical write and handed unchanged scope to
+  r53.
+
+### Product Truth r53 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r53 structural artifacts for priorities `4914..4905` are
+  `f106a297…a789`, `634379c6…c46f`, `2a080747…edae` and
+  `d480897e…60b7`.
+- [x] ✅ Image assessment `914b1112…1717` verified `56/56` bytes. Seven rows
+  are contradictory and three require exact retailer acquisition; exact
+  graphs and DB writes are zero.
+- [x] ✅ r53 closed without a canonical write and handed unchanged scope to
+  r54.
+
+### Product Truth r54 / bounded Amazon continuation — 2026-08-01
+
+- [x] ✅ r54 structural artifacts for priorities `4904..4895` are
+  `eefe7cd5…7748`, `018a4e9b…d9b2`, `b2b1c571…193d` and
+  `a8d8e94a…0825`.
+- [x] ✅ Image assessment `13795311…53da` verified `34/34` bytes. Nine rows
+  are contradictory and one requires exact retailer acquisition; exact graphs
+  and DB writes are zero.
+- [x] ✅ Checkpoint r49–r54 covers 60 new Amazon listings: one exact canonical
+  materialization and 59 honest fail-closed outcomes.
+- [ ] 🔄 Continue r55 from sealed scope `2ff8364b…140e`.
+
+### Walmart Listing Integrity / frozen v14 continuation — 2026-08-02
+
+- [x] ✅ First bounded catalog epoch is terminal `10/10`; all outcomes are
+  preserved in PASS/source-required/unresolved lifecycle artifacts and Walmart
+  writes equal `0`.
+- [x] ✅ Visual Qualification false negative for packaging text split across
+  exact Product line/Flavor/badge regions is fixed without trusting free-form
+  model prose. Frozen release `4ee130af…b7dfe`, manifest
+  `1373d2a5…392b9`, passed `319/319`.
+- [x] ✅ Completed the second bounded v14 ten-SKU epoch. MAIN-only failures are
+  quarantined and do not prevent later SKU from being diagnosed.
+- [x] ✅ Added immutable newer-release re-admission for exact false-negative
+  quarantines; do not mutate historical evidence or replay uncertain calls.
+- [ ] ⬜ Continue controlled catalog waves and publish factual PASS galleries
+  plus final full-denominator report. Price, inventory, repricing and delisting
+  remain prohibited.
+
+### Walmart Listing Integrity / v16 production recovery — 2026-08-02
+
+- [x] ✅ Second controlled epoch completed `10/10`; nine source-required and
+  one unresolved, Walmart writes `0`, completion evidence
+  `8b9e7b20…b48db`.
+- [x] ✅ Shared Turso deferred read→write upgrade failure fixed with an exact
+  active-run write-first CAS boundary. V16 `e5c01241…e8b46`, manifest
+  `adfe475f…8dba3`, passed `320/320` and completed production recovery without
+  replaying model/Walmart calls.
+- [x] ✅ Single-use, prior-state-SHA re-admission for `FaisalX-2554` and
+  `FaisalX-3713` is implemented and sealed. V17 `7f3d8ae6…eacc41`, manifest
+  `86c91ce5…e03ce`, passed `322/322`; it grants no Walmart write authority.
+- [x] ✅ The already-running third bounded pool was handed from v16 to v17 at a
+  saved per-SKU boundary without interrupting or replaying a completed call.
+- [x] ✅ V17 was activated at a saved per-SKU boundary and resumed the third
+  run without replay; wrapper/worker `28961/28964`, stderr empty, Walmart
+  writes `0`.
+- [x] ✅ Finished the resumed third bounded pool under v17.
+- [x] ✅ Proved both exact readmissions and independent outcomes in the next
+  fresh pool.
+- [x] ✅ Proved automatic single-use exclusion: the following pool has
+  `readmission: null` and contains neither `2554` nor `3713`.
+- [x] ✅ Third epoch completed `10/10`, evidence `1de1292a…e2905e24`, writes
+  `0`; fresh pool `433481ca…23fd8f` placed exact `2554`/`3713` first/second.
+- [x] ✅ Independent outcomes: `2554` is a real cross-product MAIN defect;
+  `3713` is source-required. Both advanced with Walmart writes `0`.
+- [x] ✅ Frozen v18 `9bb25906…e68ed`, manifest `46c62544…fe0f0`, `323/323`
+  enforces the temporary image hold before candidate generation while leaving
+  the exact description/bullets-only lane enabled.
+- [x] ✅ Completed the current bounded pool `10/10`, evidence
+  `54089e82…da9c13`, Walmart writes `0`.
+- [x] ✅ Fifth run `wlirun-7a6004179d67e7146d3fed5e` completed `10/10`:
+  four deferred image defects, six source-required outcomes, completion
+  evidence `a7f43743…daef2`, Walmart writes `0`.
+- [x] ✅ Frozen v19 `3ed78a00…0592f`, manifest `3007bb15…97fa9`, clean commit
+  `9aa214dd`, passed `326/326` and adds the canonical combined non-image route
+  for title/description/bullets/attributes while preserving all image bytes.
+- [x] ✅ Real `FaisalX-3712` compilation proved
+  `description + bullets + attributes`, images unchanged, compiler v6 PASS and
+  Walmart writes `0`.
+- [ ] ⛔ Owner pause: LaunchAgent unloaded; run `wlirun-dba7077ea6bdf7212845e8b1`
+  is saved after four terminal items with six `QUEUED`. V19 is not activated.
+  Resume at this exact boundary, execute one non-image canary, reread Walmart,
+  qualify the changed fields and build the factual gallery. Retain image
+  defects for the deferred MAIN/gallery wave.
+- [x] ✅ V19 handoff audit rehashed all `325` release files and all seven
+  certification logs with zero mismatch. Exact queued suffix is `FaisalX-4738`,
+  `FaisalX-4811`, `FaisalX-5614`, `RizwanX-3007`, `RizwanX-3008`,
+  `RizwanX-3009`; ordinals 1–4 must not replay.
