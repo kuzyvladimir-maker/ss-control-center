@@ -190,6 +190,45 @@ interface PlanItem {
   remoteShipmentId?: string | null;
   totalNetCharge?: string | null;
   baseRate?: string | null;
+  // Temperature-aware engine (topic 135). `tempClass` drives the class chip;
+  // `shadow` is what the weather-aware logic would pick + the saving, shown on
+  // the card during the shadow week. Present only when the engine is on and the
+  // order is cold (frozen/chilled Amazon).
+  tempClass?: string | null;
+  tempClassSource?: string | null;
+  walmartColdConflict?: boolean;
+  shadow?: ShadowInfo | null;
+}
+
+// Mirror of src/lib/shipping/temp-class ShadowResult (client-side view).
+interface ShadowInfo {
+  tempClass: string;
+  size: string;
+  originMaxC: number | null;
+  routeMaxC: number | null;
+  allowedDays: number | null;
+  extraIce: number;
+  iceBase: number;
+  iceTotal: number;
+  iceWeightDeltaLb: number;
+  pick: {
+    carrier: string | null;
+    service: string | null;
+    price: number;
+    edd: string;
+    calDays: number;
+  } | null;
+  summerPrice: number | null;
+  savingsUsd: number | null;
+  longerTransitPrices: Array<{
+    service: string;
+    price: number;
+    calDays: number;
+    edd: string;
+  }>;
+  iceNote: string;
+  reason: string;
+  noForecast: boolean;
 }
 
 interface PlanResponse {
@@ -3157,6 +3196,21 @@ export default function ShippingLabelsPage() {
       onToggleSelected={() => toggleOne(o.orderId)}
       onClassify={() => setClassifyModal(o)}
       onManual={() => setManualModal(o)}
+      onSetTempClass={async (cls: string) => {
+        const sku = o.items[0]?.sku;
+        if (!sku) return;
+        try {
+          await fetch("/api/shipping/temperature-class", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sku, class: cls, setBy: "shipping-ui" }),
+          });
+          // Re-quote this one order so the chip + shadow reflect the new class.
+          requoteAmazonOrder(o);
+        } catch (e) {
+          console.warn("[temp-class] set failed:", e);
+        }
+      }}
       onPacking={() => setPackingModal(o)}
       onSku={() => setSkuModal(o)}
       onEditPackage={() => setEditPackageModal(o)}
@@ -4549,6 +4603,7 @@ function OrderRow({
   onToggleSelected,
   onClassify,
   onManual,
+  onSetTempClass,
   onPacking,
   onSku,
   onEditPackage,
@@ -4597,6 +4652,9 @@ function OrderRow({
   onToggleSelected: () => void;
   onClassify: () => void;
   onManual: () => void;
+  // Set the temperature class (FROZEN/CHILLED/DRY) for this order's first SKU
+  // (topic 135). null when the engine is off.
+  onSetTempClass: ((cls: string) => void) | null;
   onPacking: () => void;
   onSku: () => void;
   onEditPackage: () => void;
@@ -5009,7 +5067,7 @@ function OrderRow({
           </ul>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex flex-col items-end gap-1">
           {order.items[0]?.knownType && (
             // Clickable so operators can flip a misclassified Frozen/Dry
             // type without waiting for the order to land in "Need
@@ -5026,6 +5084,31 @@ function OrderRow({
             >
               <TypeTag type={order.items[0].knownType} />
             </button>
+          )}
+          {/* Temperature class chip (topic 135). Click cycles Frozen → Chilled
+              → Dry and persists the manual class for the first SKU. Only shown
+              when the engine is on (plan.tempClass present). */}
+          {plan?.tempClass && onSetTempClass && (
+            <button
+              type="button"
+              onClick={() => {
+                const order3 = ["FROZEN", "CHILLED", "DRY"];
+                const cur = order3.indexOf(plan.tempClass as string);
+                onSetTempClass(order3[(cur + 1) % 3]);
+              }}
+              title={`Temperature class: ${plan.tempClass}${plan.tempClassSource ? ` (${plan.tempClassSource})` : ""} — click to change`}
+              className="cursor-pointer rounded px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium ring-1 ring-ink-3/30 transition hover:ring-ink-2"
+            >
+              {plan.tempClass.charAt(0) + plan.tempClass.slice(1).toLowerCase()}
+            </button>
+          )}
+          {plan?.walmartColdConflict && (
+            <span
+              className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong"
+              title="A frozen/chilled SKU is on a Walmart order — frozen & chilled are forbidden on Walmart."
+            >
+              Cold on Walmart
+            </span>
           )}
         </div>
       </div>
@@ -5282,6 +5365,75 @@ function OrderRow({
           (label still dated today) when Monday is faster in transit at no more
           than $3 extra, or more than 15% cheaper — both options always stay
           inside the food-safety window.
+        </div>
+      )}
+
+      {/* Temperature-aware engine (topic 135) — shadow view. Shows what the
+          weather-driven logic WOULD pick + the saving, without changing the
+          purchase (that only happens in "live"). */}
+      {plan?.shadow && (
+        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[length:var(--ship-badge)] text-info">
+          <div className="font-semibold text-ink">
+            New logic (shadow) · {plan.shadow.tempClass.charAt(0)}
+            {plan.shadow.tempClass.slice(1).toLowerCase()} · {plan.shadow.size}{" "}
+            cooler
+          </div>
+          {plan.shadow.noForecast ? (
+            <div className="text-ink-3">
+              No forecast available → summer profile used.
+            </div>
+          ) : (
+            <>
+              <div className="text-ink-2">
+                Route {plan.shadow.routeMaxC?.toFixed(0) ?? "?"}°C / Clearwater{" "}
+                {plan.shadow.originMaxC?.toFixed(0) ?? "?"}°C → up to{" "}
+                {plan.shadow.allowedDays ?? "∞"} days in transit · ice{" "}
+                {plan.shadow.iceBase}
+                {plan.shadow.extraIce > 0 ? `+${plan.shadow.extraIce}` : ""} ={" "}
+                {plan.shadow.iceTotal}
+                {plan.shadow.iceWeightDeltaLb > 0
+                  ? ` (+${plan.shadow.iceWeightDeltaLb} lb on label)`
+                  : ""}
+              </div>
+              {plan.shadow.pick ? (
+                <div className="text-ink-2">
+                  Would pick{" "}
+                  <span className="font-medium text-ink">
+                    {plan.shadow.pick.service} $
+                    {plan.shadow.pick.price.toFixed(2)} /{" "}
+                    {plan.shadow.pick.calDays}d
+                  </span>{" "}
+                  (EDD {plan.shadow.pick.edd})
+                  {plan.shadow.savingsUsd != null &&
+                    (plan.shadow.savingsUsd > 0.01 ? (
+                      <span className="ml-1 font-semibold text-ink">
+                        — saves ${plan.shadow.savingsUsd.toFixed(2)} vs current $
+                        {plan.shadow.summerPrice?.toFixed(2)}
+                      </span>
+                    ) : plan.shadow.savingsUsd < -0.01 ? (
+                      <span className="ml-1 text-ink-3">
+                        — ${Math.abs(plan.shadow.savingsUsd).toFixed(2)} more than
+                        current ${plan.shadow.summerPrice?.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span className="ml-1 text-ink-3">— same as current</span>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-ink-3">
+                  No rate fits the weather window — summer pick stands.
+                </div>
+              )}
+              {plan.shadow.longerTransitPrices.length > 0 && (
+                <div className="text-ink-3">
+                  Longer-transit prices (not quoted before):{" "}
+                  {plan.shadow.longerTransitPrices
+                    .map((p) => `${p.calDays}d $${p.price.toFixed(2)}`)
+                    .join(" · ")}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
