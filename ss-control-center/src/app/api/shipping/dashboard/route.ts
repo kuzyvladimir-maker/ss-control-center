@@ -31,6 +31,7 @@ import {
 } from "@/lib/shipping/packing-signature";
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
 import { ownShipBy, bucketForYmd } from "@/lib/shipping/own-deadline";
+import { applyManualClass } from "@/lib/shipping/temp-class/card-class";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -456,6 +457,33 @@ export async function GET() {
     // DB + Walmart work) has finished before the loop reads veeqoProductType.
     await productProbeDone;
 
+    // Manual temperature class per SKU (topic 135). One batch read; the
+    // manual class wins over the Veeqo tag on the card, exactly as in the
+    // plan. A missing table / read error just leaves the old tag labels.
+    const manualClassBySku = new Map<string, string>();
+    try {
+      const allSkus = [
+        ...new Set(
+          [...orderItems.values()]
+            .flat()
+            .map((i) => (i.sku ?? "").trim())
+            .filter(Boolean),
+        ),
+      ];
+      if (allSkus.length > 0) {
+        const rows = await prisma.skuTemperatureClass.findMany({
+          where: { sku: { in: allSkus } },
+          select: { sku: true, class: true },
+        });
+        for (const r of rows) manualClassBySku.set(r.sku, r.class);
+      }
+    } catch (e) {
+      console.warn(
+        "[dashboard] SkuTemperatureClass read failed:",
+        e instanceof Error ? e.message : e,
+      );
+    }
+
     const orders = [];
     for (const o of veeqoOrders) {
       // Prune Walmart-direct rows that are already Shipped on Walmart's
@@ -503,16 +531,24 @@ export async function GET() {
         "walmart";
 
       const items = orderItems.get(o.id) ?? [];
-      const itemsWithType = items.map((i) => ({
-        sku: i.sku,
-        productId: i.productId,
-        productTitle: i.productTitle,
-        quantity: i.quantity,
-        imageUrl: i.imageUrl,
-        knownType: walmartChannelForType
+      const itemsWithType = items.map((i) => {
+        const tagType = walmartChannelForType
           ? "Dry"
-          : productType(i.productId ?? undefined),
-      }));
+          : productType(i.productId ?? undefined);
+        // Walmart stays Dry whatever the class (cold is forbidden there).
+        const cls = walmartChannelForType
+          ? { knownType: tagType, tempClass: "Dry" as const }
+          : applyManualClass(tagType, manualClassBySku.get((i.sku ?? "").trim()));
+        return {
+          sku: i.sku,
+          productId: i.productId,
+          productTitle: i.productTitle,
+          quantity: i.quantity,
+          imageUrl: i.imageUrl,
+          knownType: cls.knownType,
+          tempClass: cls.tempClass,
+        };
+      });
 
       // ── State classification ──
       let state: "bought" | "waiting_placed" | "need_attention" | "ready_to_buy";

@@ -50,6 +50,11 @@ import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
 import { formatEngineLine } from "@/lib/shipping/temp-class/engine-line";
+import {
+  applyManualClass,
+  strictestCardClass,
+  type CardClass,
+} from "@/lib/shipping/temp-class/card-class";
 // DYMO Connect Web Service path was tried (port 41951 HTTPS / 41952 HTTP) but
 // the local DYMO Label service only enumerates older LabelWriter models
 // (e.g. 450) — it doesn't see the 5XL that's wired in via the macOS CUPS
@@ -88,6 +93,9 @@ interface DashboardItem {
   // Null when Veeqo has no image attached to the listing.
   imageUrl: string | null;
   knownType: "Frozen" | "Dry" | null;
+  // Three-way temperature class for the chip and the type tabs (topic 135):
+  // the owner's manual SkuTemperatureClass when set, else the Frozen/Dry tag.
+  tempClass?: CardClass | null;
 }
 
 interface DashboardOrder {
@@ -1808,8 +1816,13 @@ export default function ShippingLabelsPage() {
       untyped = 0;
     for (const o of scopedOrders) {
       if (o.items.length === 0) continue;
-      if (o.items.every((i) => i.knownType === "Frozen")) frozen += 1;
-      else if (o.items.every((i) => i.knownType === "Dry")) dry += 1;
+      // Strictest item class, manual class included (topic 135): a chilled
+      // order counts under Chilled, not Frozen.
+      const cc = strictestCardClass(o.items);
+      if (cc === "Frozen" && o.items.every((i) => i.knownType === "Frozen"))
+        frozen += 1;
+      else if (cc === "Dry" && o.items.every((i) => i.knownType === "Dry"))
+        dry += 1;
       if (
         o.items.some((i) => i.knownType !== "Frozen" && i.knownType !== "Dry")
       )
@@ -1850,10 +1863,9 @@ export default function ShippingLabelsPage() {
   // Orders the plan resolved to the CHILLED temperature class (topic 135).
   const chilledCount = useMemo(
     () =>
-      scopedOrders.filter(
-        (o) => planByOrderNumber.get(o.orderNumber)?.tempClass === "CHILLED",
-      ).length,
-    [scopedOrders, planByOrderNumber],
+      scopedOrders.filter((o) => strictestCardClass(o.items) === "Chilled")
+        .length,
+    [scopedOrders],
   );
 
   // Orders whose label is printed today but whose package physically leaves on
@@ -2042,11 +2054,7 @@ export default function ShippingLabelsPage() {
           const types = o.items.map((i) => i.knownType);
           if (types.length === 0) return false;
           if (typeFilter === "Chilled") {
-            // Chilled is a temperature class the plan resolves (manual class
-            // per SKU, or a chilled/refrigerated Veeqo tag) — not a dashboard
-            // Frozen/Dry tag — so it reads the plan row.
-            if (planByOrderNumber.get(o.orderNumber)?.tempClass !== "CHILLED")
-              return false;
+            if (strictestCardClass(o.items) !== "Chilled") return false;
           } else if (typeFilter === "Untyped") {
             // "Untyped" = at least one item without a Frozen/Dry tag.
             // These typically end up in need_attention=no_type (Amazon)
@@ -2055,6 +2063,7 @@ export default function ShippingLabelsPage() {
             if (types.every((t) => t === "Frozen" || t === "Dry")) return false;
           } else {
             if (!types.every((t) => t === typeFilter)) return false;
+            if (strictestCardClass(o.items) !== typeFilter) return false;
           }
         }
         if (tokens.length > 0) {
@@ -3218,11 +3227,33 @@ export default function ShippingLabelsPage() {
         const sku = o.items[0]?.sku;
         if (!sku) return;
         try {
-          await fetch("/api/shipping/temperature-class", {
+          const res = await fetch("/api/shipping/temperature-class", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ sku, class: cls, setBy: "shipping-ui" }),
           });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          // Show the new class on every card carrying this SKU right away —
+          // orders without a plan (e.g. waiting for procurement) included.
+          setData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  orders: prev.orders.map((ord) => ({
+                    ...ord,
+                    items: ord.items.map((it) => {
+                      if (it.sku !== sku || ord.isWalmart) return it;
+                      const next = applyManualClass(it.knownType, cls);
+                      return {
+                        ...it,
+                        knownType: next.knownType as "Frozen" | "Dry" | null,
+                        tempClass: next.tempClass,
+                      };
+                    }),
+                  })),
+                }
+              : prev,
+          );
           // Re-quote this one order so the chip + shadow reflect the new class.
           requoteAmazonOrder(o);
         } catch (e) {
@@ -4729,6 +4760,7 @@ function OrderRow({
   // still in flight (planLoading) we show a spinner; if plan is in but
   // this order has status="stop", we show the stop reason from the plan.
   const planPending = plan && plan.status === "pending";
+  const cardClass = strictestCardClass(order.items);
   const engineLine = formatEngineLine({
     tempClass: plan?.tempClass,
     shadow: plan?.shadow ?? null,
@@ -5098,7 +5130,7 @@ function OrderRow({
         </div>
 
         <div className="shrink-0 flex flex-col items-end gap-1">
-          {order.items[0]?.knownType && (
+          {cardClass && (
             // Clickable so operators can flip a misclassified Frozen/Dry
             // type without waiting for the order to land in "Need
             // attention". Vladimir caught a real case (Jimmy Dean
@@ -5106,30 +5138,21 @@ function OrderRow({
             // existing classify flow only fires on `needAttentionReason
             // === "no_type"` — already-classified rows had no
             // affordance to fix the type.
-            <button
-              type="button"
-              onClick={onManual}
-              title="Click to change Frozen/Dry"
-              className="cursor-pointer rounded transition hover:ring-1 hover:ring-ink-3/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink-2"
-            >
-              <TypeTag type={order.items[0].knownType} />
-            </button>
-          )}
-          {/* Temperature class chip (topic 135). Click cycles Frozen → Chilled
-              → Dry and persists the manual class for the first SKU. Only shown
-              when the engine is on (plan.tempClass present). */}
-          {plan?.tempClass && onSetTempClass && (
+            // One class chip for every order (topic 135): the strictest item
+            // class, honouring the owner's manual class. Click cycles
+            // Frozen → Chilled → Dry and saves it for the SKU.
             <button
               type="button"
               onClick={() => {
+                if (!onSetTempClass) return onManual();
                 const order3 = ["FROZEN", "CHILLED", "DRY"];
-                const cur = order3.indexOf(plan.tempClass as string);
+                const cur = order3.indexOf(cardClass.toUpperCase());
                 onSetTempClass(order3[(cur + 1) % 3]);
               }}
-              title={`Temperature class: ${plan.tempClass}${plan.tempClassSource ? ` (${plan.tempClassSource})` : ""} — click to change`}
-              className="cursor-pointer rounded px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium ring-1 ring-ink-3/30 transition hover:ring-ink-2"
+              title="Temperature class — click to change (Frozen → Chilled → Dry). Saved for this SKU; the manual class beats the Veeqo tag."
+              className="cursor-pointer rounded transition hover:ring-1 hover:ring-ink-3/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink-2"
             >
-              {plan.tempClass.charAt(0) + plan.tempClass.slice(1).toLowerCase()}
+              <TypeTag type={cardClass} />
             </button>
           )}
           {plan?.tempClass && plan.tempClassSource === "default" && !order.isWalmart && (
