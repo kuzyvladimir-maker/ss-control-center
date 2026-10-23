@@ -39,6 +39,23 @@ import {
   chooseTodayOrMonday,
   type VeeqoRate,
 } from "@/lib/shipping/rate-selection";
+// Temperature-aware engine (topic 135). Runs alongside the summer profile:
+// "shadow" shows what it WOULD pick + the saving without changing the buy;
+// "live" makes the buy use it; "summer" disables it entirely (rollback).
+import {
+  getRateProfile,
+  resolveOrderClass,
+  parseTempClass,
+  coolerSizeFromBox,
+  getRouteWeather,
+  buildShadowResult,
+  selectTempAwareRate,
+  ICE_WEIGHT_PER_PIECE_LB,
+  iceMarker,
+  type ShadowResult,
+  type RateProfile,
+  type TempClass,
+} from "@/lib/shipping/temp-class";
 
 // Planning quotes carriers for every ready order (pooled, but still several
 // seconds each) — on a busy morning that is a long invocation by nature. Make
@@ -49,6 +66,20 @@ export const maxDuration = 300;
 
 // (The Veeqo rate shape and the rate-choosing rules now live in
 //  @/lib/shipping/rate-selection — imported above.)
+
+// Destination ZIP for the temperature-aware weather lookup — same shape the
+// Frozen Analytics pipeline reads (deliver_to / shipping_address, zip /
+// postcode / postal_code), first 5 digits.
+function pickDestZip(order: {
+  deliver_to?: { zip?: string; postcode?: string; postal_code?: string } | null;
+  shipping_address?: { zip?: string; postcode?: string; postal_code?: string } | null;
+}): string | null {
+  const a = order.deliver_to ?? order.shipping_address ?? null;
+  if (!a) return null;
+  const raw = String(a.zip ?? a.postcode ?? a.postal_code ?? "");
+  const m = raw.match(/\d{5}/);
+  return m ? m[0] : null;
+}
 
 // ── Day info ──
 function getDayInfo(today: string) {
@@ -150,6 +181,11 @@ export async function GET(request: NextRequest) {
       console.error("Failed to fetch SKU database:", e);
     }
     const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
+
+    // Rate-selection profile (topic 135). "summer" = the engine is OFF (pure
+    // Master Prompt v3.5). Read once per pass (60s cached inside).
+    const rateProfile: RateProfile = await getRateProfile(prisma);
+    const tempEngineOn = rateProfile !== "summer";
 
     const orders = await fetchAllOrders();
 
@@ -265,6 +301,13 @@ export async function GET(request: NextRequest) {
       remoteShipmentId: string | null; serviceType: string | null;
       subCarrierId: string | null; serviceCarrier: string | null;
       totalNetCharge: string | null; baseRate: string | null;
+      // Temperature-aware engine (topic 135). `tempClass` is the resolved
+      // class shown as the card chip; `shadow` is what the new logic would do
+      // + the saving (present whenever the engine is on and the order is cold).
+      tempClass: string | null;
+      tempClassSource: string | null;
+      walmartColdConflict: boolean;
+      shadow: ShadowResult | null;
     }> = [];
 
     // ── Pre-warm rate quotes in parallel ──────────────────────────────────
@@ -386,6 +429,11 @@ export async function GET(request: NextRequest) {
       // ── Product type ──
       let productType = "Unknown";
       let stopReason: string | null = null;
+      // Veeqo tags of the first line's product (re-used by the class resolver)
+      // and whether the only problem is "no Frozen/Dry tag" — live mode
+      // resolves that to FROZEN instead of stopping (owner, 2026-10-23).
+      let firstLineTags: string[] = [];
+      let missingTagStop = false;
       const productId: number | null =
         order.line_items?.[0]?.sellable?.product?.id || null;
 
@@ -411,7 +459,15 @@ export async function GET(request: NextRequest) {
                 (t: { name?: string } | string) =>
                   (typeof t === "string" ? t : t.name || "").toLowerCase()
               );
+              firstLineTags = tagNames;
               if (tagNames.some((t: string) => t.includes("frozen"))) {
+                productType = "Frozen";
+              } else if (
+                tagNames.some((t: string) => parseTempClass(t) === "CHILLED")
+              ) {
+                // chilled / refrigerated is cold chain everywhere the old
+                // Frozen/Dry type is read (owner, 2026-10-23): it must never
+                // fall into the "Missing Frozen/Dry tag" stop below.
                 productType = "Frozen";
               } else if (tagNames.some((t: string) => t.includes("dry"))) {
                 productType = "Dry";
@@ -426,6 +482,7 @@ export async function GET(request: NextRequest) {
                 productType = "Dry";
               } else {
                 stopReason = `Missing Frozen/Dry tag (tags: ${tagNames.join(", ") || "none"})`;
+                missingTagStop = true;
               }
             } else if (!isAmazon) {
               // Non-Amazon order with no product_id resolved (Veeqo
@@ -438,6 +495,93 @@ export async function GET(request: NextRequest) {
           } catch (e) {
             stopReason = `Could not fetch product tags: ${e instanceof Error ? e.message : String(e)}`;
           }
+        }
+      }
+
+      // ── Temperature class (topic 135) ──
+      // Resolve the order's class (strictest across lines) when the engine is
+      // on. The MANUAL SkuTemperatureClass per SKU wins; lines without one fall
+      // back to the Frozen/Dry productType just computed. Walmart → DRY, with a
+      // conflict flag if a cold SKU slipped onto a Walmart order.
+      let tempClass: string | null = null;
+      let tempClassSource: string | null = null;
+      let walmartColdConflict = false;
+      if (tempEngineOn) {
+        try {
+          // Every line gets ITS OWN legacy override and tags — the old code
+          // read only line 1, so a dry item listed first shipped a frozen box
+          // as Dry. Line 1's tags were already fetched above.
+          type ClassLine = {
+            sellable?: {
+              sku_code?: string;
+              sku?: string;
+              product_id?: number;
+              product?: { id?: number };
+            };
+          };
+          const rawLines: ClassLine[] = order.line_items ?? [];
+          const lineProductIds = rawLines.map(
+            (li) => li?.sellable?.product?.id ?? li?.sellable?.product_id ?? null,
+          );
+          const ids = [
+            ...new Set(lineProductIds.filter((x): x is number => typeof x === "number")),
+          ];
+          const legacyByProduct = new Map<number, string>();
+          if (ids.length > 0) {
+            const rows = await prisma.productTypeOverride.findMany({
+              where: { productId: { in: ids } },
+              select: { productId: true, type: true },
+            });
+            for (const r of rows) legacyByProduct.set(r.productId, r.type);
+          }
+          const classInput = await Promise.all(
+            (rawLines.length ? rawLines : [{} as ClassLine]).map(async (li, i) => {
+              const pid = lineProductIds[i] ?? null;
+              const legacy = pid != null ? legacyByProduct.get(pid) ?? null : null;
+              let tags: string[] = i === 0 ? firstLineTags : [];
+              if (i > 0 && !legacy && pid != null && !isWalmart) {
+                try {
+                  const p = await getProduct(pid);
+                  tags = (p.tags || []).map((t: { name?: string } | string) =>
+                    (typeof t === "string" ? t : t.name || "").toLowerCase(),
+                  );
+                } catch {
+                  /* unknown → resolver falls back to FROZEN (strict) */
+                }
+              }
+              return {
+                sku: String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
+                legacyType: legacy,
+                tags,
+              };
+            }),
+          );
+          const oc = await resolveOrderClass(prisma as never, classInput, {
+            isWalmart,
+          });
+          tempClass = oc.tempClass;
+          // "default" = some line had no class at all → the card says
+          // "type unknown → treated as Frozen" (owner, 2026-10-23).
+          tempClassSource =
+            oc.perLine.find((l) => l.source === "manual")?.source ??
+            (oc.unknownAny ? "default" : oc.perLine[0]?.source ?? null);
+          walmartColdConflict = oc.walmartColdConflict;
+          // LIVE only: the resolved class drives the buy. Strictest line wins
+          // (a mixed order with any cold item is cold chain), a manual DRY
+          // makes it Dry, and an untagged SKU is FROZEN instead of a stop.
+          // Shadow/summer keep the old first-line Frozen/Dry type untouched.
+          if (rateProfile === "live" && !isWalmart) {
+            productType = oc.tempClass === "DRY" ? "Dry" : "Frozen";
+            if (missingTagStop) {
+              stopReason = null;
+              missingTagStop = false;
+            }
+          }
+        } catch (e) {
+          console.warn(
+            `[temp-class] ${order.number} class resolve failed:`,
+            e instanceof Error ? e.message : e,
+          );
         }
       }
 
@@ -693,6 +837,12 @@ export async function GET(request: NextRequest) {
       let selectedRate: VeeqoRate | null = null;
       let shipDateNote: string | null = null;
       let frozenRateDebug: string | null = null;
+      // Temperature-aware engine output for this order (topic 135).
+      let shadow: ShadowResult | null = null;
+      // LIVE only: extra gel-ice pieces the picked transit needs. Added to the
+      // label weight (≈1 lb each) and carried to the warehouse note as
+      // "[ice +N]" in the plan notes; the buy route reads it from there.
+      let liveIceExtra = 0;
 
       // Per-order diagnostic for non-Amazon-non-Walmart paths. We log
       // every gate the order passes/fails so we can see in Vercel logs
@@ -884,6 +1034,71 @@ export async function GET(request: NextRequest) {
               .join(" | ");
           }
 
+          // ── Temperature-aware engine (topic 135) ──
+          // Compute the weather-driven pick for cold orders on the SAME rate
+          // list. In "shadow" it only annotates the card (purchase unchanged);
+          // in "live" it replaces the pick. DRY needs no weather. No forecast
+          // or no cooler size → we leave the summer pick alone.
+          if (
+            tempEngineOn &&
+            isAmazon &&
+            (tempClass === "FROZEN" || tempClass === "CHILLED") &&
+            skuBoxSize &&
+            rates.length > 0
+          ) {
+            const coolerSize = coolerSizeFromBox(skuBoxSize);
+            const destZip = pickDestZip(order);
+            if (coolerSize && destZip) {
+              try {
+                const weather = await getRouteWeather(destZip, effectiveShipDay);
+                shadow = buildShadowResult({
+                  rates,
+                  tempClass: tempClass as TempClass,
+                  size: coolerSize,
+                  deliveryBy,
+                  shipDay: effectiveShipDay,
+                  weather,
+                  summerRate: selectedRate,
+                });
+                if (rateProfile === "live" && !shadow.noForecast) {
+                  // Live: buy the temperature-aware pick. Disables the Monday
+                  // shift (tryMonday gated on summer below) to avoid mixing the
+                  // two engines; the forecast is re-checked at buy time.
+                  const liveSel = selectTempAwareRate({
+                    rates,
+                    tempClass: tempClass as TempClass,
+                    size: coolerSize,
+                    deliveryBy,
+                    shipDay: effectiveShipDay,
+                    weather,
+                  });
+                  if (liveSel.rate) {
+                    selectedRate = liveSel.rate;
+                    // The ice-extended day is always the cell's top day, so
+                    // extra ice is needed exactly when the pick uses it.
+                    const pickedDays = Math.round(
+                      (Date.parse(veeqoDateToLocal(liveSel.rate.delivery_promise_date)) -
+                        Date.parse(effectiveShipDay)) /
+                        86_400_000,
+                    );
+                    liveIceExtra =
+                      liveSel.extraIce > 0 && pickedDays >= liveSel.allowedDays
+                        ? liveSel.extraIce
+                        : 0;
+                    frozenRateDebug =
+                      `live: ${liveSel.diagnostic}` +
+                      (liveIceExtra > 0 ? ` ${iceMarker(liveIceExtra)}` : "");
+                  }
+                }
+              } catch (e) {
+                console.warn(
+                  `[temp-class] ${order.number} shadow compute failed:`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
+            }
+          }
+
           // Surface a stopReason for non-Amazon orders whose rate quote
           // came back empty, so the UI shows "stopped: Veeqo returned 0
           // rates" instead of "Awaiting rate" forever. Without this the
@@ -929,7 +1144,10 @@ export async function GET(request: NextRequest) {
             productType === "Frozen" &&
             isAmazon &&
             monDeadlineDays >= 1 &&
-            dayInfo.dayName !== "Mon";
+            dayInfo.dayName !== "Mon" &&
+            // Live temp-engine uses its own today pick; don't let the summer
+            // Monday-shift override it (the two engines must not mix).
+            rateProfile !== "live";
 
           if (tryMonday) {
             try {
@@ -1118,7 +1336,10 @@ export async function GET(request: NextRequest) {
         qty,
         productType,
         _productId: productId, // Not saved to DB, used in response
-        weight: skuWeight,
+        weight:
+          skuWeight != null && liveIceExtra > 0
+            ? skuWeight + liveIceExtra * ICE_WEIGHT_PER_PIECE_LB
+            : skuWeight,
         boxSize: skuBoxSize,
         budgetMax: null,
         // Map Veeqo rate fields to our display/purchase fields
@@ -1149,6 +1370,10 @@ export async function GET(request: NextRequest) {
         serviceCarrier: selectedRate?.service_carrier || null, // "ups"
         totalNetCharge: selectedRate?.total_net_charge || null,
         baseRate: selectedRate?.base_rate || null,
+        tempClass,
+        tempClassSource,
+        walmartColdConflict,
+        shadow,
       });
     });
 

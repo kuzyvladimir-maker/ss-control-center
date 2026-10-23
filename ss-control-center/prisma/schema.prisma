@@ -288,6 +288,39 @@ model ProductTypeOverride {
   updatedAt      DateTime @updatedAt
 }
 
+// Temperature class per SKU for the weather-aware shipping rate engine
+// (topic 135, 2026-10-23). This is the MANUAL control the owner sets in the
+// Command Center and it OUTRANKS the Veeqo tag + the legacy ProductTypeOverride
+// — the sync never writes a Veeqo tag back over it. See
+// src/lib/shipping/temp-class/resolve-class.ts and
+// docs/wiki/frozen-weather-rate-selection-plan-2026-10-23.md.
+model SkuTemperatureClass {
+  id        String   @id @default(cuid())
+  sku       String   @unique
+  // "FROZEN" | "CHILLED" | "DRY" (SQLite has no enums — see comment style on
+  // FrozenRiskAlert.riskLevel).
+  class     String
+  // "manual" (owner in Command Center) | "review" (bulk-approved seed list) | "ai"
+  source    String   @default("manual")
+  setBy     String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Append-only audit of every class change, so a wrong class is always traceable.
+model SkuTemperatureClassChange {
+  id        String   @id @default(cuid())
+  sku       String
+  fromClass String? // null on first assignment
+  toClass   String
+  source    String
+  setBy     String?
+  at        DateTime @default(now())
+
+  @@index([sku])
+}
+
 // Frozen Delivery Analytics
 model FrozenIncident {
   id        String   @id @default(cuid())
