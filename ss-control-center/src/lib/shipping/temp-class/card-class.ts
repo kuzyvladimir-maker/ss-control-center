@@ -50,3 +50,32 @@ export function strictestCardClass(
   if (classes.includes("Dry")) return "Dry";
   return null;
 }
+
+/**
+ * The exact mapping /api/shipping/dashboard applies to one order line: the
+ * Veeqo-tag type, the Walmart rule (always Dry) and the manual class looked up
+ * by the line's trimmed SKU.
+ */
+export function cardItemClass(args: {
+  tagType: string | null;
+  isWalmart: boolean;
+  sku: string | null | undefined;
+  manualBySku: ReadonlyMap<string, string>;
+}): { knownType: string | null; tempClass: CardClass | null } {
+  if (args.isWalmart) return { knownType: args.tagType, tempClass: "Dry" };
+  return applyManualClass(
+    args.tagType,
+    args.manualBySku.get((args.sku ?? "").trim()),
+  );
+}
+
+/**
+ * True when the tab runs a different build than the server, i.e. the page
+ * should reload to pick up new code. Unknown on either side → no reload.
+ */
+export function isStaleBuild(
+  clientSha: string | null | undefined,
+  serverSha: string | null | undefined,
+): boolean {
+  return !!clientSha && !!serverSha && clientSha !== serverSha;
+}

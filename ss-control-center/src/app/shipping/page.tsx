@@ -52,6 +52,7 @@ import { groupBuyTargets } from "@/lib/shipping/buy-targets";
 import { formatEngineLine } from "@/lib/shipping/temp-class/engine-line";
 import {
   applyManualClass,
+  isStaleBuild,
   strictestCardClass,
   type CardClass,
 } from "@/lib/shipping/temp-class/card-class";
@@ -1292,7 +1293,33 @@ export default function ShippingLabelsPage() {
         const body = await dashRes.json().catch(() => null);
         throw new Error(body?.error ?? `HTTP ${dashRes.status}`);
       }
-      const dashJson = (await dashRes.json()) as DashboardResponse;
+      const dashJson = (await dashRes.json()) as DashboardResponse & {
+        buildSha?: string | null;
+      };
+      // A tab opened before a deploy keeps running the OLD bundle — the
+      // Refresh button reloads data, not code — so a fixed card could keep
+      // showing the old result. If the server runs a newer build, reload the
+      // page once to pick up the new code.
+      if (isStaleBuild(process.env.NEXT_PUBLIC_BUILD_SHA, dashJson.buildSha)) {
+        // At most one reload per server build, so a mismatch that a reload
+        // can't cure (e.g. a CDN serving an old bundle) never loops.
+        let already = false;
+        try {
+          already =
+            window.sessionStorage.getItem("shipping.reloadedFor") ===
+            dashJson.buildSha;
+          window.sessionStorage.setItem(
+            "shipping.reloadedFor",
+            dashJson.buildSha ?? "",
+          );
+        } catch {
+          /* storage blocked — still reload once */
+        }
+        if (!already) {
+          window.location.reload();
+          return;
+        }
+      }
       setData(dashJson);
       setLoading(false);
 

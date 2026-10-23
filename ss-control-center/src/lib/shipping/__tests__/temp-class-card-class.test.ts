@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyManualClass, strictestCardClass } from "../temp-class/card-class";
+import { applyManualClass, cardItemClass, isStaleBuild, strictestCardClass } from "../temp-class/card-class";
 
 test("AT-943E-XUUS: Veeqo tag says Frozen, manual class CHILLED → card shows Chilled, cold chain kept", () => {
   assert.deepEqual(applyManualClass("Frozen", "CHILLED"), { knownType: "Frozen", tempClass: "Chilled" });
@@ -21,4 +21,24 @@ test("order chip = strictest item: Frozen > Chilled > Dry", () => {
   assert.equal(strictestCardClass([{ tempClass: "Dry" }, { tempClass: "Chilled" }]), "Chilled");
   assert.equal(strictestCardClass([{ tempClass: "Chilled" }, { knownType: "Frozen" }]), "Frozen");
   assert.equal(strictestCardClass([{ knownType: null }]), null);
+});
+
+test("real scenario: order with no plan, AT-943E-XUUS CHILLED in the table, Veeqo tag Frozen → chip Chilled", () => {
+  const manualBySku = new Map([["AT-943E-XUUS", "CHILLED"]]);
+  // The dashboard's own mapping for the line (sku as Veeqo sends it).
+  const item = cardItemClass({ tagType: "Frozen", isWalmart: false, sku: "AT-943E-XUUS", manualBySku });
+  assert.deepEqual(item, { knownType: "Frozen", tempClass: "Chilled" });
+  // The card chip for the order (no plan involved).
+  assert.equal(strictestCardClass([item]), "Chilled");
+  // Stray whitespace in the Veeqo SKU still matches.
+  assert.equal(cardItemClass({ tagType: "Frozen", isWalmart: false, sku: " AT-943E-XUUS ", manualBySku }).tempClass, "Chilled");
+  // Walmart stays Dry regardless.
+  assert.equal(cardItemClass({ tagType: "Frozen", isWalmart: true, sku: "AT-943E-XUUS", manualBySku }).tempClass, "Dry");
+});
+
+test("stale tab detection: reload only when both builds are known and differ", () => {
+  assert.equal(isStaleBuild("aaa", "bbb"), true);
+  assert.equal(isStaleBuild("aaa", "aaa"), false);
+  assert.equal(isStaleBuild("", "bbb"), false);
+  assert.equal(isStaleBuild("aaa", null), false);
 });

@@ -31,7 +31,7 @@ import {
 } from "@/lib/shipping/packing-signature";
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
 import { ownShipBy, bucketForYmd } from "@/lib/shipping/own-deadline";
-import { applyManualClass } from "@/lib/shipping/temp-class/card-class";
+import { cardItemClass } from "@/lib/shipping/temp-class/card-class";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -536,9 +536,12 @@ export async function GET() {
           ? "Dry"
           : productType(i.productId ?? undefined);
         // Walmart stays Dry whatever the class (cold is forbidden there).
-        const cls = walmartChannelForType
-          ? { knownType: tagType, tempClass: "Dry" as const }
-          : applyManualClass(tagType, manualClassBySku.get((i.sku ?? "").trim()));
+        const cls = cardItemClass({
+          tagType,
+          isWalmart: walmartChannelForType,
+          sku: i.sku,
+          manualBySku: manualClassBySku,
+        });
         return {
           sku: i.sku,
           productId: i.productId,
@@ -782,6 +785,9 @@ export async function GET() {
       storeBreakdown,
       timeBuckets,
       orders,
+      // Commit the server runs — the page reloads itself when its own bundle
+      // is older (see next.config.ts NEXT_PUBLIC_BUILD_SHA).
+      buildSha: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
     });
   } catch (err) {
     console.error("[api/shipping/dashboard]", err);

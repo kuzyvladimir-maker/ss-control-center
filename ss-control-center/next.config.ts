@@ -42,6 +42,14 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     "*": ["./data/**"],
   },
+  // The commit this bundle was built from, baked into the client. /shipping
+  // compares it with the commit the API runs; a mismatch means the tab is
+  // running OLD JavaScript (the in-app Refresh reloads data, not code) and the
+  // page reloads itself. Topic 135, 2026-10-23: a fixed chip still showed the
+  // old label in a tab opened before the deploy.
+  env: {
+    NEXT_PUBLIC_BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+  },
 };
 
 export default nextConfig;
