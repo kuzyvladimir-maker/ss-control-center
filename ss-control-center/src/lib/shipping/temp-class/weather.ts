@@ -85,6 +85,8 @@ export interface RouteWeather extends WeatherForClass {
   /** Resolved destination coords (null when the ZIP couldn't be geocoded). */
   destCity: string | null;
   destState: string | null;
+  /** Destination max over the transit window, °C (part of routeMaxC). */
+  destMaxC: number | null;
 }
 
 /**
@@ -113,6 +115,7 @@ export async function getRouteWeather(
       routeMaxC: null,
       destCity: null,
       destState: null,
+      destMaxC: null,
     };
   }
 
@@ -137,6 +140,7 @@ export async function getRouteWeather(
     routeMaxC: routeMaxC === -Infinity ? null : routeMaxC,
     destCity: dest.city,
     destState: dest.state,
+    destMaxC: destMax,
   };
 }
 

@@ -42,6 +42,10 @@ export interface ShadowResult {
   reason: string;
   diagnostic: string;
   noForecast: boolean;
+  /** Destination shown on the card's engine line (set by the plan route). */
+  destCity?: string | null;
+  destState?: string | null;
+  destMaxC?: number | null;
 }
 
 function toPick(r: EnrichedRate | null): ShadowPick | null {

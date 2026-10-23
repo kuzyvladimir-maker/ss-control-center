@@ -1044,15 +1044,21 @@ export async function GET(request: NextRequest) {
             if (coolerSize && destZip) {
               try {
                 const weather = await getRouteWeather(destZip, effectiveShipDay);
-                shadow = buildShadowResult({
-                  rates,
-                  tempClass: tempClass as TempClass,
-                  size: coolerSize,
-                  deliveryBy,
-                  shipDay: effectiveShipDay,
-                  weather,
-                  summerRate: selectedRate,
-                });
+                shadow = {
+                  ...buildShadowResult({
+                    rates,
+                    tempClass: tempClass as TempClass,
+                    size: coolerSize,
+                    deliveryBy,
+                    shipDay: effectiveShipDay,
+                    weather,
+                    summerRate: selectedRate,
+                  }),
+                  // For the card's engine line (origin → destination temps).
+                  destCity: weather.destCity,
+                  destState: weather.destState,
+                  destMaxC: weather.destMaxC,
+                };
                 if (rateProfile === "live" && !shadow.noForecast) {
                   // Live: buy the temperature-aware pick. Disables the Monday
                   // shift (tryMonday gated on summer below) to avoid mixing the

@@ -49,6 +49,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
+import { formatEngineLine } from "@/lib/shipping/temp-class/engine-line";
 // DYMO Connect Web Service path was tried (port 41951 HTTPS / 41952 HTTP) but
 // the local DYMO Label service only enumerates older LabelWriter models
 // (e.g. 450) — it doesn't see the 5XL that's wired in via the macOS CUPS
@@ -229,6 +230,9 @@ interface ShadowInfo {
   iceNote: string;
   reason: string;
   noForecast: boolean;
+  destCity?: string | null;
+  destState?: string | null;
+  destMaxC?: number | null;
 }
 
 interface PlanResponse {
@@ -4725,6 +4729,10 @@ function OrderRow({
   // still in flight (planLoading) we show a spinner; if plan is in but
   // this order has status="stop", we show the stop reason from the plan.
   const planPending = plan && plan.status === "pending";
+  const engineLine = formatEngineLine({
+    tempClass: plan?.tempClass,
+    shadow: plan?.shadow ?? null,
+  });
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -5622,6 +5630,20 @@ function OrderRow({
                 : planLoading
                   ? "Calculating best rate…"
                   : "Awaiting rate"}
+            </span>
+          )}
+          {/* Temperature engine line (topic 135): what the weather engine
+              decided for this order, BEFORE buying — origin → destination
+              temps, class, the day cap and any extra ice. Same in shadow and
+              live; built from data the plan already computed. */}
+          {engineLine && (
+            <span
+              className={`flex-1 text-center text-[length:var(--ship-row)] font-medium tabular-nums ${
+                engineLine.mode === "summer" ? "text-warn-strong" : "text-ink-2"
+              }`}
+              title="Temperature-aware engine: Clearwater max (ship day + next) → destination max over the transit, the route max it decides on, the order's strictest class, the most transit days it allows and the extra gel ice needed."
+            >
+              {engineLine.text}
             </span>
           )}
           <Button
