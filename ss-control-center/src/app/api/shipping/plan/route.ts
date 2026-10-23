@@ -25,6 +25,7 @@ import {
 import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { findShippedPackage } from "@/lib/shipping/package-history";
+import { resolveDeliveryBy } from "@/lib/shipping/delivery-by";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
 import {
   isProcurementPlaced,
@@ -789,23 +790,15 @@ export async function GET(request: NextRequest) {
       // generous deliver-by window anchored on dispatch_date — gives
       // selectBestRate freedom to pick cheapest without a hard deadline
       // (TikTok/eBay don't enforce marketplace deadlines like Amazon).
-      let deliveryBy: string;
-      if (order.due_date) {
-        deliveryBy = veeqoDateToLocal(order.due_date);
-      } else {
-        // dispatch_date + 10 days as a sane default. Operator can still
-        // see the EDD on the picked rate; the marketplace doesn't gate
-        // them on a deadline so we just need any future date.
-        const dispatchDay = order.dispatch_date
-          ? veeqoDateToLocal(order.dispatch_date)
-          : actualShipDay;
-        const baseDate = new Date(`${dispatchDay}T12:00:00`);
-        baseDate.setDate(baseDate.getDate() + 10);
-        const y = baseDate.getFullYear();
-        const m = String(baseDate.getMonth() + 1).padStart(2, "0");
-        const d = String(baseDate.getDate()).padStart(2, "0");
-        deliveryBy = `${y}-${m}-${d}`;
-      }
+      // Only Amazon / Walmart due_date is an enforced delivery promise. On
+      // Shopify (NAN health) etc. Veeqo puts the SHIP-BY there, and a
+      // "deliver by today" filter stopped every rate — see delivery-by.ts.
+      const { deliveryBy } = resolveDeliveryBy({
+        dueDate: order.due_date,
+        dispatchDate: order.dispatch_date,
+        shipDay: actualShipDay,
+        enforcedDeadline: isAmazon || isWalmart,
+      });
       const allocationId = order.allocations?.[0]?.id;
 
       // Normalize a malformed ShipTo before quoting. Amazon B2B / DC orders pack
