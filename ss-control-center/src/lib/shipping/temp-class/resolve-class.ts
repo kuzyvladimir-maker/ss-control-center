@@ -81,8 +81,10 @@ export function decideOrderClass(
   const unknownAny = perLine.some((l) => l.unknown);
 
   if (opts.isWalmart) {
-    const walmartColdConflict = resolved.some(
-      (c) => c === "FROZEN" || c === "CHILLED",
+    // Only a REAL signal (manual / legacy / tag) counts — Walmart lines are
+    // never tag-checked, so the FROZEN default would flag every Walmart order.
+    const walmartColdConflict = perLine.some(
+      (l) => !l.unknown && (l.tempClass === "FROZEN" || l.tempClass === "CHILLED"),
     );
     return { tempClass: "DRY", perLine, unknownAny, walmartColdConflict };
   }

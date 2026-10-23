@@ -45,7 +45,7 @@ import {
 import {
   getRateProfile,
   resolveOrderClass,
-  tempClassToProductType,
+  parseTempClass,
   coolerSizeFromBox,
   getRouteWeather,
   buildShadowResult,
@@ -427,6 +427,11 @@ export async function GET(request: NextRequest) {
       // ── Product type ──
       let productType = "Unknown";
       let stopReason: string | null = null;
+      // Veeqo tags of the first line's product (re-used by the class resolver)
+      // and whether the only problem is "no Frozen/Dry tag" — live mode
+      // resolves that to FROZEN instead of stopping (owner, 2026-10-23).
+      let firstLineTags: string[] = [];
+      let missingTagStop = false;
       const productId: number | null =
         order.line_items?.[0]?.sellable?.product?.id || null;
 
@@ -452,7 +457,15 @@ export async function GET(request: NextRequest) {
                 (t: { name?: string } | string) =>
                   (typeof t === "string" ? t : t.name || "").toLowerCase()
               );
+              firstLineTags = tagNames;
               if (tagNames.some((t: string) => t.includes("frozen"))) {
+                productType = "Frozen";
+              } else if (
+                tagNames.some((t: string) => parseTempClass(t) === "CHILLED")
+              ) {
+                // chilled / refrigerated is cold chain everywhere the old
+                // Frozen/Dry type is read (owner, 2026-10-23): it must never
+                // fall into the "Missing Frozen/Dry tag" stop below.
                 productType = "Frozen";
               } else if (tagNames.some((t: string) => t.includes("dry"))) {
                 productType = "Dry";
@@ -467,6 +480,7 @@ export async function GET(request: NextRequest) {
                 productType = "Dry";
               } else {
                 stopReason = `Missing Frozen/Dry tag (tags: ${tagNames.join(", ") || "none"})`;
+                missingTagStop = true;
               }
             } else if (!isAmazon) {
               // Non-Amazon order with no product_id resolved (Veeqo
@@ -492,27 +506,75 @@ export async function GET(request: NextRequest) {
       let walmartColdConflict = false;
       if (tempEngineOn) {
         try {
-          const classSkus = (order.line_items ?? [])
-            .map(
-              (li: { sellable?: { sku_code?: string; sku?: string } }) =>
-                String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
-            )
-            .filter(Boolean);
-          const classInput = (classSkus.length ? classSkus : [""]).map(
-            (sku: string) => ({
-              sku,
-              legacyType: productType === "Unknown" ? null : productType,
+          // Every line gets ITS OWN legacy override and tags — the old code
+          // read only line 1, so a dry item listed first shipped a frozen box
+          // as Dry. Line 1's tags were already fetched above.
+          type ClassLine = {
+            sellable?: {
+              sku_code?: string;
+              sku?: string;
+              product_id?: number;
+              product?: { id?: number };
+            };
+          };
+          const rawLines: ClassLine[] = order.line_items ?? [];
+          const lineProductIds = rawLines.map(
+            (li) => li?.sellable?.product?.id ?? li?.sellable?.product_id ?? null,
+          );
+          const ids = [
+            ...new Set(lineProductIds.filter((x): x is number => typeof x === "number")),
+          ];
+          const legacyByProduct = new Map<number, string>();
+          if (ids.length > 0) {
+            const rows = await prisma.productTypeOverride.findMany({
+              where: { productId: { in: ids } },
+              select: { productId: true, type: true },
+            });
+            for (const r of rows) legacyByProduct.set(r.productId, r.type);
+          }
+          const classInput = await Promise.all(
+            (rawLines.length ? rawLines : [{} as ClassLine]).map(async (li, i) => {
+              const pid = lineProductIds[i] ?? null;
+              const legacy = pid != null ? legacyByProduct.get(pid) ?? null : null;
+              let tags: string[] = i === 0 ? firstLineTags : [];
+              if (i > 0 && !legacy && pid != null && !isWalmart) {
+                try {
+                  const p = await getProduct(pid);
+                  tags = (p.tags || []).map((t: { name?: string } | string) =>
+                    (typeof t === "string" ? t : t.name || "").toLowerCase(),
+                  );
+                } catch {
+                  /* unknown → resolver falls back to FROZEN (strict) */
+                }
+              }
+              return {
+                sku: String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
+                legacyType: legacy,
+                tags,
+              };
             }),
           );
           const oc = await resolveOrderClass(prisma as never, classInput, {
             isWalmart,
           });
           tempClass = oc.tempClass;
+          // "default" = some line had no class at all → the card says
+          // "type unknown → treated as Frozen" (owner, 2026-10-23).
           tempClassSource =
             oc.perLine.find((l) => l.source === "manual")?.source ??
-            oc.perLine[0]?.source ??
-            null;
+            (oc.unknownAny ? "default" : oc.perLine[0]?.source ?? null);
           walmartColdConflict = oc.walmartColdConflict;
+          // LIVE only: the resolved class drives the buy. Strictest line wins
+          // (a mixed order with any cold item is cold chain), a manual DRY
+          // makes it Dry, and an untagged SKU is FROZEN instead of a stop.
+          // Shadow/summer keep the old first-line Frozen/Dry type untouched.
+          if (rateProfile === "live" && !isWalmart) {
+            productType = oc.tempClass === "DRY" ? "Dry" : "Frozen";
+            if (missingTagStop) {
+              stopReason = null;
+              missingTagStop = false;
+            }
+          }
         } catch (e) {
           console.warn(
             `[temp-class] ${order.number} class resolve failed:`,

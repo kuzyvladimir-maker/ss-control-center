@@ -5102,6 +5102,14 @@ function OrderRow({
               {plan.tempClass.charAt(0) + plan.tempClass.slice(1).toLowerCase()}
             </button>
           )}
+          {plan?.tempClass && plan.tempClassSource === "default" && !order.isWalmart && (
+            <span
+              className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong"
+              title="No temperature class on file for at least one SKU (no manual class, no Frozen/Chilled/Dry tag) — handled as Frozen, the strict default. Click the class chip to set it."
+            >
+              Type unknown → treated as Frozen
+            </span>
+          )}
           {plan?.walmartColdConflict && (
             <span
               className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong"

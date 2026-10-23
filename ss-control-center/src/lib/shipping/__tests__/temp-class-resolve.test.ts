@@ -55,3 +55,19 @@ test("Walmart stays DRY and flags a cold SKU conflict", () => {
   assert.equal(ok.tempClass, "DRY");
   assert.equal(ok.walmartColdConflict, false);
 });
+
+test("Walmart: an untagged (default FROZEN) line is NOT a cold conflict; a tagged one is", () => {
+  const untagged = decideOrderClass([{}], { isWalmart: true });
+  assert.equal(untagged.tempClass, "DRY");
+  assert.equal(untagged.walmartColdConflict, false);
+  const tagged = decideOrderClass([{ tags: ["chilled"] }], { isWalmart: true });
+  assert.equal(tagged.walmartColdConflict, true);
+});
+
+test("a refrigerated Veeqo tag resolves to CHILLED, and a frozen line still wins the order", () => {
+  assert.equal(decideOrderClass([{ tags: ["refrigerated"] }]).tempClass, "CHILLED");
+  assert.equal(
+    decideOrderClass([{ tags: ["dry"] }, { tags: ["refrigerated"] }, { legacy: "Frozen" }]).tempClass,
+    "FROZEN",
+  );
+});
