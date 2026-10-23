@@ -63,3 +63,5 @@
   - Dry-правила выбора ставки упрощены (убраны 12pm USPS cutoff и 10% UPS prefer) — [shipping-rate-selection](shipping-rate-selection.md)
 
 - 2026-10-21 — [Package autofill from shipped history, Buy-after-Save zeros, our ship-by deadline](shipping-package-autofill-and-own-deadline-2026-10-21.md)
+
+- 2026-10-23 — [Temperature-aware rate selection: plan](frozen-weather-rate-selection-plan-2026-10-23.md) · [implementation & go-live](temp-class-rate-engine-implementation-2026-10-23.md)
