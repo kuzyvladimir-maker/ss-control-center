@@ -90,3 +90,16 @@ export function buildIcePlan(size: CoolerSize, extra: number): IcePlan {
     extraCostUsd: safeExtra * ICE_UNIT_COST_USD,
   };
 }
+
+/**
+ * Extra-ice marker the plan writes into a live plan item's notes ("[ice +N]")
+ * and the buy route turns into the warehouse note. 0 when absent.
+ */
+export function iceMarker(extra: number): string {
+  return extra > 0 ? `[ice +${extra}]` : "";
+}
+
+export function iceExtraFromNotes(notes: string | null | undefined): number {
+  const m = /\[ice \+(\d+)\]/.exec(notes ?? "");
+  return m ? Number(m[1]) : 0;
+}

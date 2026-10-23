@@ -774,7 +774,7 @@ export default function ShippingLabelsPage() {
   // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
   // "Dry" keeps orders whose first item matches (mixed orders only match
   // when every item is the same type).
-  const [typeFilter, setTypeFilter] = useState<"all" | "Frozen" | "Dry" | "Untyped">(
+  const [typeFilter, setTypeFilter] = useState<"all" | "Frozen" | "Chilled" | "Dry" | "Untyped">(
     "all",
   );
   // KPI card filter. Maps to the same `state` field on each order so a
@@ -1843,6 +1843,14 @@ export default function ShippingLabelsPage() {
     for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
     return m;
   }, [plan, walmartRates, orders, walmartBuySource]);
+  // Orders the plan resolved to the CHILLED temperature class (topic 135).
+  const chilledCount = useMemo(
+    () =>
+      scopedOrders.filter(
+        (o) => planByOrderNumber.get(o.orderNumber)?.tempClass === "CHILLED",
+      ).length,
+    [scopedOrders, planByOrderNumber],
+  );
 
   // Orders whose label is printed today but whose package physically leaves on
   // a LATER day (Frozen Ship Date Trick — typically the next business day, e.g.
@@ -2029,7 +2037,13 @@ export default function ShippingLabelsPage() {
         if (typeFilter !== "all" && !wideOpen) {
           const types = o.items.map((i) => i.knownType);
           if (types.length === 0) return false;
-          if (typeFilter === "Untyped") {
+          if (typeFilter === "Chilled") {
+            // Chilled is a temperature class the plan resolves (manual class
+            // per SKU, or a chilled/refrigerated Veeqo tag) — not a dashboard
+            // Frozen/Dry tag — so it reads the plan row.
+            if (planByOrderNumber.get(o.orderNumber)?.tempClass !== "CHILLED")
+              return false;
+          } else if (typeFilter === "Untyped") {
             // "Untyped" = at least one item without a Frozen/Dry tag.
             // These typically end up in need_attention=no_type (Amazon)
             // but the operator wants to be able to surface them
@@ -3695,6 +3709,14 @@ export default function ShippingLabelsPage() {
             active={typeFilter === "Frozen"}
             onClick={() =>
               setTypeFilter(typeFilter === "Frozen" ? "all" : "Frozen")
+            }
+          />
+          <Seg
+            label="Chilled"
+            count={chilledCount}
+            active={typeFilter === "Chilled"}
+            onClick={() =>
+              setTypeFilter(typeFilter === "Chilled" ? "all" : "Chilled")
             }
           />
           <Seg

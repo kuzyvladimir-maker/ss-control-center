@@ -69,13 +69,41 @@ row directly). Takes effect within 60 s (cached).
 5. On the owner's word: `PUT /api/shipping/rate-profile {"profile":"live"}`.
    Carrier override and Next-Day rules still apply.
 
-## Known gaps (flagged to owner)
+## Closed on 2026-10-23 (second pass)
 
-- **Chilled seed SKUs** — the review sheet (`1NXuQpZutohF…`) requires Google
-  sign-in and could not be exported; the 27 chilled codes are a TODO in the seed
-  JSON. Frozen (10) + dry (2) are pre-filled.
-- **Live buy-time ice** — in `live`, the plan picks the right carrier, but the
-  extra-ice label-weight bump and the Veeqo warehouse ice-note are **not yet
-  written at purchase** (shadow week doesn't buy, so no impact now). This is the
-  one buy-route follow-up before flipping `live`.
-- **Chilled filter tab** — not added yet (class chip + shadow are in).
+- **Chilled seed**: the 27 chilled SKUs are filled in the seed JSON. They come
+  from the numbered list sent to the topic, which follows the same order as
+  the review sheet; rows 19, 23 and 30–39 were verified to match.
+- **Per-line class**: each order line now gets its own legacy override and
+  Veeqo tags. Previously line 1's Frozen/Dry type was copied to every line.
+- **`chilled` / `refrigerated` tag** counts as cold chain in every mode, so
+  tagging Veeqo can never produce the "Missing Frozen/Dry tag" stop.
+- **Live only**: the resolved class drives the buy. The strictest line wins,
+  a manual DRY makes the order Dry, and an untagged SKU is treated as FROZEN
+  instead of stopping. Shadow and summer keep the old first-line type.
+- **Walmart cold flag**: only a real signal (manual, legacy or tag) raises it,
+  not the FROZEN default.
+- **"Type unknown → treated as Frozen"** chip on the card.
+- **Live ice**: the plan adds extra pieces × 1 lb to the plan-item weight and
+  writes `[ice +N]` into the notes. The buy route appends "ADD N EXTRA ICE" to
+  the Veeqo warehouse note.
+  - Caveat: the live quote is taken without the ice weight. At buy time the
+    heavier package goes through the re-quote price guard (≤ max($1, 5%)). A
+    larger jump refuses the buy and names the closest options.
+- **Chilled filter tab** on /shipping.
+
+## Incident: engine commits reached main
+
+`agent-sync sync` always pushes `HEAD:main`, even from a feature branch.
+Because of that, 794a57bd3, af14f6726 and cd826525c landed on main. They were
+reverted there by f0f61879f, whose tree is identical to cad34eff7. The
+branch re-applies them in d62543c85.
+
+**Rule:** never run `agent-sync sync` on a feature branch. Commit with plain
+git and `git push origin <branch>`.
+
+## Remaining before `live`
+
+- Verify the shadow numbers for a week.
+- Optionally re-quote the live pick with the ice weight included, so the
+  buy-time guard never trips on a heavier package.

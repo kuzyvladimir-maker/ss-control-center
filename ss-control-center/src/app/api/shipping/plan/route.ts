@@ -50,6 +50,8 @@ import {
   getRouteWeather,
   buildShadowResult,
   selectTempAwareRate,
+  ICE_WEIGHT_PER_PIECE_LB,
+  iceMarker,
   type ShadowResult,
   type RateProfile,
   type TempClass,
@@ -837,6 +839,10 @@ export async function GET(request: NextRequest) {
       let frozenRateDebug: string | null = null;
       // Temperature-aware engine output for this order (topic 135).
       let shadow: ShadowResult | null = null;
+      // LIVE only: extra gel-ice pieces the picked transit needs. Added to the
+      // label weight (≈1 lb each) and carried to the warehouse note as
+      // "[ice +N]" in the plan notes; the buy route reads it from there.
+      let liveIceExtra = 0;
 
       // Per-order diagnostic for non-Amazon-non-Walmart paths. We log
       // every gate the order passes/fails so we can see in Vercel logs
@@ -1068,7 +1074,20 @@ export async function GET(request: NextRequest) {
                   });
                   if (liveSel.rate) {
                     selectedRate = liveSel.rate;
-                    frozenRateDebug = `live: ${liveSel.diagnostic}`;
+                    // The ice-extended day is always the cell's top day, so
+                    // extra ice is needed exactly when the pick uses it.
+                    const pickedDays = Math.round(
+                      (Date.parse(veeqoDateToLocal(liveSel.rate.delivery_promise_date)) -
+                        Date.parse(effectiveShipDay)) /
+                        86_400_000,
+                    );
+                    liveIceExtra =
+                      liveSel.extraIce > 0 && pickedDays >= liveSel.allowedDays
+                        ? liveSel.extraIce
+                        : 0;
+                    frozenRateDebug =
+                      `live: ${liveSel.diagnostic}` +
+                      (liveIceExtra > 0 ? ` ${iceMarker(liveIceExtra)}` : "");
                   }
                 }
               } catch (e) {
@@ -1317,7 +1336,10 @@ export async function GET(request: NextRequest) {
         qty,
         productType,
         _productId: productId, // Not saved to DB, used in response
-        weight: skuWeight,
+        weight:
+          skuWeight != null && liveIceExtra > 0
+            ? skuWeight + liveIceExtra * ICE_WEIGHT_PER_PIECE_LB
+            : skuWeight,
         boxSize: skuBoxSize,
         budgetMax: null,
         // Map Veeqo rate fields to our display/purchase fields

@@ -14,6 +14,7 @@ import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
 import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 import { matchLiveRate } from "@/lib/shipping/requote-match";
+import { iceExtraFromNotes } from "@/lib/shipping/temp-class/ice";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
@@ -807,7 +808,12 @@ export async function POST(request: NextRequest) {
         // catch below and report a SUCCESSFUL purchase as failed. Its own
         // try/catch keeps it that way permanently: a note that doesn't land is
         // a log line, never a failed buy.
-        const noteText = `✅ Label Purchased: ${item.carrier} ${boughtService} $${boughtPrice ?? "?"} | Tracking: ${tracking}${shipDayNote}`;
+        // Live temperature-aware pick that uses the ice-extended day → tell
+        // the warehouse how many extra gel-ice pieces go in (plan marks it
+        // "[ice +N]"; the label weight already includes them).
+        const iceExtra = iceExtraFromNotes(item.notes);
+        const iceNote = iceExtra > 0 ? ` | ADD ${iceExtra} EXTRA ICE` : "";
+        const noteText = `✅ Label Purchased: ${item.carrier} ${boughtService} $${boughtPrice ?? "?"} | Tracking: ${tracking}${shipDayNote}${iceNote}`;
         after(async () => {
           try {
             await addEmployeeNote(parseInt(item.orderId), noteText);

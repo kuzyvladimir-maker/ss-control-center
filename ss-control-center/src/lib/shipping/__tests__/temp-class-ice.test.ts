@@ -6,6 +6,8 @@ import {
   coolerSizeFromBox,
   ICE_BASE,
   ICE_EXTRA_CAPACITY,
+  iceExtraFromNotes,
+  iceMarker,
 } from "../temp-class/ice";
 
 test("ice bases match the owner's numbers", () => {
@@ -44,4 +46,12 @@ test("coolerSizeFromBox recognises named coolers only", () => {
   assert.equal(coolerSizeFromBox("m"), "M");
   assert.equal(coolerSizeFromBox("7×7×6"), null);
   assert.equal(coolerSizeFromBox(null), null);
+});
+
+test("ice marker round-trips through plan notes; absent → 0", () => {
+  const notes = `live: [temp-rate] picked UPS Ground 4d ${iceMarker(4)} | other`;
+  assert.equal(iceExtraFromNotes(notes), 4);
+  assert.equal(iceMarker(0), "");
+  assert.equal(iceExtraFromNotes("today: [frozen-rate v3.5] picked FedEx"), 0);
+  assert.equal(iceExtraFromNotes(null), 0);
 });
