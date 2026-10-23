@@ -39,6 +39,21 @@ import {
   chooseTodayOrMonday,
   type VeeqoRate,
 } from "@/lib/shipping/rate-selection";
+// Temperature-aware engine (topic 135). Runs alongside the summer profile:
+// "shadow" shows what it WOULD pick + the saving without changing the buy;
+// "live" makes the buy use it; "summer" disables it entirely (rollback).
+import {
+  getRateProfile,
+  resolveOrderClass,
+  tempClassToProductType,
+  coolerSizeFromBox,
+  getRouteWeather,
+  buildShadowResult,
+  selectTempAwareRate,
+  type ShadowResult,
+  type RateProfile,
+  type TempClass,
+} from "@/lib/shipping/temp-class";
 
 // Planning quotes carriers for every ready order (pooled, but still several
 // seconds each) — on a busy morning that is a long invocation by nature. Make
@@ -49,6 +64,20 @@ export const maxDuration = 300;
 
 // (The Veeqo rate shape and the rate-choosing rules now live in
 //  @/lib/shipping/rate-selection — imported above.)
+
+// Destination ZIP for the temperature-aware weather lookup — same shape the
+// Frozen Analytics pipeline reads (deliver_to / shipping_address, zip /
+// postcode / postal_code), first 5 digits.
+function pickDestZip(order: {
+  deliver_to?: { zip?: string; postcode?: string; postal_code?: string } | null;
+  shipping_address?: { zip?: string; postcode?: string; postal_code?: string } | null;
+}): string | null {
+  const a = order.deliver_to ?? order.shipping_address ?? null;
+  if (!a) return null;
+  const raw = String(a.zip ?? a.postcode ?? a.postal_code ?? "");
+  const m = raw.match(/\d{5}/);
+  return m ? m[0] : null;
+}
 
 // ── Day info ──
 function getDayInfo(today: string) {
@@ -150,6 +179,11 @@ export async function GET(request: NextRequest) {
       console.error("Failed to fetch SKU database:", e);
     }
     const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
+
+    // Rate-selection profile (topic 135). "summer" = the engine is OFF (pure
+    // Master Prompt v3.5). Read once per pass (60s cached inside).
+    const rateProfile: RateProfile = await getRateProfile(prisma);
+    const tempEngineOn = rateProfile !== "summer";
 
     const orders = await fetchAllOrders();
 
@@ -265,6 +299,13 @@ export async function GET(request: NextRequest) {
       remoteShipmentId: string | null; serviceType: string | null;
       subCarrierId: string | null; serviceCarrier: string | null;
       totalNetCharge: string | null; baseRate: string | null;
+      // Temperature-aware engine (topic 135). `tempClass` is the resolved
+      // class shown as the card chip; `shadow` is what the new logic would do
+      // + the saving (present whenever the engine is on and the order is cold).
+      tempClass: string | null;
+      tempClassSource: string | null;
+      walmartColdConflict: boolean;
+      shadow: ShadowResult | null;
     }> = [];
 
     // ── Pre-warm rate quotes in parallel ──────────────────────────────────
@@ -438,6 +479,45 @@ export async function GET(request: NextRequest) {
           } catch (e) {
             stopReason = `Could not fetch product tags: ${e instanceof Error ? e.message : String(e)}`;
           }
+        }
+      }
+
+      // ── Temperature class (topic 135) ──
+      // Resolve the order's class (strictest across lines) when the engine is
+      // on. The MANUAL SkuTemperatureClass per SKU wins; lines without one fall
+      // back to the Frozen/Dry productType just computed. Walmart → DRY, with a
+      // conflict flag if a cold SKU slipped onto a Walmart order.
+      let tempClass: string | null = null;
+      let tempClassSource: string | null = null;
+      let walmartColdConflict = false;
+      if (tempEngineOn) {
+        try {
+          const classSkus = (order.line_items ?? [])
+            .map(
+              (li: { sellable?: { sku_code?: string; sku?: string } }) =>
+                String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
+            )
+            .filter(Boolean);
+          const classInput = (classSkus.length ? classSkus : [""]).map(
+            (sku: string) => ({
+              sku,
+              legacyType: productType === "Unknown" ? null : productType,
+            }),
+          );
+          const oc = await resolveOrderClass(prisma as never, classInput, {
+            isWalmart,
+          });
+          tempClass = oc.tempClass;
+          tempClassSource =
+            oc.perLine.find((l) => l.source === "manual")?.source ??
+            oc.perLine[0]?.source ??
+            null;
+          walmartColdConflict = oc.walmartColdConflict;
+        } catch (e) {
+          console.warn(
+            `[temp-class] ${order.number} class resolve failed:`,
+            e instanceof Error ? e.message : e,
+          );
         }
       }
 
@@ -693,6 +773,8 @@ export async function GET(request: NextRequest) {
       let selectedRate: VeeqoRate | null = null;
       let shipDateNote: string | null = null;
       let frozenRateDebug: string | null = null;
+      // Temperature-aware engine output for this order (topic 135).
+      let shadow: ShadowResult | null = null;
 
       // Per-order diagnostic for non-Amazon-non-Walmart paths. We log
       // every gate the order passes/fails so we can see in Vercel logs
@@ -884,6 +966,58 @@ export async function GET(request: NextRequest) {
               .join(" | ");
           }
 
+          // ── Temperature-aware engine (topic 135) ──
+          // Compute the weather-driven pick for cold orders on the SAME rate
+          // list. In "shadow" it only annotates the card (purchase unchanged);
+          // in "live" it replaces the pick. DRY needs no weather. No forecast
+          // or no cooler size → we leave the summer pick alone.
+          if (
+            tempEngineOn &&
+            isAmazon &&
+            (tempClass === "FROZEN" || tempClass === "CHILLED") &&
+            skuBoxSize &&
+            rates.length > 0
+          ) {
+            const coolerSize = coolerSizeFromBox(skuBoxSize);
+            const destZip = pickDestZip(order);
+            if (coolerSize && destZip) {
+              try {
+                const weather = await getRouteWeather(destZip, effectiveShipDay);
+                shadow = buildShadowResult({
+                  rates,
+                  tempClass: tempClass as TempClass,
+                  size: coolerSize,
+                  deliveryBy,
+                  shipDay: effectiveShipDay,
+                  weather,
+                  summerRate: selectedRate,
+                });
+                if (rateProfile === "live" && !shadow.noForecast) {
+                  // Live: buy the temperature-aware pick. Disables the Monday
+                  // shift (tryMonday gated on summer below) to avoid mixing the
+                  // two engines; the forecast is re-checked at buy time.
+                  const liveSel = selectTempAwareRate({
+                    rates,
+                    tempClass: tempClass as TempClass,
+                    size: coolerSize,
+                    deliveryBy,
+                    shipDay: effectiveShipDay,
+                    weather,
+                  });
+                  if (liveSel.rate) {
+                    selectedRate = liveSel.rate;
+                    frozenRateDebug = `live: ${liveSel.diagnostic}`;
+                  }
+                }
+              } catch (e) {
+                console.warn(
+                  `[temp-class] ${order.number} shadow compute failed:`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
+            }
+          }
+
           // Surface a stopReason for non-Amazon orders whose rate quote
           // came back empty, so the UI shows "stopped: Veeqo returned 0
           // rates" instead of "Awaiting rate" forever. Without this the
@@ -929,7 +1063,10 @@ export async function GET(request: NextRequest) {
             productType === "Frozen" &&
             isAmazon &&
             monDeadlineDays >= 1 &&
-            dayInfo.dayName !== "Mon";
+            dayInfo.dayName !== "Mon" &&
+            // Live temp-engine uses its own today pick; don't let the summer
+            // Monday-shift override it (the two engines must not mix).
+            rateProfile !== "live";
 
           if (tryMonday) {
             try {
@@ -1149,6 +1286,10 @@ export async function GET(request: NextRequest) {
         serviceCarrier: selectedRate?.service_carrier || null, // "ups"
         totalNetCharge: selectedRate?.total_net_charge || null,
         baseRate: selectedRate?.base_rate || null,
+        tempClass,
+        tempClassSource,
+        walmartColdConflict,
+        shadow,
       });
     });
 
