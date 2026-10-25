@@ -906,6 +906,17 @@ export default function ShippingLabelsPage() {
   // record-of-truth; logs/shipping-buy.jsonl is the audit fallback.
   const [buyReport, setBuyReport] = useState<BuyReport | null>(null);
 
+  // Rate-selection profile switch (topic 135). One Setting row
+  // (shipping_rate_profile) decides how the temperature-aware engine behaves:
+  //   summer — engine OFF (Master Prompt v3.5 only; the one-switch rollback)
+  //   shadow — engine shows its pick + saving on the card, buys by summer
+  //   live   — the engine's pick is what gets bought (battle mode)
+  // This control is the owner's single click to go live and to roll back.
+  const [rateProfile, setRateProfile] = useState<
+    "summer" | "shadow" | "live" | null
+  >(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+
   // Frozen Analytics v2 alerts (Phase 3 integration). We pull all currently
   // pending alerts at low+ severity and index by orderNumber so each row can
   // surface the predicted risk + recommendations next to its Buy button.
@@ -1389,6 +1400,62 @@ export default function ShippingLabelsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Load the current rate-selection profile once on mount so the switch below
+  // reflects production truth (the Setting row in Turso), not a hardcoded guess.
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      try {
+        const res = await fetch("/api/shipping/rate-profile");
+        if (!res.ok) return;
+        const json = (await res.json()) as { profile?: string };
+        if (alive && json?.profile) {
+          setRateProfile(json.profile as "summer" | "shadow" | "live");
+        }
+      } catch {
+        /* non-fatal — the switch just stays blank until a retry */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Flip the profile. "live" is battle mode, so it confirms once; rolling back
+  // to "summer" is immediate and needs no confirmation.
+  const changeRateProfile = useCallback(
+    async (next: "summer" | "shadow" | "live") => {
+      if (next === rateProfile || profileSaving) return;
+      if (
+        next === "live" &&
+        !window.confirm(
+          "Go LIVE? The temperature-aware engine will decide which rate is bought for Amazon frozen/chilled orders. You can roll back to Summer from this same switch at any time.",
+        )
+      ) {
+        return;
+      }
+      setProfileSaving(true);
+      try {
+        const res = await fetch("/api/shipping/rate-profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: next }),
+        });
+        if (res.ok) {
+          const json = (await res.json()) as { profile?: string };
+          setRateProfile(
+            (json?.profile as "summer" | "shadow" | "live") ?? next,
+          );
+        }
+      } catch {
+        /* non-fatal — leave the switch on its last known value */
+      } finally {
+        setProfileSaving(false);
+      }
+    },
+    [rateProfile, profileSaving],
+  );
 
   // Pull the active frozen-risk alerts so each shipping row can show the
   // recommendation badge inline. Runs once on mount and again whenever the
@@ -3378,6 +3445,54 @@ export default function ShippingLabelsPage() {
           >
             {loading ? "Refreshing…" : "Refresh"}
           </Btn>
+
+          {/* Rate engine profile — the owner's one-click switch. Summer is the
+              rollback (engine off, Master Prompt v3.5 only); Shadow lets the
+              temperature-aware engine advise on the card without changing a
+              purchase; Live lets it decide which rate is bought. It rides the
+              pinned command bar so it's always one click away, including the
+              rollback. */}
+          <div className="flex shrink-0 items-center gap-1.5">
+            <span className="hidden text-[11px] font-medium text-ink-3 sm:inline">
+              Rate engine
+            </span>
+            <div className="inline-flex overflow-hidden rounded-md border border-rule">
+              {(["summer", "shadow", "live"] as const).map((p) => {
+                const active = rateProfile === p;
+                const label =
+                  p === "summer"
+                    ? "Summer"
+                    : p === "shadow"
+                      ? "Shadow"
+                      : "Live";
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={profileSaving || rateProfile === null}
+                    onClick={() => void changeRateProfile(p)}
+                    className={[
+                      "px-2.5 py-1 text-[11.5px] font-medium transition-colors disabled:opacity-50",
+                      active && p === "live"
+                        ? "bg-amber-500 text-white"
+                        : active
+                          ? "bg-[#0071dc] text-white"
+                          : "bg-surface text-ink-3 hover:bg-bg-elev hover:text-ink",
+                    ].join(" ")}
+                    title={
+                      p === "summer"
+                        ? "Engine OFF — Master Prompt v3.5 only (the rollback)"
+                        : p === "shadow"
+                          ? "Engine advises on the card; purchases still go by summer"
+                          : "Battle mode — the engine's pick is what gets bought"
+                    }
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* One line telling the operator exactly what the search is doing
