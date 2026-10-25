@@ -314,6 +314,19 @@ STILL IN TRANSIT, window open: no refund, no replacement, no A-to-Z yet. Give
   an expedited shipping service at our own expense to get it to you sooner".
   Ship-by is a deadline, not our planned ship date.
 
+NOT DELIVERED + DELAYED IN TRANSIT (owner, 2026-10-25, topic 42). When CASE DATA
+  shows the package is NOT delivered and the carrier flagged a delay (or it is
+  clearly past the Amazon delivery window / circling the network), this is a
+  CARRIER DELAY, never a reason to offer a cancellation. Build the decision from
+  that fact. Always reference the concrete facts you were given — the last scan
+  date and location and that the carrier reported it delayed — never a vague
+  "it is on its way". If the window has passed AND the label is Amazon Buy
+  Shipping (claimsProtected), ask the buyer to contact Amazon Customer Service
+  and request an A-to-Z Guarantee review (Amazon reviews the carrier tracking
+  and decides; we do not refund first). If the window has passed and it is NOT
+  Buy Shipping protected, we resolve it ourselves (replacement or refund). Do
+  NOT promise a new delivery date we cannot verify.
+
 NEVER ADMIT FAULT IN THE BUYER TEXT (owner, 2026-10-20; tightened 2026-10-25,
   topic 42 — overrides anything older). Not in writing, not publicly: no "our
   error / our mistake / our fault", no "on our side / on our end", no "it never

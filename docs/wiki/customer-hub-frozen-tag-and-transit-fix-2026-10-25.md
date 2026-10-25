@@ -70,6 +70,35 @@ Enforced at three layers so it never depends on the model obeying the prompt:
 - `__tests__/autopilot.test.ts` updated: "something went wrong" is now a
   violation (was explicitly allowed under the old 2026-10-20 rule).
 
+## 4. Tracking facts are now the mandatory minimum (Diana, topic 42)
+
+Owner follow-up: the card was missing the single most important fact — **is the
+order delivered**, and the tracking chronology. Diana (`111-7501764-0683435`,
+USPS `9334610990150220712718`) circled the network 16–24 Oct (Portland OR →
+Indianapolis → Pontiac → Flint MI), "Package delayed in transit" on 21 Oct, last
+scan 24 Oct "arrived at a carrier facility" Flint MI — **not delivered, 12 days
+in transit, carrier fault**. The old M6 fact only said "accepted … / not
+delivered yet".
+
+- `transit.ts` `transitFacts` now also returns `lastScan`, `lastLocation`,
+  `lastStatus`, `delayed` (any delay/held/exception/undeliverable event), and
+  `daysInTransit` (first scan → delivery, or → `now` while undelivered, so
+  "12 days and counting" is a fact). Pure; takes an optional `now` for tests.
+- `case-data.ts` M6 now ALWAYS states the delivery verdict (DELIVERED date /
+  NOT delivered), days in transit, "delayed in transit" when flagged, and the
+  last scan date + location — EN for the prompt, RU for the card's Факты table.
+- `carrierEvents` gained `inferCarrier`: when the stored carrier is a billing
+  label ("Buy Shipping") it reads the carrier off the tracking-number shape
+  (USPS 91–95…/9400…, UPS 1Z, FedEx) so a USPS number is not sent to the UPS
+  endpoint and silently lost. Diana's number is USPS.
+- Analyzer prompt: a NOT-DELIVERED + DELAYED-IN-TRANSIT rule — this is a carrier
+  delay, never a cancel; cite the last scan + delay facts; past window + Buy
+  Shipping → A-to-Z; past window + not protected → we resolve; never promise an
+  unverified new date. Source chain for M6 already includes the Seller Central
+  "Delivery Information" page via VPS as a fallback to the carrier API.
+
+Tests: `__tests__/transit-facts.test.ts` (Diana circling, delivered, label-only).
+
 ## Still owner/prod side
 
 Rebuilding Brenda's card (v2) and confirming Diana's type

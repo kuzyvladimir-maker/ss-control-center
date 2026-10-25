@@ -27,6 +27,20 @@ export interface TransitFacts {
   transitHours: number | null;
   /** Delivered-event wording worth quoting ("Left at front door", "Received by …"). */
   deliveryDetail: string | null;
+  /** Most recent scan (any event), "YYYY-MM-DD HH:MM" — the latest known position. */
+  lastScan: string | null;
+  /** Location of the most recent scan ("Flint, MI"). */
+  lastLocation: string | null;
+  /** Wording of the most recent scan ("Arrived at a carrier facility", "Package delayed in transit"). */
+  lastStatus: string | null;
+  /** Carrier flagged the package delayed somewhere in its history. */
+  delayed: boolean;
+  /**
+   * Days the carrier has held the package: first scan → delivery, or first
+   * scan → `now` when still undelivered (so "12 days and counting" is a fact,
+   * not a guess). Null without a carrier scan.
+   */
+  daysInTransit: number | null;
 }
 
 function at(e: TransitEvent): number | null {
@@ -51,15 +65,27 @@ function label(e: TransitEvent): string {
   return [e.date, e.time].filter(Boolean).join(" ");
 }
 
-export function transitFacts(events: TransitEvent[] | null | undefined): TransitFacts {
+const DELAY_RE = /delay|held|exception|not be delivered|rescheduled|return to sender|undeliverable/i;
+
+export function transitFacts(
+  events: TransitEvent[] | null | undefined,
+  now: Date = new Date(),
+): TransitFacts {
   const list = (events || []).filter((e) => at(e) !== null);
   list.sort((a, b) => (at(a) as number) - (at(b) as number));
   const first = list.find(isCarrierScan) || null;
   const delivered = [...list].reverse().find(isDelivered) || null;
+  const last = list.length ? list[list.length - 1] : null;
   let transitHours: number | null = null;
   if (first && delivered) {
     const h = ((at(delivered) as number) - (at(first) as number)) / 3_600_000;
     transitHours = h >= 0 ? Math.round(h) : null;
+  }
+  let daysInTransit: number | null = null;
+  if (first) {
+    const end = delivered ? (at(delivered) as number) : now.getTime();
+    const d = (end - (at(first) as number)) / 86_400_000;
+    daysInTransit = d >= 0 ? Math.round(d) : null;
   }
   const detail = delivered
     ? [delivered.description, delivered.location].map((s) => (s || "").trim()).filter(Boolean).join(" @ ")
@@ -69,6 +95,11 @@ export function transitFacts(events: TransitEvent[] | null | undefined): Transit
     delivered: delivered ? label(delivered) : null,
     transitHours,
     deliveryDetail: detail || null,
+    lastScan: last ? label(last) : null,
+    lastLocation: (last?.location || "").trim() || null,
+    lastStatus: (last?.description || "").trim() || null,
+    delayed: list.some((e) => DELAY_RE.test(e.description || "")),
+    daysInTransit,
   };
 }
 

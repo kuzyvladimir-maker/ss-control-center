@@ -60,13 +60,33 @@ function item(
   return { key, present, fact: present ? fact : "", factRu: present ? factRu : "", tried };
 }
 
-async function carrierEvents(carrier: string | null, tracking: string): Promise<TransitEvent[] | null> {
+/**
+ * Guess the carrier from the tracking number when the stored carrier is
+ * ambiguous ("Buy Shipping" is a billing label, not a carrier). USPS numbers
+ * are 20–22 digits starting 91/92/93/94 (or the "9400…" IMpb form); UPS starts
+ * "1Z"; FedEx is 12/15 digits. Diana's 9334610990150220712718 is USPS — without
+ * this it would fall through to the UPS endpoint and return nothing.
+ */
+function inferCarrier(carrier: string | null, tracking: string): "usps" | "fedex" | "ups" {
   const c = (carrier || "").toLowerCase();
-  const info = c.includes("fedex")
-    ? await getFedexTracking(tracking)
-    : c.includes("usps")
-      ? await getUspsTracking(tracking)
-      : await getUpsTracking(tracking);
+  if (c.includes("usps")) return "usps";
+  if (c.includes("fedex")) return "fedex";
+  if (c.includes("ups")) return "ups";
+  const t = (tracking || "").replace(/\s+/g, "");
+  if (/^1Z/i.test(t)) return "ups";
+  if (/^9[1-5]\d{18,20}$/.test(t) || /^9400\d{18,}$/.test(t)) return "usps";
+  if (/^\d{12}$|^\d{15}$|^\d{20,22}$/.test(t)) return "fedex";
+  return "ups";
+}
+
+async function carrierEvents(carrier: string | null, tracking: string): Promise<TransitEvent[] | null> {
+  const which = inferCarrier(carrier, tracking);
+  const info =
+    which === "fedex"
+      ? await getFedexTracking(tracking)
+      : which === "usps"
+        ? await getUspsTracking(tracking)
+        : await getUpsTracking(tracking);
   return info?.events?.length ? info.events : null;
 }
 
@@ -246,19 +266,34 @@ export async function collectCaseData(
     }
     const tf = transitFacts(events);
     const ok = Boolean(events?.length);
-    items.push(
-      item(
-        "M6",
-        ok,
-        tf.firstCarrierScan
-          ? `Carrier tracking: accepted ${tf.firstCarrierScan}; ${tf.delivered ? `delivered ${tf.delivered} (${tf.deliveryDetail})` : "not delivered yet"}${tf.transitHours !== null ? `; ~${tf.transitHours} h in transit` : ""}`
-          : "Carrier tracking: NO carrier acceptance scan — label only, the carrier never received the package.",
-        tf.firstCarrierScan
-          ? `перевозчик принял ${tf.firstCarrierScan}; ${tf.delivered ? `доставлено ${tf.delivered}` : "ещё не доставлено"}`
-          : "скана приёмки нет — посылку перевозчику не передали",
-        m6tried
-      )
-    );
+    // Owner rule (2026-10-25, topic 42, Diana): the card's tracking fact must
+    // ALWAYS state the delivery verdict (delivered or NOT), the last scan date
+    // + location, and whether the carrier flagged a delay — this is the
+    // mandatory minimum a decision is built on. A circling, undelivered,
+    // past-window package is a carrier delay, never a reason to offer a cancel.
+    const carrierEn = m.carrier || "carrier";
+    const carrierRu = m.carrier || "перевозчик";
+    const last = tf.lastScan
+      ? `; last scan ${tf.lastScan}${tf.lastLocation ? ` at ${tf.lastLocation}` : ""}${tf.lastStatus ? ` ("${tf.lastStatus}")` : ""}`
+      : "";
+    const lastRu = tf.lastScan
+      ? `; последний скан ${tf.lastScan}${tf.lastLocation ? `, ${tf.lastLocation}` : ""}${tf.lastStatus ? ` («${tf.lastStatus}»)` : ""}`
+      : "";
+    const delayedEn = tf.delayed ? "; DELAYED in transit" : "";
+    const delayedRu = tf.delayed ? "; задержка в пути" : "";
+    let factEn: string;
+    let factRu: string;
+    if (!tf.firstCarrierScan) {
+      factEn = "Carrier tracking: NO carrier acceptance scan — label only, the carrier never received the package.";
+      factRu = "скана приёмки нет — посылку перевозчику не передали";
+    } else if (tf.delivered) {
+      factEn = `Carrier tracking (${carrierEn}): DELIVERED ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; accepted ${tf.firstCarrierScan}${tf.transitHours !== null ? `; ~${tf.transitHours} h in transit` : ""}.`;
+      factRu = `${carrierRu}: ДОСТАВЛЕНО ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; принят ${tf.firstCarrierScan}.`;
+    } else {
+      factEn = `Carrier tracking (${carrierEn}): NOT delivered${tf.daysInTransit !== null ? ` — ${tf.daysInTransit} days in transit` : ""}${delayedEn}${last}; accepted ${tf.firstCarrierScan}.`;
+      factRu = `${carrierRu}: НЕ доставлен${tf.daysInTransit !== null ? `, ${tf.daysInTransit} дн. в пути` : ""}${delayedRu}${lastRu}; принят ${tf.firstCarrierScan}.`;
+    }
+    items.push(item("M6", ok, factEn, factRu, m6tried));
   }
 
   // ── M7 product type (Veeqo tags / owner's manual class — never guessed) ──
