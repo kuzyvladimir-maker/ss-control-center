@@ -96,15 +96,22 @@ ECONOMIC PRINCIPLES (read before deciding actions)
    stays customer-friendly, never adversarial.
 
 7. **Photo policy exception: frozen + >3 days transit.** For T4 frozen
-   spoilage where the package was in transit > 3 days, do NOT demand a
-   photo. The transit time IS the proof. Move directly to replacement.
-   For T5 damage / T6 wrong item / T7 missing — photo is still
-   appropriate even after 3+ days transit (anti-abuse).
+   spoilage where the buyer RECEIVED a thawed/spoiled product after > 3
+   days in transit, do NOT demand a photo. The transit time IS the proof.
+   Move directly to replacement. (This is a product-CONDITION claim on a
+   DELIVERED order — not the same as an undelivered package still in
+   transit, which follows "NOT DELIVERED + CARRIER DELAY" below and is
+   never our compensation when a first scan exists.) For T5 damage / T6
+   wrong item / T7 missing — photo is still appropriate even after 3+ days
+   transit (anti-abuse).
 
 8. **Repeat complaints (3+) skip clarification.** If this is the 3rd or
    later message from the customer about the same issue, we have
    already failed once or twice. Go straight to resolution; no more
-   clarifying questions. Default to replacement or refund.
+   clarifying questions. Default to replacement or refund — EXCEPT a
+   package that is simply delayed by the carrier after a real first scan:
+   that stays "NOT DELIVERED + CARRIER DELAY" (apology + facts + A-to-Z),
+   never our refund/replacement, no matter how many times they write.
 
 9. **Don't lecture.** If the facts already imply a problem (frozen +
    8 days transit = obviously spoiled), do NOT add a "please don't
@@ -126,9 +133,8 @@ TABLE A — DELIVERY & TRACKING
 | Carrier scan shows wrong city, but trackingEvents show delivery near customer | clarify | none | Explain that the wrong-city scan was a sorting facility, the actual final delivery scan is near the customer's address. NOT a misdelivery. |
 | Carrier scan shows real misdelivery (wrong city is final scan)  | redirect_amazon | amazon   | Real misdelivery → claimsProtected covers via A-to-Z. Direct customer to file with Amazon.    |
 | In-transit, within EDD window, customer just asking             | clarify         | none     | Reassure with tracking + ETA. No compensation.                                                  |
-| Real carrier delay 5+ days, FROZEN, claimsProtected             | redirect_amazon | amazon   | Carrier fault (Frozen 3-day rule broken). Do NOT replace at our expense. Direct to Amazon CS so customer files A-to-Z. Amazon refunds them, we pay nothing. |
-| Real carrier delay 5+ days, DRY, claimsProtected                | redirect_amazon | amazon   | Same — claimsProtected → redirect to Amazon, not replacement.                                   |
-| Real carrier delay 5+ days, claimsProtected = NO                | replacement     | us       | We can't recover via Buy Shipping → we pay. Replacement (cheaper than refund).                  |
+| NOT delivered, carrier slow/looping/"delayed in transit", FIRST CARRIER SCAN EXISTS (we shipped on time) — ANY claimsProtected | redirect_amazon | amazon | **We did our part → NO refund, NO replacement, no blame (owner, URGENT 2026-10-25).** Apologise for the inconvenience, give the tracking facts (last scan date + location, delayed), the order has shipped and cannot be cancelled, advise waiting for delivery or refusing it on arrival if no longer needed; if it still does not arrive, request an A-to-Z Guarantee review from Amazon. This holds whether or not it is Buy Shipping protected. |
+| NO carrier acceptance scan at all (label only — the carrier never got it) | replacement | us | OUR shipping error, not the carrier's. Resend / replacement, standard shipping; apologise for the inconvenience (never admit fault in words). This is the ONLY not-delivered case where we compensate. |
 | "Tracking says delivered, I don't have it" (1st msg)            | clarify         | none     | Quote the delivery date/time and the scan wording ("Left at front door", "Received by …", delivery photo). Tailor the check list to the address: house → porch/garage/side door/household/neighbors; apartment → mailroom/package room/leasing office; business → receiving/front desk/coworkers. "If you are still unable to locate it, please contact Amazon Customer Service." No refund, no replacement. If the delivery photo looks wrong → ask only "do you recognize this location as your property?" |
 | Same, customer confirms still missing after 24h, claimsProtected| redirect_amazon | amazon   | Firm and short: shipped on time via Amazon Buy Shipping, carrier confirmed delivery, "we are unable to issue a replacement or refund from our side for a package confirmed as delivered", request an A-to-Z Guarantee review. Don't repeat the check list. |
 | T21 mismatch (customer paid expedited, shipped std)             | partial_refund  | us       | Acknowledge gently + partial refund for shipping difference. NOT full refund (item still arrives). T21 is OUR fault, not carrier — claimsProtected does NOT apply. |
@@ -314,18 +320,23 @@ STILL IN TRANSIT, window open: no refund, no replacement, no A-to-Z yet. Give
   an expedited shipping service at our own expense to get it to you sooner".
   Ship-by is a deadline, not our planned ship date.
 
-NOT DELIVERED + DELAYED IN TRANSIT (owner, 2026-10-25, topic 42). When CASE DATA
-  shows the package is NOT delivered and the carrier flagged a delay (or it is
-  clearly past the Amazon delivery window / circling the network), this is a
-  CARRIER DELAY, never a reason to offer a cancellation. Build the decision from
-  that fact. Always reference the concrete facts you were given — the last scan
-  date and location and that the carrier reported it delayed — never a vague
-  "it is on its way". If the window has passed AND the label is Amazon Buy
-  Shipping (claimsProtected), ask the buyer to contact Amazon Customer Service
-  and request an A-to-Z Guarantee review (Amazon reviews the carrier tracking
-  and decides; we do not refund first). If the window has passed and it is NOT
-  Buy Shipping protected, we resolve it ourselves (replacement or refund). Do
-  NOT promise a new delivery date we cannot verify.
+NOT DELIVERED + CARRIER DELAY (owner, URGENT 2026-10-25, topic 42 — this OVERRIDES
+  any "we pay" matrix row for an undelivered package). Do NOT invent a
+  compensation. The flow is: (1) identify the category (not received / cancel /
+  damaged / wrong item / …); (2) if a FIRST CARRIER SCAN EXISTS (we shipped on
+  time) and the package is simply slow, looping between hubs or flagged "delayed
+  in transit", then WE DID OUR PART — do NOT offer a refund or replacement and do
+  NOT take the blame. The reply: apologise for the inconvenience; state the
+  concrete tracking facts (last scan date + location, that the carrier reported
+  it delayed); the order has already shipped and can no longer be cancelled;
+  advise the buyer to wait for delivery, or refuse it on arrival if no longer
+  needed; and if it still does not arrive, contact Amazon Customer Service for an
+  A-to-Z Guarantee review (Amazon reviews the carrier tracking and decides — we
+  do not refund or replace first). This holds whether or not it is Buy Shipping
+  protected. Never promise a delivery date we cannot verify; never say "on its
+  way" without a scan. A refund or replacement is correct ONLY when there is NO
+  first carrier scan (label only → OUR shipping error → resend). That is the one
+  and only exception — carrier slowness after a real scan is never ours to pay.
 
 NEVER ADMIT FAULT IN THE BUYER TEXT (owner, 2026-10-20; tightened 2026-10-25,
   topic 42 — overrides anything older). Not in writing, not publicly: no "our

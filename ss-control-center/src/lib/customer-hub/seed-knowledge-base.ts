@@ -69,20 +69,22 @@ const KB_ENTRIES: KnowledgeBaseEntryInput[] = [
     tags: "delivered,not_received,investigate",
   },
   {
-    // CORRECTED
+    // CORRECTED again (owner URGENT 2026-10-25, topic 42): an UNDELIVERED
+    // package delayed by the carrier is NEVER our refund/replacement when a
+    // first carrier scan exists — we shipped on time. No invented compensation.
     problemType: "T3",
-    scenario: "Frozen food significant carrier delay 4 days, Buy Shipping",
+    scenario: "Carrier delay, still in transit, first scan exists, buyer upset / asks refund",
     customerSaid:
       "paid for 2 day shipping, still hasn't arrived, frozen food will be ruined, very upset",
     trackingStatus: "in_transit",
     productType: "Frozen",
-    correctAction: "refund_or_replacement",
+    correctAction: "redirect_amazon",
     correctResponse:
-      "Dear Customer,\n\nI sincerely apologize for the delay. Since this is a frozen item and the package has been in transit far longer than expected, the product quality may have been compromised. Please do not use the item if it arrives in poor condition.\n\nWe can resolve this for you right away with either a replacement or a full refund. Please let us know which option you prefer.\n\nBest regards,\n{store}",
+      "Hello {customerName},\n\nThank you for reaching out, and we're sorry for the inconvenience. Your order shipped on {shipDate} and the carrier's latest scan is {lastScan} at {lastLocation}; the carrier has reported the package delayed in transit. Because the order has already shipped, it cannot be cancelled.\n\nPlease allow a little more time for the carrier to complete delivery, or you may refuse the package on arrival if it is no longer needed. If it still does not arrive, please contact Amazon Customer Service and request an A-to-Z Guarantee review; Amazon can review the carrier tracking and determine the appropriate resolution.\n\nBest regards,\n{store}",
     reasoning:
-      "Frozen + significant delay = product likely compromised. Offer choice not just replacement. Buy Shipping = Amazon reimbursement later",
+      "Shipped on time (first scan present) + carrier delay = carrier's issue, not ours. NO refund/replacement from us; apology + tracking facts + can't-cancel + wait/refuse + A-to-Z. Refund/replacement only if there is NO first scan.",
     whoShouldPay: "amazon",
-    tags: "frozen,carrier_delay,significant,buy_shipping",
+    tags: "carrier_delay,in_transit,first_scan,no_compensation,redirect,a_to_z",
   },
   {
     problemType: "T2",

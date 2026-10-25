@@ -108,6 +108,37 @@ delivered yet".
 
 Tests: `__tests__/transit-facts.test.ts` (Diana circling, delivered, label-only).
 
+## 5. No invented compensation for carrier delay (owner URGENT 2026-10-25)
+
+Owner (angry): the engine was offering a full refund / replacement for packages
+that we shipped on time and the carrier merely delayed (Diana). New hard rule:
+
+- **First carrier scan EXISTS (we shipped on time) + carrier slow / looping /
+  "delayed in transit" + NOT delivered → NO refund, NO replacement, no blame.**
+  Reply: apologise for the inconvenience; state the tracking facts (last scan +
+  location, delayed); order already shipped, cannot cancel; wait for delivery or
+  refuse on arrival; if it never arrives, request an A-to-Z review from Amazon.
+  Holds whether or not Buy Shipping protected.
+- **Refund / replacement ONLY when there is NO first carrier scan** (label only →
+  our shipping error → resend). That is the single exception.
+
+Fixes:
+- `message-analyzer.ts` DECISION MATRIX TABLE A: the old "Real carrier delay 5+
+  days, claimsProtected = NO → replacement | us" row (the leak) is replaced with
+  a no-compensation redirect row + an explicit "no acceptance scan → our error →
+  resend" row. Rules 7 (frozen >3d) and 8 (repeat complaints) now exclude an
+  undelivered carrier-delay package. The "NOT DELIVERED + CARRIER DELAY" prompt
+  block drops the "not protected → we resolve (replacement/refund)" clause.
+- `seed-knowledge-base.ts` T3 ("carrier delay, still in transit") was
+  `refund_or_replacement` offering "replacement or a full refund" — corrected to
+  `redirect_amazon` (apology + facts + can't-cancel + wait/refuse + A-to-Z). The
+  LIVE KB is **not** force-re-seeded (that wipes the 175 imported owner replies);
+  the decision matrix is authoritative and the prompt treats KB entries as
+  tone-only, so the matrix override governs regardless.
+
+The flow is now: (1) categorise the inquiry; (2) retrieve KB pattern(s);
+(3) answer per pattern + tracking facts, bound by the matrix.
+
 ## Still owner/prod side
 
 Rebuilding Brenda's card (v2) and confirming Diana's type
