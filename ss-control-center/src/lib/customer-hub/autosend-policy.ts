@@ -80,6 +80,14 @@ export const FAULT_ADMISSION_RE =
   /\b(our (own )?(error|mistake|fault|oversight)|(was|is) (on )?our (side|end|fault)|on our (side|end)|(was|is) our responsibility|it never (actually )?left (us|our)|we (made|have made) (a|an) (mistake|error)|we (failed|messed up)|not the carrier'?s (fault|error)|our fulfil?l?ment (error|mistake|failure))\b/i;
 
 /**
+ * Owner rule 2026-10-25 (topic 42): the buyer text never concedes that
+ * "something went wrong" — it is a soft fault admission. The generator scrubs
+ * it (scrubBuyerReply), this is the belt-and-braces autopilot gate.
+ */
+export const FAULT_CONCESSION_RE =
+  /\bsomething\s+(has\s+gone|went)\s+wrong\b/i;
+
+/**
  * Message-body rules for a reply that goes to the buyer without the owner.
  * Returns human-readable violations; empty means clean.
  */
@@ -92,6 +100,7 @@ export function replyContentViolations(text: string): string[] {
   if (REVIEW_ASK_RE.test(text)) out.push("reply mentions reviews/feedback");
   if (HEALTH_RE.test(text)) out.push("reply makes a health claim");
   if (FAULT_ADMISSION_RE.test(text)) out.push("reply admits fault");
+  if (FAULT_CONCESSION_RE.test(text)) out.push("reply concedes something went wrong");
   return out;
 }
 

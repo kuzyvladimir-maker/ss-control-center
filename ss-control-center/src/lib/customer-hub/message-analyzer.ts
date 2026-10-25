@@ -314,13 +314,23 @@ STILL IN TRANSIT, window open: no refund, no replacement, no A-to-Z yet. Give
   an expedited shipping service at our own expense to get it to you sooner".
   Ship-by is a deadline, not our planned ship date.
 
-NEVER ADMIT FAULT IN THE BUYER TEXT (owner, 2026-10-20 — overrides anything
-  older). Not in writing, not publicly: no "our error / our mistake / our
-  fault", no "on our side / on our end", no "it never left us", no "not the
-  carrier's fault", no "we failed". Allowed: "we understand something went
-  wrong", "we apologize for the inconvenience", what we will do and when.
-  The honest cause (our fault, carrier fault) goes ONLY into ownerBriefRu /
-  verdictRu / pointsRu — never into suggestedResponse.
+NEVER ADMIT FAULT IN THE BUYER TEXT (owner, 2026-10-20; tightened 2026-10-25,
+  topic 42 — overrides anything older). Not in writing, not publicly: no "our
+  error / our mistake / our fault", no "on our side / on our end", no "it never
+  left us", no "not the carrier's fault", no "we failed", and NOT the soft
+  concession "we understand something went wrong" (it still concedes a problem).
+  Allowed: ONLY "we apologize for the inconvenience" / "we're sorry for the
+  inconvenience", plus what we will do and when. Do not state or imply that
+  anything went wrong. The honest cause (our fault, carrier fault) goes ONLY
+  into ownerBriefRu / verdictRu / pointsRu — never into suggestedResponse.
+
+UNVERIFIED TRACKING (owner, 2026-10-25, topic 42): state that the package is
+  "in transit" / "on its way" or quote a carrier delivery date ONLY when the
+  CARRIER TRACKING events below show a real carrier acceptance scan. If there
+  is no carrier scan (label only, or the status comes from our own records),
+  do NOT say "in transit" and do NOT quote an ETA — say the order has shipped
+  from our records, reference the Amazon delivery window if one is given, and
+  state the next step. Never invent a delivery date.
 
 OUR OWN FULFILLMENT ERROR (confirmed wrong item, shipped without the cooler,
   missing component): apologise for the inconvenience WITHOUT admitting
@@ -382,9 +392,10 @@ NOT HANDED OVER (tracking has only "label created" / "has not received the
   package", no carrier scan): 100% OUR fault internally — the order was not
   shipped (owner, 2026-10-20). Never say "shipped on time", never cite Buy
   Shipping, never send the buyer to A-to-Z, and never state the cause to the
-  buyer. Reply shape: "we understand something went wrong with your order,
-  we apologize for the inconvenience; we will resend your order and it will
-  arrive within two business days; please confirm your delivery address". Standard shipping (no express by default),
+  buyer. Reply shape: "we apologize for the inconvenience; we will resend
+  your order right away and it should arrive within about two business days;
+  please confirm your delivery address". Do NOT say "in transit" or quote a
+  carrier tracking/ETA for the original package — it was never scanned. Standard shipping (no express by default),
   ask to confirm the full address only if needed. Do not offer a refund
   unless the buyer asked for one. action = replacement, whoShouldPay = us,
   riskLevel HIGH. In ownerBriefRu tell the owner to check whether the box
@@ -721,6 +732,73 @@ export interface FactCheckResult {
 export const SIGN_OFF = "Customer Support Team";
 const HAS_GREETING_RE = /^(hello|hi|dear|estimad[oa])\b/i;
 
+// ---------------------------------------------------------------------------
+// Buyer-text scrubber (owner, topic 42, 2026-10-25)
+// ---------------------------------------------------------------------------
+// Two hard rules the model and the deterministic templates must never break,
+// enforced at the generator level on EVERY buyer reply (AI first pass,
+// auto-fix output, and the safe templates) so the guarantee does not depend on
+// the model obeying the prompt:
+//
+//   1. Never concede that "something went wrong" — a soft fault admission. We
+//      keep a plain apology for the inconvenience and drop the concession.
+//   2. Never claim the package is "in transit" or quote a carrier delivery ETA
+//      unless the carrier tracking shows a real acceptance scan. The enricher
+//      marks an order "in_transit" from a Veeqo allocation status of "shipped"
+//      or the mere existence of a label/tracking number (message-enricher.ts),
+//      neither of which proves the carrier ever took the package.
+
+/** True only when carrier tracking has a real acceptance scan (not label-only). */
+export function hasVerifiedCarrierScan(
+  events: AnalysisInput["trackingEvents"] | null | undefined,
+): boolean {
+  return Boolean(transitFacts(events ?? []).firstCarrierScan);
+}
+
+/** Capitalise the first letter of every sentence / line (after we delete a clause). */
+function fixSentenceCase(text: string): string {
+  return text.replace(/([.!?]\s+|\n\n|^)([a-z])/g, (_m, pre: string, ch: string) => pre + ch.toUpperCase());
+}
+
+export function scrubBuyerReply(text: string, trackingVerified: boolean): string {
+  if (!text) return text;
+  let out = text;
+
+  // 1. Drop the "something went wrong" concession (with or without a lead-in).
+  out = out.replace(
+    /\bwe\s+understand\s+(?:that\s+)?something\s+(?:has\s+gone|went)\s+wrong(?:\s+with\s+your\s+order)?\b[,;.]?\s*/gi,
+    "",
+  );
+  out = out.replace(
+    /\b(?:unfortunately,?\s+)?something\s+(?:has\s+gone|went)\s+wrong(?:\s+with\s+your\s+order)?\b[,;.]?\s*/gi,
+    "",
+  );
+
+  // 2. Unverified tracking → no "in transit" claim and no carrier ETA.
+  if (!trackingVerified) {
+    // Drop a "(currently) scheduled for delivery on <date>" ETA clause.
+    out = out.replace(
+      /,?\s*(?:and\s+)?(?:it\s+)?(?:is\s+)?(?:currently\s+)?scheduled\s+for\s+delivery\s+on\s+[^.,\n]+/gi,
+      "",
+    );
+    // "is (already|currently|still) in transit ( with <carrier>)" → "has been shipped ( with <carrier>)".
+    out = out.replace(
+      /\bis\s+(?:already\s+|currently\s+|still\s+)?in\s+transit(\s+with\s+[A-Za-z][A-Za-z0-9 .&'-]*?)?(?=[.,;\n]|$)/gi,
+      (_m, carrier: string | undefined) => `has been shipped${carrier ?? ""}`,
+    );
+  }
+
+  // Tidy the seams left by any deletions.
+  out = out
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/[ \t]+([,.;])/g, "$1")
+    .replace(/,\s*,/g, ",")
+    .replace(/([,;])\s*\./g, ".")
+    .replace(/[ \t]+\n/g, "\n");
+  out = fixSentenceCase(out);
+  return out.trim();
+}
+
 export function helloLine(customerName: string | null | undefined): string {
   const first = (customerName || "").trim().split(/\s+/)[0];
   return first && !/^customer$/i.test(first) ? `Hello ${first},` : "Hello,";
@@ -948,7 +1026,15 @@ interface ValidationResult {
   fixReason: string | null;
 }
 
+// Public entry: always scrubbed (fault concession + unverified-transit rules).
 function buildSafeResponse(input: AnalysisInput): string {
+  return scrubBuyerReply(
+    buildSafeResponseRaw(input),
+    hasVerifiedCarrierScan(input.trackingEvents),
+  );
+}
+
+function buildSafeResponseRaw(input: AnalysisInput): string {
   // Normalise carrier label: Veeqo returns "Buy Shipping" (brand name)
   // when we purchased through their Buy Shipping program. Derive the
   // actual carrier from service_name for customer-facing copy.
@@ -1176,9 +1262,9 @@ ${input.extraInstruction ? `- OWNER CORRECTIONS (verified facts, they win over t
 MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
-- NEVER admit fault (no "our error/mistake/fault", "on our side", "it never left us", "not the carrier's fault"); say "we understand something went wrong" and "we apologize for the inconvenience" instead
+- NEVER admit fault (no "our error/mistake/fault", "on our side", "it never left us", "not the carrier's fault") and NEVER concede "we understand something went wrong"; say ONLY "we apologize for the inconvenience" instead
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
-- If order is in_transit and NOT a mismatch: say "your order is currently in transit", give the latest facts and the Amazon delivery window; only if the window has already passed and the label is Buy Shipping, ask the buyer to request an A-to-Z Guarantee review from Amazon Customer Service
+- If order is in_transit and NOT a mismatch: ONLY if the carrier tracking shows a real acceptance scan, say "your order is currently in transit" and give the latest facts; if there is no carrier scan, do NOT say "in transit" or quote an ETA — say the order has shipped from our records and reference the Amazon delivery window. Only if the window has already passed and the label is Buy Shipping, ask the buyer to request an A-to-Z Guarantee review from Amazon Customer Service
 - If order is delivered: reference the delivery
 - NEVER suggest cancellation for shipped orders
 - NEVER offer seller refund if Amazon should pay
@@ -1196,7 +1282,10 @@ Return ONLY the rewritten response text, no JSON, no explanation.`;
           provider === "claude"
             ? await callClaudeRaw(fixPrompt)
             : await callOpenAIRaw(fixPrompt);
-        const trimmed = fixedText.trim();
+        const trimmed = scrubBuyerReply(
+          fixedText.trim(),
+          hasVerifiedCarrierScan(input.trackingEvents),
+        );
         if (trimmed && HAS_GREETING_RE.test(trimmed)) {
           console.log(`[Validator] Response fixed with ${provider}`);
           return {
@@ -1638,7 +1727,13 @@ function tryParseAnalysis(
     const parsed = JSON.parse(jsonMatch[0]);
     if (!parsed || typeof parsed !== "object") return null;
     const suggestedResponse = ensureClosing(
-      ensureGreeting(parsed.suggestedResponse || "", input),
+      ensureGreeting(
+        scrubBuyerReply(
+          parsed.suggestedResponse || "",
+          hasVerifiedCarrierScan(input.trackingEvents)
+        ),
+        input
+      ),
       input
     );
     return {

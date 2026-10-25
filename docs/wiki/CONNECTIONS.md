@@ -347,6 +347,9 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 
 ---
 
+### Customer Hub
+- [Decision Engine](customer-hub-decision-engine.md) → [Frozen-tag + fault/transit fix 2026-10-25](customer-hub-frozen-tag-and-transit-fix-2026-10-25.md) (M7 читает теги через /products/:id; scrubBuyerReply убирает признание вины и непроверенный transit)
+
 ## Легенда
 - `←` зависит от
 - `→` используется в

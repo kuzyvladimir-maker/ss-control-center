@@ -300,8 +300,16 @@ test("buyer text never admits fault (owner rule 2026-10-20)", () => {
     "This was our error and we apologize.",
     "We made a mistake with your order.",
   ]) assert.ok(replyContentViolations(bad).includes("reply admits fault"), bad);
+  // Owner tightened the rule 2026-10-25 (topic 42): the soft concession
+  // "something went wrong" is itself a fault admission and is now flagged.
+  assert.ok(
+    replyContentViolations(
+      "We understand something went wrong with your order, and we apologize for the inconvenience."
+    ).includes("reply concedes something went wrong")
+  );
+  // A plain apology with no concession stays clean.
   assert.deepEqual(
-    replyContentViolations("We understand something went wrong with your order, and we apologize for the inconvenience."),
+    replyContentViolations("We apologize for the inconvenience and will resend your order."),
     []
   );
 });

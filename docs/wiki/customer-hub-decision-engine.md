@@ -451,3 +451,11 @@ subject:"message sent" OR subject:"confirmation"` — никогда не мат
   Причина: стабильная проблема с кейсами типа Deborah (T21), где модель
   получала нормальный ответ, а валидатор выбрасывал его и подставлял
   примитивный шаблон с неверной датой.
+
+## Frozen-tag + fault/transit fix (2026-10-25, topic 42)
+
+See [customer-hub-frozen-tag-and-transit-fix-2026-10-25.md](customer-hub-frozen-tag-and-transit-fix-2026-10-25.md):
+M7 теперь читает теги товара через `/products/:id` (а не из `/orders?query=`,
+где тегов нет) — это и был баг «у товара нет тега Frozen/Dry». Плюс генератор
+больше не пишет «we understand something went wrong» и не утверждает «посылка
+в пути»/ETA без подтверждённого carrier-скана (`scrubBuyerReply`).

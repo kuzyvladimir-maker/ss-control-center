@@ -6,7 +6,8 @@
 import { prisma } from "@/lib/prisma";
 import { spApiGet } from "@/lib/amazon-sp-api/client";
 import { getOrderFinancialEvents } from "@/lib/amazon-sp-api/finances";
-import { veeqoFetch } from "@/lib/veeqo/client";
+import { veeqoFetch, getProduct } from "@/lib/veeqo/client";
+import { parseTempClass } from "@/lib/shipping/temp-class/classes";
 import { getUpsTracking } from "@/lib/carriers/ups-tracking";
 import { getFedexTracking } from "@/lib/carriers/fedex-tracking";
 import { getUspsTracking } from "@/lib/carriers/usps-tracking";
@@ -32,6 +33,19 @@ export interface CollectResult {
   /** Fields worth persisting on the message (fresh tracking, product type). */
   patch: { trackingEvents?: string; productType?: string };
 }
+
+// Minimal shape of a Veeqo order line, enough to resolve product id + SKU for
+// the M7 Frozen/Dry tag lookup. Veeqo returns far more; we only read these.
+type VeeqoLine = {
+  sellable?: {
+    sku_code?: string;
+    sku?: string;
+    id?: number;
+    product_id?: number;
+    product?: { id?: number };
+  };
+};
+type VeeqoOrder = { number?: string; line_items?: VeeqoLine[] };
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 120);
 const UNSHIPPED = /unshipped|pending|partiallyshipped/i;
@@ -247,20 +261,99 @@ export async function collectCaseData(
     );
   }
 
-  // ── M7 product type (Veeqo tags only — never guessed) ───────────────
+  // ── M7 product type (Veeqo tags / owner's manual class — never guessed) ──
+  // The Frozen/Dry tag lives on the PRODUCT, not on the /orders?query= payload,
+  // so we resolve each line's product id and read /products/:id. The old code
+  // read `li.sellable.product.tags` straight off the orders-list response —
+  // that field is NEVER populated there, so the set was always empty and the
+  // hub reported "no Frozen/Dry tag" even when the tag WAS set in Veeqo (the
+  // Brenda bug). Precedence matches the shipping card (resolve-class.ts): the
+  // owner's manual SkuTemperatureClass → legacy ProductTypeOverride → Veeqo
+  // product tag, matched case-insensitively (frozen / chilled / refrigerated
+  // all count as the cold chain → "Frozen"). We never guess: no signal → null.
   const m7tried: SourceAttempt[] = [{ source: "теги Veeqo первой позиции", ok: Boolean(m.productType) }];
   let productType = m.productType;
   if (!productType && orderId) {
     try {
       const orders = await veeqoFetch(`/orders?query=${encodeURIComponent(orderId)}&page_size=5`);
-      const list = Array.isArray(orders) ? orders : [];
-      const tags = new Set<string>();
-      for (const o of list)
-        for (const li of o?.line_items || [])
-          for (const t of li?.sellable?.product?.tags || []) tags.add(typeof t === "string" ? t : t?.name);
-      productType = tags.has("Frozen") ? "Frozen" : tags.has("Dry") ? "Dry" : null;
+      const list: VeeqoOrder[] = Array.isArray(orders) ? (orders as VeeqoOrder[]) : [];
+      // Prefer the order whose number matches exactly; otherwise the first hit.
+      const order = list.find((o) => String(o?.number || "") === orderId) || list[0] || null;
+      const lines: VeeqoLine[] = order?.line_items || [];
+      const productIds = [
+        ...new Set(
+          lines
+            .map((li) => li?.sellable?.product?.id ?? li?.sellable?.product_id ?? li?.sellable?.id)
+            .filter((x): x is number => typeof x === "number")
+        ),
+      ];
+      const skus = [
+        ...new Set(
+          lines.map((li) => String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? "")).filter(Boolean)
+        ),
+      ];
+
+      // Strictest class across all lines wins, so one frozen line classifies
+      // the whole order as Frozen (FROZEN/CHILLED → "Frozen", DRY → "Dry").
+      const RANK = { FROZEN: 3, CHILLED: 2, DRY: 1 } as const;
+      const classes: Array<keyof typeof RANK> = [];
+      const tagsSeen = new Set<string>();
+
+      // 1. Owner's manual class (per SKU) — nothing reads a tag back over it.
+      if (skus.length) {
+        try {
+          const manual = await prisma.skuTemperatureClass.findMany({
+            where: { sku: { in: skus } },
+            select: { class: true },
+          });
+          for (const r of manual) {
+            const c = parseTempClass(r.class);
+            if (c) classes.push(c);
+          }
+          if (manual.length) m7tried.push({ source: "ручной класс (SkuTemperatureClass)", ok: true });
+        } catch {
+          /* table missing / read error — fall through to legacy + tags */
+        }
+      }
+
+      // 2. Legacy ProductTypeOverride, else the Veeqo product tag per product.
+      for (const pid of productIds) {
+        try {
+          const override = await prisma.productTypeOverride.findUnique({ where: { productId: pid } });
+          const legacy = parseTempClass(override?.type);
+          if (legacy) {
+            classes.push(legacy);
+            continue;
+          }
+        } catch {
+          /* ignore and try tags */
+        }
+        try {
+          const product = (await getProduct(pid)) as { tags?: Array<string | { name?: string }> };
+          for (const t of product?.tags || []) {
+            const name = typeof t === "string" ? t : t?.name;
+            if (!name) continue;
+            tagsSeen.add(name);
+            const c = parseTempClass(name);
+            if (c) classes.push(c);
+          }
+        } catch (e) {
+          m7tried.push({ source: `теги товара ${pid} (/products/:id)`, ok: false, note: errText(e) });
+        }
+      }
+
+      const strictest = [...classes].sort((a, b) => RANK[b] - RANK[a])[0] || null;
+      productType = strictest ? (strictest === "DRY" ? "Dry" : "Frozen") : null;
       if (productType) patch.productType = productType;
-      m7tried.push({ source: "теги Veeqo всех позиций", ok: Boolean(productType), note: productType ? undefined : "у товара нет тега Frozen/Dry" });
+      m7tried.push({
+        source: "теги товара Veeqo (/products/:id)",
+        ok: Boolean(productType),
+        note: productType
+          ? undefined
+          : tagsSeen.size
+            ? `теги не содержат Frozen/Chilled/Dry (нашли: ${[...tagsSeen].join(", ")})`
+            : "у товара нет тегов / заказ не найден в Veeqo",
+      });
     } catch (e) {
       m7tried.push({ source: "теги Veeqo всех позиций", ok: false, note: errText(e) });
     }
