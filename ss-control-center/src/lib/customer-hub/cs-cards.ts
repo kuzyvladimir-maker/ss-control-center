@@ -44,16 +44,30 @@ export async function cardAction(
   cardId: string,
   action: "approve" | "wrong" | "rework",
   comment: string | null,
-  actor: string
+  actor: string,
+  /**
+   * Owner, topic 42, 2026-10-25: approve with an EXACT reply text. When set, it
+   * becomes the message's editedResponse and the SEND task carries it verbatim
+   * (no regeneration/scrub). Ignored for wrong/rework.
+   */
+  overrideText?: string | null
 ): Promise<CardActionResult> {
   const card = await prisma.csCard.findUnique({ where: { id: cardId } });
   if (!card) throw new Error(`Card ${cardId} not found`);
   if (!["PENDING", "PUBLISHED", "WRONG", "REWORK"].includes(card.status))
     throw new Error(`Card ${cardId} is ${card.status} — act on the latest version`);
-  const m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
+  let m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
   if (!m) throw new Error("Buyer message not found");
 
   if (action === "approve") {
+    if (overrideText && overrideText.trim()) {
+      await prisma.buyerMessage.update({
+        where: { id: m.id },
+        data: { editedResponse: overrideText.trim() },
+      });
+      m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
+      if (!m) throw new Error("Buyer message not found");
+    }
     const task = await enqueueSendTask(m, { approvedBy: `owner via ${actor}`, cardId });
     await prisma.csCard.update({
       where: { id: cardId },

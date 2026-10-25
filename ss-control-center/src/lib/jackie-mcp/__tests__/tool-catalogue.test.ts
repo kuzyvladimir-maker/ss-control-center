@@ -85,6 +85,7 @@ test("every write tool is flagged write=true; every read tool is write=false", (
     "cs_case_process",
     "cs_card_published",
     "cs_card_action",
+    "cs_card_set_reply",
     "cs_task_claim",
     "cs_task_complete",
   ]);

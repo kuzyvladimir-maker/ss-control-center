@@ -148,7 +148,7 @@ export interface CardPayload {
   textRu: string;
 }
 
-async function createCard(
+export async function createCard(
   m: Msg,
   snap: CaseDataSnapshot,
   a: {
@@ -232,6 +232,41 @@ async function createCard(
   await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify(payload) } });
   await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "CARD_PENDING" } });
   return card.id;
+}
+
+/**
+ * Put an EXACT owner-approved reply on a case (owner, topic 42, 2026-10-25).
+ * The English text is stored on the message as `editedResponse` and used
+ * VERBATIM — it is never run through the analyzer/scrubber — so the card draft
+ * and the SEND task (enqueueSendTask reads editedResponse first) carry exactly
+ * what the owner approved. A fresh PENDING card is built from the message's
+ * existing case-data snapshot (facts preserved); prior versions are superseded.
+ */
+export async function setApprovedReply(
+  messageId: string,
+  textEn: string,
+  textRu?: string | null
+): Promise<{ cardId: string; version: number }> {
+  const text = (textEn || "").trim();
+  if (!text) throw new Error("text_en is required");
+  const existing = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
+  if (!existing) throw new Error(`Message ${messageId} not found`);
+  const ru =
+    (textRu && textRu.trim()) ||
+    (await translateText(text, "en-ru").catch(() => null));
+  await prisma.buyerMessage.update({
+    where: { id: messageId },
+    data: { editedResponse: text, editedResponseRu: ru },
+  });
+  const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
+  if (!m) throw new Error(`Message ${messageId} not found`);
+  const snap: CaseDataSnapshot =
+    parseSnapshot(m.caseDataJson) ?? { collectedAt: new Date().toISOString(), items: [] };
+  const missing = missingKeys(snap);
+  const missingRu = missing.length ? exhaustedNoteRu(snap) : null;
+  const cardId = await createCard(m, snap, { ownerBriefRu: m.ownerBrief }, missingRu);
+  const card = await prisma.csCard.findUnique({ where: { id: cardId } });
+  return { cardId, version: card?.version ?? 1 };
 }
 
 // ── Main entry ────────────────────────────────────────────────────────

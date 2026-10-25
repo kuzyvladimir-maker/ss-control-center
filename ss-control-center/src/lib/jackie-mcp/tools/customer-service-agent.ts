@@ -11,7 +11,7 @@
 import { after } from "next/server";
 import { cardAction, markPublished, pendingCards } from "@/lib/customer-hub/cs-cards";
 import { claimTask, completeTask, listTasks } from "@/lib/customer-hub/cs-tasks";
-import { processCase } from "@/lib/customer-hub/cs-pipeline";
+import { processCase, setApprovedReply } from "@/lib/customer-hub/cs-pipeline";
 import { prisma } from "@/lib/prisma";
 import { optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
@@ -61,6 +61,11 @@ const cardActionTool: JackieTool = {
       card_id: { type: "string" },
       action: { type: "string", enum: ["approve", "wrong", "rework"] },
       comment: { type: "string", description: "Owner's explanation / how he would answer (Russian is fine)." },
+      override_text: {
+        type: "string",
+        description:
+          "approve only: send THIS exact reply verbatim (becomes the message's editedResponse, SEND task carries it unchanged — no regeneration/scrub).",
+      },
     },
     required: ["card_id", "action"],
     additionalProperties: false,
@@ -72,7 +77,8 @@ const cardActionTool: JackieTool = {
       requireString(args, "card_id"),
       action as "approve" | "wrong" | "rework",
       optionalString(args, "comment") ?? null,
-      ctx.actor
+      ctx.actor,
+      optionalString(args, "override_text") ?? null
     );
     if (res.reprocessMessageId) reprocessLater(res.reprocessMessageId, res.ownerInstruction);
     return res;
@@ -180,4 +186,36 @@ const caseProcess: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [caseProcess, cardsPending, cardPublished, cardActionTool, tasksList, taskClaim, taskComplete];
+const cardSetReply: JackieTool = {
+  name: "cs_card_set_reply",
+  description:
+    "Put an EXACT owner-approved reply on a case as a new PENDING card (supersedes prior versions, incl. PUBLISHED). text_en is used VERBATIM — never regenerated or scrubbed — and approve will send exactly this. Facts come from the case's existing data. Args: amazon_order_id OR message_id, text_en (required), text_ru (optional owner translation; auto-translated for the owner's view if omitted). Returns card_id.",
+  write: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      message_id: { type: "string" },
+      amazon_order_id: { type: "string" },
+      text_en: { type: "string" },
+      text_ru: { type: "string" },
+    },
+    required: ["text_en"],
+    additionalProperties: false,
+  },
+  handler: async (args) => {
+    let id = optionalString(args, "message_id");
+    const orderId = optionalString(args, "amazon_order_id");
+    if (!id && orderId) {
+      const m = await prisma.buyerMessage.findFirst({
+        where: { amazonOrderId: orderId, direction: "incoming" },
+        orderBy: { receivedAt: "desc" },
+      });
+      id = m?.id;
+    }
+    if (!id) throw new Error("message_id or amazon_order_id with an incoming message is required");
+    const r = await setApprovedReply(id, requireString(args, "text_en"), optionalString(args, "text_ru") ?? null);
+    return { ok: true, ...r, hint: "card is PENDING; approve (or cs_card_action approve) sends text_en verbatim" };
+  },
+};
+
+export const tools: JackieTool[] = [caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];
