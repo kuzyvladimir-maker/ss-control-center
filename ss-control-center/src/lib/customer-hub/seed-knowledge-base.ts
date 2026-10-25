@@ -447,20 +447,22 @@ const KB_ENTRIES: KnowledgeBaseEntryInput[] = [
 
   // ────────── Repeat complaints (T20) ──────────
   {
-    // CORRECTED
+    // CORRECTED again (owner URGENT 2026-10-25, topic 42): an UNDELIVERED
+    // carrier delay is never our refund/replacement when a first scan exists —
+    // not even on a repeat complaint. Shipped on time = carrier's issue → A-to-Z.
     problemType: "T20",
-    scenario: "2nd complaint, package 7 days in transit",
+    scenario: "2nd complaint, package in transit, carrier delay, first scan exists",
     customerSaid:
       "second time writing, been a WEEK, your last answer was useless, want refund NOW",
     trackingStatus: "in_transit",
     productType: "Frozen",
-    correctAction: "refund_or_replacement",
+    correctAction: "redirect_amazon",
     correctResponse:
-      "Dear Customer,\n\nThank you for reaching out again, and I sincerely apologize that your order still hasn't arrived.\n\nYour package has been in transit for 7 days. We can offer you either a full refund or a replacement shipped right away. Please let me know which option you prefer, and we'll take care of it right away.\n\nBest regards,\n{store}",
+      "Hello {customerName},\n\nThank you for following up, and we're sorry for the inconvenience. Your order shipped on {shipDate} and the carrier's latest scan is {lastScan} at {lastLocation}, with the package reported delayed in transit. Because the order has already shipped, it cannot be cancelled.\n\nIf the package still does not arrive, please contact Amazon Customer Service and request an A-to-Z Guarantee review; Amazon can review the carrier tracking and determine the appropriate resolution. You may also refuse the package on delivery if it is no longer needed.\n\nBest regards,\n{store}",
     reasoning:
-      "2nd complaint = escalate. Previous was 'wait'. Now must solve. Removed 'within the hour'.",
+      "Repeat complaint does not change the facts: shipped on time (first scan) + carrier delay = carrier's issue. NO refund/replacement from us; apology + facts + can't-cancel + A-to-Z. Comp only if NO first scan.",
     whoShouldPay: "amazon",
-    tags: "repeat,2nd_message,escalate",
+    tags: "repeat,2nd_message,carrier_delay,in_transit,first_scan,no_compensation,a_to_z",
   },
   {
     problemType: "T20",
