@@ -81,9 +81,18 @@ in transit, carrier fault**. The old M6 fact only said "accepted … / not
 delivered yet".
 
 - `transit.ts` `transitFacts` now also returns `lastScan`, `lastLocation`,
-  `lastStatus`, `delayed` (any delay/held/exception/undeliverable event), and
+  `lastStatus`, `delayed` (any delay/held/exception/undeliverable event),
   `daysInTransit` (first scan → delivery, or → `now` while undelivered, so
-  "12 days and counting" is a fact). Pure; takes an optional `now` for tests.
+  "12 days and counting" is a fact), and `route`/`scanCount` — the distinct scan
+  hubs in order (`Portland, OR → Indianapolis, IN → Pontiac, MI → Flint, MI`) so
+  a looping package is visible. Pure; takes an optional `now` for tests.
+- The M6 source chain (`case-data-gate.ts`) is now Veeqo → carrier API
+  (USPS/UPS/FedEx) → saved tracking → Seller Central **Delivery Information** via
+  VPS (read-only); the card only reaches the owner once that chain is exhausted,
+  with a note of what was searched. Tracking is always collected AND feeds the
+  decision matrix (no first scan ⇒ our fault/resend; not delivered + past window
+  + carrier movement/delay ⇒ carrier delay; delivered + buyer says no ⇒ address
+  check / proof of delivery; delivered late ⇒ apologise for the inconvenience).
 - `case-data.ts` M6 now ALWAYS states the delivery verdict (DELIVERED date /
   NOT delivered), days in transit, "delayed in transit" when flagged, and the
   last scan date + location — EN for the prompt, RU for the card's Факты table.

@@ -35,6 +35,10 @@ export interface TransitFacts {
   lastStatus: string | null;
   /** Carrier flagged the package delayed somewhere in its history. */
   delayed: boolean;
+  /** Distinct scan locations in order ("Portland, OR → Indianapolis, IN → Flint, MI") — shows looping. */
+  route: string | null;
+  /** Number of carrier scans (movement events), to spot a package bouncing around. */
+  scanCount: number;
   /**
    * Days the carrier has held the package: first scan → delivery, or first
    * scan → `now` when still undelivered (so "12 days and counting" is a fact,
@@ -90,6 +94,14 @@ export function transitFacts(
   const detail = delivered
     ? [delivered.description, delivered.location].map((s) => (s || "").trim()).filter(Boolean).join(" @ ")
     : null;
+  // Route = distinct scan locations in order (consecutive duplicates collapsed),
+  // so a package bouncing Portland → Indianapolis → Pontiac → Flint is visible.
+  const scans = list.filter(isCarrierScan);
+  const locs: string[] = [];
+  for (const e of scans) {
+    const loc = (e.location || "").trim();
+    if (loc && loc !== locs[locs.length - 1]) locs.push(loc);
+  }
   return {
     firstCarrierScan: first ? label(first) : null,
     delivered: delivered ? label(delivered) : null,
@@ -100,6 +112,8 @@ export function transitFacts(
     lastStatus: (last?.description || "").trim() || null,
     delayed: list.some((e) => DELAY_RE.test(e.description || "")),
     daysInTransit,
+    route: locs.length ? locs.join(" → ") : null,
+    scanCount: scans.length,
   };
 }
 

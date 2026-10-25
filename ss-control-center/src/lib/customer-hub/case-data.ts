@@ -290,8 +290,10 @@ export async function collectCaseData(
       factEn = `Carrier tracking (${carrierEn}): DELIVERED ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; accepted ${tf.firstCarrierScan}${tf.transitHours !== null ? `; ~${tf.transitHours} h in transit` : ""}.`;
       factRu = `${carrierRu}: ДОСТАВЛЕНО ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; принят ${tf.firstCarrierScan}.`;
     } else {
-      factEn = `Carrier tracking (${carrierEn}): NOT delivered${tf.daysInTransit !== null ? ` — ${tf.daysInTransit} days in transit` : ""}${delayedEn}${last}; accepted ${tf.firstCarrierScan}.`;
-      factRu = `${carrierRu}: НЕ доставлен${tf.daysInTransit !== null ? `, ${tf.daysInTransit} дн. в пути` : ""}${delayedRu}${lastRu}; принят ${tf.firstCarrierScan}.`;
+      const routeEn = tf.route ? `; route: ${tf.route}` : "";
+      const routeRu = tf.route ? `; маршрут: ${tf.route}` : "";
+      factEn = `Carrier tracking (${carrierEn}): NOT delivered${tf.daysInTransit !== null ? ` — ${tf.daysInTransit} days in transit` : ""}${delayedEn}; accepted ${tf.firstCarrierScan}${last}${routeEn}.`;
+      factRu = `${carrierRu}: НЕ доставлен${tf.daysInTransit !== null ? `, ${tf.daysInTransit} дн. в пути` : ""}${delayedRu}; принят ${tf.firstCarrierScan}${lastRu}${routeRu}.`;
     }
     items.push(item("M6", ok, factEn, factRu, m6tried));
   }

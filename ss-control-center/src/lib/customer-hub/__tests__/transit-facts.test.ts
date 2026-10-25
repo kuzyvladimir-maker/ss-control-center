@@ -24,6 +24,12 @@ test("undelivered circling package: not delivered, delayed, last scan + location
   assert.match(tf.lastStatus || "", /carrier facility/i);
   assert.equal(tf.firstCarrierScan, "2026-10-13 18:30", "label-created is not the acceptance scan");
   assert.equal(tf.daysInTransit, 12, "13 Oct pickup → 25 Oct now ≈ 12 days");
+  assert.equal(
+    tf.route,
+    "Portland, OR → Indianapolis, IN → Pontiac, MI → Flint, MI",
+    "distinct hubs in order (label-created Portland collapsed)",
+  );
+  assert.ok(tf.scanCount >= 4, "counts the movement scans");
 });
 
 test("delivered package: delivered date + detail, transit hours", () => {
