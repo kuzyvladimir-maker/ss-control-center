@@ -201,3 +201,26 @@ test("Thu ship, UPS Ground arrives Mon (4 calendar days over the weekend): allow
   });
   assert.equal(warm.rate?.title, "FedEx 2Day");
 });
+
+test("summer floor: hot weather (Clearwater 28°C, route 24°C) never makes Live stricter than summer's 3 days", () => {
+  const mon = "2026-10-26";
+  const rates = [
+    rate({ title: "FedEx 2Day", price: 40.33, eddYmd: "2026-10-28" }), // 2d
+    rate({ title: "UPS Ground", price: 18.12, eddYmd: "2026-10-29" }), // 3d
+  ];
+  const hot = { originMaxC: 28, routeMaxC: 24 };
+  // Table alone says 2 days → the pricey 2Day (the +$22.21 case).
+  const tableOnly = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: hot });
+  assert.equal(tableOnly.rate?.title, "FedEx 2Day");
+  // With the summer cap (3, no heat alert) → the same 3-day Ground summer buys.
+  const floored = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: hot, summerCapDays: 3 });
+  assert.equal(floored.allowedDays, 3);
+  assert.equal(floored.rate?.title, "UPS Ground");
+  assert.match(floored.reasonRu ?? "", /не строже летних правил: до 3 дн\./);
+  // A Frozen Analytics heat alert (summer cap 2) still keeps it at 2.
+  const alert = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: hot, summerCapDays: 2 });
+  assert.equal(alert.rate?.title, "FedEx 2Day");
+  // The table can still ADD days above summer in the cold.
+  const cold = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: { originMaxC: 20, routeMaxC: -2 }, summerCapDays: 3 });
+  assert.equal(cold.allowedDays, 4);
+});

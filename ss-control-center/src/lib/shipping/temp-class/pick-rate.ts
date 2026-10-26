@@ -89,11 +89,26 @@ export function selectTempAwareRate(args: {
   shipDay: string;
   weather: WeatherForClass;
   hasIncident?: boolean;
+  /** The summer v3.5 cap for this order (3 days, 2 on a Frozen Analytics heat
+   *  alert). The weather table may ADD days but never allow fewer than summer
+   *  (owner 2026-10-26: winter must be cheaper, never stricter). */
+  summerCapDays?: number;
 }): TempAwareSelection {
   const { rates, tempClass, size, deliveryBy, shipDay, weather, hasIncident } =
     args;
 
-  const dr = allowedDays({ tempClass, size, weather, hasIncident });
+  const dr = { ...allowedDays({ tempClass, size, weather, hasIncident }) };
+  if (
+    tempClass !== "DRY" &&
+    args.summerCapDays != null &&
+    Number.isFinite(dr.allowedDays) &&
+    dr.allowedDays < args.summerCapDays
+  ) {
+    dr.reasonRu = `не строже летних правил: до ${args.summerCapDays} дн. (по таблице было ${dr.allowedDays}: ${dr.reasonRu ?? dr.reason})`;
+    dr.reason = `summer floor ${args.summerCapDays}d (table ${dr.allowedDays}d: ${dr.reason})`;
+    dr.allowedDays = args.summerCapDays;
+    dr.extraIce = 0; // summer packs the base ice for its own window
+  }
   const base = {
     allowedDays: dr.allowedDays,
     extraIce: dr.extraIce,

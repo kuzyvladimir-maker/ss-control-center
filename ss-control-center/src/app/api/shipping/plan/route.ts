@@ -1107,6 +1107,7 @@ export async function GET(request: NextRequest) {
                     shipDay: effectiveShipDay,
                     weather,
                     summerRate: selectedRate,
+                    summerCapDays: frozenMaxCalDays(frozenRiskLevel),
                   }),
                   // For the card's engine line (origin → destination temps).
                   destCity: weather.destCity,
@@ -1123,6 +1124,7 @@ export async function GET(request: NextRequest) {
                     deliveryBy,
                     shipDay: effectiveShipDay,
                     weather,
+                    summerCapDays: frozenMaxCalDays(frozenRiskLevel),
                   });
                   liveEngineCtx = {
                     coolerSize,
@@ -1245,6 +1247,7 @@ export async function GET(request: NextRequest) {
                   deliveryBy,
                   shipDay: nextMonday,
                   weather: monWeather,
+                  summerCapDays: frozenMaxCalDays(frozenRiskLevel),
                 });
                 if (ms.rate) {
                   const monDays = Math.round(

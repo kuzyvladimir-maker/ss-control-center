@@ -85,6 +85,7 @@ export function buildShadowResult(args: {
   weather: WeatherForClass;
   summerRate: VeeqoRate | null;
   hasIncident?: boolean;
+  summerCapDays?: number;
 }): ShadowResult {
   const {
     rates,
@@ -105,6 +106,7 @@ export function buildShadowResult(args: {
     shipDay,
     weather,
     hasIncident,
+    summerCapDays: args.summerCapDays,
   });
 
   const ice = buildIcePlan(size, sel.extraIce);
