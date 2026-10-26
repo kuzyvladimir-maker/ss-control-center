@@ -15,75 +15,6 @@ function cleanEnv(value: string | undefined): string | undefined {
   return value.trim().replace(/^['"]|['"]$/g, "");
 }
 
-// ── Let plain queries run concurrently (2026-10-26) ────────────────────────
-// @prisma/adapter-libsql guards EVERY query with one mutex per adapter, and a
-// transaction holds it until commit/rollback. Over Turso's remote protocol
-// plain queries and a transaction run on separate streams, so that global
-// lock only queues unrelated requests: a long cron transaction or a 7 s
-// table pull froze /shipping, alerts and the NAN queue for 30–160 s. This
-// wrapper turns the adapter's lock into a no-op for plain queries and keeps a
-// real lock for transactions only (still one at a time per client, as before).
-// Remote Turso only — the local SQLite file keeps the stock behaviour.
-type AnyAdapter = Record<string | symbol, unknown> & {
-  startTransaction: (isolation?: unknown) => Promise<{
-    commit: () => Promise<void>;
-    rollback: () => Promise<void>;
-  }>;
-};
-type LockLike = { acquire: () => Promise<() => void> };
-
-function concurrentLibSql(factory: PrismaLibSql): PrismaLibSql {
-  const connect = factory.connect.bind(factory);
-  (factory as unknown as { connect: () => Promise<unknown> }).connect =
-    async () => {
-      const adapter = (await connect()) as unknown as AnyAdapter;
-      const lockKey = Object.getOwnPropertySymbols(adapter).find((k) => {
-        const v = adapter[k] as Partial<LockLike> | undefined;
-        return typeof v?.acquire === "function";
-      });
-      if (!lockKey) return adapter; // library changed — keep stock behaviour
-      const txLock = adapter[lockKey] as LockLike;
-      const noop: LockLike = { acquire: async () => () => {} };
-      adapter[lockKey] = noop;
-      const startTransaction = adapter.startTransaction.bind(adapter);
-      adapter.startTransaction = async (isolation?: unknown) => {
-        const release = await txLock.acquire();
-        try {
-          const tx = await startTransaction(isolation);
-          const commit = tx.commit.bind(tx);
-          const rollback = tx.rollback.bind(tx);
-          let released = false;
-          const done = () => {
-            if (!released) {
-              released = true;
-              release();
-            }
-          };
-          tx.commit = async () => {
-            try {
-              await commit();
-            } finally {
-              done();
-            }
-          };
-          tx.rollback = async () => {
-            try {
-              await rollback();
-            } finally {
-              done();
-            }
-          };
-          return tx;
-        } catch (e) {
-          release();
-          throw e;
-        }
-      };
-      return adapter;
-    };
-  return factory;
-}
-
 function createPrismaClient() {
   // Production (Vercel/Turso): use remote libsql URL + auth token
   // Otherwise prefer DATABASE_URL so runtime and Prisma CLI point to the
@@ -93,9 +24,7 @@ function createPrismaClient() {
   const databaseUrl = cleanEnv(process.env.DATABASE_URL);
 
   if (tursoUrl && tursoToken) {
-    const adapter = concurrentLibSql(
-      new PrismaLibSql({ url: tursoUrl, authToken: tursoToken }),
-    );
+    const adapter = new PrismaLibSql({ url: tursoUrl, authToken: tursoToken });
     return new PrismaClient({ adapter });
   }
 
