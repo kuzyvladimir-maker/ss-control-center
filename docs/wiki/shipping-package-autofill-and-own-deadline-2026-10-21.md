@@ -120,3 +120,35 @@ One Rate, EDD 10/28 · 2 days, at the same prices.
 
 The "N days" on the card is our own calculation: EDD minus
 `plan.actualShipDay`, in `page.tsx`. It was right; only the EDD was wrong.
+
+### 5b. Owner rule: carrier EDDs are never moved (2026-10-25, commit 706bad877)
+
+**Rule.** The card shows the carrier's EDD exactly as quoted, and "N days" is
+EDD − SHIP DAY. Our projection, which shifted EDDs when Veeqo ignored
+`preferred_shipment_date`, is removed.
+
+**When Veeqo ignores the ship day** (a real gap in pickup days and no EDD
+moved), `getRatesForLaterShipDay` returns the EDDs unchanged together with
+`quoteAnchorYmd`, the pickup day those EDDs really count from.
+- **Plan.** The plan stores it as `quoteAnchorDay` and adds the note "QUOTE NOT
+  FOR SHIP DAY".
+- **Frozen gate.** Transit is measured from that day, which is the carrier's
+  real transit, and the marketplace deadline is pulled in by the gap. That
+  keeps the 2026-10-06 food-safety protection.
+- **Card.** It reads "EDD X · N days from pickup Y · quote not for ship day".
+
+**Plan response.** The response now also carries `tempClass`,
+`tempClassSource`, `walmartColdConflict` and `shadow`. Before this,
+`enrichedItems` dropped them, so the temperature engine line and the shadow
+block never reached the card.
+
+**Live check.** All 19 frozen orders from the Sunday 10/25 plan were re-planned
+after deploy:
+- every EDD is back to the carrier date: 2Day = 10/28 · 2 days;
+- 6 orders switched to a cheaper honest 3-day rate (−$90.14 in total), because
+  the +1 day had pushed those rates past the 3-day frozen cap;
+- no order was flagged (Sun→Mon is the same pickup day).
+
+**Note on Dry and non-Amazon orders.** They still quote through the allocation
+pool (`GET /shipping/rates`), which takes no date parameter. Their EDDs come
+from Veeqo as-is and are never shifted by us.
