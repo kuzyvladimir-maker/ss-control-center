@@ -172,6 +172,26 @@ model ShippingPlanItem {
   @@index([product])
 }
 
+// Carrier rates captured from a marketplace's own admin UI where no API lists
+// them — today NAN Health (Shopify): shippingLabelPurchase neither lists rates
+// nor buys FedEx, so a browser session reads the "Buy shipping label" page
+// (no purchase) and posts the list here. The /shipping card shows the latest
+// snapshot per order with its capture time. Read-only reference: the owner
+// buys these labels himself in Shopify.
+model ShippingRateSnapshot {
+  id          String   @id @default(cuid())
+  orderNumber String // as Veeqo shows it, without "#" (e.g. "1374")
+  channel     String   @default("NAN health")
+  source      String? // e.g. "Shopify admin Buy label page (no purchase)"
+  capturedAt  String // as captured (ISO or "2026-10-26 ~01:40 ET")
+  dest        String?
+  pkg         String?
+  ratesJson   String // [{carrier, service, price, transit}]
+  createdAt   DateTime @default(now())
+
+  @@index([orderNumber])
+}
+
 // ── Merge Orders ────────────────────────────────────────────────────────
 //
 // Two orders going to the SAME address can ship in one box on one label.

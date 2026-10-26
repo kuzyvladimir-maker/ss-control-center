@@ -49,6 +49,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
+import { normOrderNumber } from "@/lib/shipping/rate-snapshot";
 import {
   formatEngineLine,
   tempTone,
@@ -275,6 +276,16 @@ interface PlanResponse {
  * rate-limited re-quote left the cell reading "Set weight/size" again, which
  * is indistinguishable from "my Save did nothing".
  */
+// Admin-UI rate snapshot for a NAN Health order (see /api/shipping/rate-snapshots).
+interface RateSnapshotView {
+  orderNumber: string;
+  capturedAt: string;
+  dest: string | null;
+  pkg: string | null;
+  source: string | null;
+  rates: Array<{ carrier: string; service: string; price: number; transit: string }>;
+}
+
 interface SavedPackage {
   length: number;
   width: number;
@@ -1008,6 +1019,10 @@ export default function ShippingLabelsPage() {
   const [rateOverrides, setRateOverrides] = useState<
     Record<string, RateOverride>
   >({});
+  // Latest admin-UI rate snapshot per NAN Health order (keyed without "#").
+  const [rateSnapshots, setRateSnapshots] = useState<
+    Record<string, RateSnapshotView>
+  >({});
 
   // Rate-shop ONE Walmart order through Walmart's API at a given ship date and
   // fold the result into the walmartRates / walmartBuyInfo / walmartStatus
@@ -1364,6 +1379,22 @@ export default function ShippingLabelsPage() {
       }
       setData(dashJson);
       setLoading(false);
+      // NAN Health (Shopify) rates snapshots — Shopify's API won't list rates,
+      // so a browser session posts what the admin "Buy label" page shows.
+      // Read-only reference; best-effort, never blocks the page.
+      const nanNums = dashJson.orders
+        .filter((o) => /nan/i.test(`${o.channel ?? ""} ${o.storeName ?? ""}`))
+        .map((o) => normOrderNumber(o.orderNumber));
+      if (nanNums.length > 0) {
+        void fetch(
+          `/api/shipping/rate-snapshots?orders=${encodeURIComponent(nanNums.join(","))}`,
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => {
+            if (j?.snapshots) setRateSnapshots(j.snapshots);
+          })
+          .catch(() => {});
+      }
 
       // ── Walmart-direct rate pass ──────────────────────────────────────
       // Walmart orders (store "SIRIUS …", not "Walmart") get no Veeqo rate.
@@ -3348,6 +3379,7 @@ export default function ShippingLabelsPage() {
       onToggleSelected={() => toggleOne(o.orderId)}
       onClassify={() => setClassifyModal(o)}
       onManual={() => setManualModal(o)}
+      rateSnapshot={rateSnapshots[normOrderNumber(o.orderNumber)] ?? null}
       onSetTempClass={async (cls: string) => {
         const sku = o.items[0]?.sku;
         if (!sku) return;
@@ -4845,6 +4877,7 @@ function OrderRow({
   onClassify,
   onManual,
   onSetTempClass,
+  rateSnapshot,
   onPacking,
   onSku,
   onEditPackage,
@@ -4896,6 +4929,7 @@ function OrderRow({
   // Set the temperature class (FROZEN/CHILLED/DRY) for this order's first SKU
   // (topic 135). null when the engine is off.
   onSetTempClass: ((cls: string) => void) | null;
+  rateSnapshot: RateSnapshotView | null;
   onPacking: () => void;
   onSku: () => void;
   onEditPackage: () => void;
@@ -4968,6 +5002,7 @@ function OrderRow({
       })
     : null;
   const [engineDetailsOpen, setEngineDetailsOpen] = useState(false);
+  const [snapshotOpen, setSnapshotOpen] = useState(false);
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -5689,6 +5724,52 @@ function OrderRow({
                 <div key={d}>{d}</div>
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* NAN Health (Shopify) rates — read from the Shopify admin "Buy label"
+          page by a browser session (Shopify's API won't list them and can't
+          buy FedEx). Reference only: the owner buys these in Shopify. */}
+      {rateSnapshot && rateSnapshot.rates.length > 0 && (
+        <div className="mt-2 ml-6 rounded-md border border-rule bg-surface px-2.5 py-1.5 text-[length:var(--ship-badge)]">
+          <div className="flex flex-wrap items-baseline gap-x-2 text-ink-2">
+            <span className="font-semibold text-ink">Тарифы Shopify</span>
+            <span className="text-ink-3">
+              снимок {rateSnapshot.capturedAt}
+              {rateSnapshot.pkg ? ` · ${rateSnapshot.pkg}` : ""} · покупка
+              вручную в Shopify
+            </span>
+          </div>
+          <div className="mt-1 grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2">
+            {(snapshotOpen
+              ? rateSnapshot.rates
+              : rateSnapshot.rates.slice(0, 6)
+            ).map((r, i) => (
+              <div
+                key={`${r.carrier}-${r.service}-${i}`}
+                className={`flex justify-between gap-2 tabular-nums ${
+                  i === 0 ? "font-semibold text-green-ink" : "text-ink-2"
+                }`}
+              >
+                <span className="truncate">
+                  {r.carrier} {r.service}
+                  {r.transit ? (
+                    <span className="text-ink-3"> · {r.transit}</span>
+                  ) : null}
+                </span>
+                <span>${r.price.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          {rateSnapshot.rates.length > 6 && (
+            <button
+              type="button"
+              onClick={() => setSnapshotOpen((v) => !v)}
+              className="mt-0.5 text-ink-3 underline hover:text-ink"
+            >
+              {snapshotOpen ? "скрыть" : `все ${rateSnapshot.rates.length}`}
+            </button>
           )}
         </div>
       )}
