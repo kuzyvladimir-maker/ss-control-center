@@ -422,20 +422,29 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
       // The Dashboard "Shipping progress" panel used the Amazon
       // status=Shipped count instead, which isn't labels at all.
       //
-      // `trackingNumber > ''` is what keeps this fast: every bought row carries
-      // its tracking number (0 bought rows without one, 2026-10-26) and that
-      // column is indexed, so SQLite seeks ~2.5k rows. Filtering on status +
-      // updatedAt alone scanned all ~150k plan rows — 20 s normally, 70–87 s
-      // during Turso's us-east-1 incident — and every sidebar poll (60 s, per
-      // open tab) held a pool client that long, so /shipping's own 50 ms
-      // queries queued behind it until the page hit 504.
-      prisma.shippingPlanItem.count({
-        where: {
-          trackingNumber: { gt: "" },
-          status: "bought",
-          updatedAt: { gte: todayStart },
-        },
-      }),
+      // Every bought row carries its tracking number (0 bought rows without
+      // one, 2026-10-26) and that column is indexed. Filtering on status +
+      // updatedAt alone scanned all ~150k plan rows (20 s; 70–87 s during
+      // Turso's us-east-1 incident) and every 60 s sidebar poll held a pool
+      // client that long — /shipping hit 504. Seeking the index and then
+      // checking ~2.5k fat rows still took 29 s+ on a cold cache, so: take the
+      // 300 newest tracked rowids from the index alone (covering, no row
+      // reads; `+rowid` keeps the planner off a full rowid-order scan), then
+      // read just those rows. 300 tracked rows ≈ 2.5 weeks of purchases.
+      // Never fails the summary: null on error.
+      prisma.$queryRaw<Array<{ n: number | bigint }>>`
+        SELECT COUNT(*) AS n FROM "ShippingPlanItem"
+        WHERE rowid IN (
+          SELECT rowid FROM "ShippingPlanItem"
+          WHERE "trackingNumber" > '' ORDER BY +rowid DESC LIMIT 300
+        )
+        AND "status" = 'bought'
+        AND "updatedAt" >= ${todayStart.toISOString().replace("Z", "+00:00")}`
+        .then((r) => Number(r[0]?.n ?? 0))
+        .catch((e) => {
+          console.warn("[dashboard/summary] labels bought today failed:", e);
+          return null;
+        }),
       // "Charged" on the /adjustments dispute board for its "30 days" preset
       // (today-29 … today ET, by the charge's own adjustmentDate, Amazon
       // board accounts, charges only). The old tile summed every row by
