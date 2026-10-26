@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   RefreshCw,
   Loader2,
@@ -392,7 +392,7 @@ export default function ProcurementPage() {
    * visible until the next refresh — that's the spec: the card does not
    * disappear, it only changes its visual status.
    */
-  const handleAction = useCallback(
+  const runAction = useCallback(
     async (
       lineItemId: string,
       orderId: string,
@@ -479,6 +479,32 @@ export default function ProcurementPage() {
       }
     },
     []
+  );
+
+  // Actions on lines of the SAME order run one after another: each one reads
+  // the order's notes and appends a rewritten [PROCUREMENT] block, so two
+  // quick clicks in parallel raced (2026-10-26 14:01 ET: two lines of one
+  // order 1.5 s apart, the second failed with a Veeqo 502). Different orders
+  // still run in parallel.
+  const orderQueues = useRef(new Map<string, Promise<unknown>>());
+  const handleAction = useCallback(
+    (
+      lineItemId: string,
+      orderId: string,
+      action: CardAction
+    ): Promise<ActionResult> => {
+      const queues = orderQueues.current;
+      const run = (queues.get(orderId) ?? Promise.resolve()).then(() =>
+        runAction(lineItemId, orderId, action)
+      );
+      const tail = run.catch(() => undefined);
+      queues.set(orderId, tail);
+      void tail.then(() => {
+        if (queues.get(orderId) === tail) queues.delete(orderId);
+      });
+      return run;
+    },
+    [runAction]
   );
 
   // Filter by channel chip + ship-by chip, then by smart search query.

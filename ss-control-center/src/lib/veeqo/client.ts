@@ -17,6 +17,28 @@ const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 // makes those self-heal instead of surfacing to the UI.
 const VEEQO_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 const VEEQO_MAX_ATTEMPTS = 4;
+// 0.5 s → 1.5 s → 4.5 s (+ jitter). A Veeqo gateway blip outlasted the old
+// 0.3/0.6/1.2 s ladder (502 on /procurement, 2026-10-26 14:01 ET).
+const veeqoBackoff = (attempt: number) =>
+  new Promise((r) => setTimeout(r, 500 * 3 ** attempt + Math.random() * 300));
+
+// Veeqo's gateway answers 5xx with a full HTML error page. That text ended up
+// verbatim in a red /procurement banner — keep the status, drop the page.
+function veeqoErrorText(status: number, body: string): string {
+  if (/^\s*<(!doctype|html)/i.test(body)) {
+    return status >= 500 || status === 429
+      ? "Veeqo is temporarily unavailable, try again"
+      : "Veeqo returned an HTML page instead of data";
+  }
+  return body.length > 500 ? `${body.slice(0, 500)}…` : body;
+}
+
+/** A Veeqo failure that may clear on its own: 429/5xx or a network error. */
+export function isVeeqoTransientError(e: unknown): boolean {
+  if (!(e instanceof Error)) return false;
+  if (/Veeqo API error (429|500|502|503|504)\b/.test(e.message)) return true;
+  return e.name === "TypeError" || e.name === "AbortError" || e.name === "TimeoutError";
+}
 
 export const VEEQO_KEY_REJECTED_MESSAGE =
   "Veeqo API key rejected — обновите VEEQO_API_KEY в Vercel";
@@ -54,9 +76,7 @@ export async function veeqoFetch(path: string, options?: RequestInit) {
       // Transient by nature — retry idempotent reads, otherwise rethrow.
       lastErr = e;
       if (canRetry && attempt < maxAttempts - 1) {
-        await new Promise((r) =>
-          setTimeout(r, 300 * 2 ** attempt + Math.random() * 200),
-        );
+        await veeqoBackoff(attempt);
         continue;
       }
       throw e;
@@ -64,20 +84,20 @@ export async function veeqoFetch(path: string, options?: RequestInit) {
 
     if (!res.ok) {
       const text = await res.text();
-      const err = new Error(`Veeqo API error ${res.status}: ${text}`);
+      const err = new Error(
+        `Veeqo API error ${res.status}: ${veeqoErrorText(res.status, text)}`,
+      );
       // Retry transient statuses on idempotent reads with exponential backoff
-      // (300ms → 600ms → 1.2s + jitter). Non-transient (400/401/403/404/422)
-      // or non-idempotent calls throw immediately — no point masking a real
-      // client/validation error behind retries.
+      // (veeqoBackoff). Non-transient (400/401/403/404/422) or non-idempotent
+      // calls throw immediately — no point masking a real client/validation
+      // error behind retries.
       if (
         canRetry &&
         VEEQO_RETRY_STATUSES.has(res.status) &&
         attempt < maxAttempts - 1
       ) {
         lastErr = err;
-        await new Promise((r) =>
-          setTimeout(r, 300 * 2 ** attempt + Math.random() * 200),
-        );
+        await veeqoBackoff(attempt);
         continue;
       }
       throw err;

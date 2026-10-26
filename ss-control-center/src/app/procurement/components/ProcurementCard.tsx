@@ -137,6 +137,9 @@ export function ProcurementCard({
   const [copied, setCopied] = useState(false);
   const [pending, setPending] = useState<null | CardAction["kind"]>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  // The action that failed, so the error banner can offer "Try again"
+  // (a Veeqo gateway blip clears in seconds).
+  const [failedAction, setFailedAction] = useState<CardAction | null>(null);
   const [partialMode, setPartialMode] = useState(false);
   const [storePopupOpen, setStorePopupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -267,10 +270,12 @@ export function ProcurementCard({
   async function dispatch(action: CardAction) {
     setPending(action.kind);
     setActionError(null);
+    setFailedAction(null);
     const r = await onAction(card.lineItemId, action);
     setPending(null);
     if (!r.ok) {
       setActionError(r.error ?? "Could not apply the action");
+      setFailedAction(action);
     } else {
       setPartialMode(false);
     }
@@ -539,6 +544,15 @@ export function ProcurementCard({
             <div className="mt-2 inline-flex items-start gap-1.5 rounded-md bg-danger-tint px-2 py-1 text-[11.5px] text-danger">
               <AlertCircle size={12} className="mt-0.5 shrink-0" />
               <span>{actionError}</span>
+              {failedAction && !pending && (
+                <button
+                  type="button"
+                  className="ml-1 font-medium underline underline-offset-2"
+                  onClick={() => void dispatch(failedAction)}
+                >
+                  Try again
+                </button>
+              )}
             </div>
           )}
 

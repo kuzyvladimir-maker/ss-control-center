@@ -1,4 +1,4 @@
-import { veeqoFetch } from "@/lib/veeqo/client";
+import { isVeeqoTransientError, veeqoFetch } from "@/lib/veeqo/client";
 import {
   getOrderTags,
   PROCUREMENT_TAGS,
@@ -162,10 +162,7 @@ export async function applyProcurementAction(
 
   let veeqoResponse: unknown = undefined;
   if (Object.keys(notesPayload).length > 0) {
-    veeqoResponse = await veeqoFetch(`/orders/${orderId}`, {
-      method: "PUT",
-      body: JSON.stringify({ order: notesPayload }),
-    });
+    veeqoResponse = await putNotesOnce(orderId, notesPayload, newStatuses);
   }
 
   // --- 5. Persist managed tags via /bulk_tagging --------------------------
@@ -208,6 +205,54 @@ export async function applyProcurementAction(
     tagsVerified,
     veeqoResponse,
   };
+}
+
+function sameStatuses(
+  a: ReadonlyMap<string, LineItemStatus>,
+  b: ReadonlyMap<string, LineItemStatus>,
+): boolean {
+  if (a.size !== b.size) return false;
+  for (const [id, s] of a) {
+    const o = b.get(id);
+    if (!o || o.kind !== s.kind) return false;
+    if (s.kind === "remain" && o.kind === "remain" && o.remaining !== s.remaining)
+      return false;
+  }
+  return true;
+}
+
+/** Append the [PROCUREMENT] note, surviving a Veeqo gateway blip.
+ *  The PUT appends a note, so it is never blindly re-sent: after a 5xx /
+ *  network failure the outcome is unknown, so re-read the order and send
+ *  again only when the latest block does not already hold `desired`
+ *  (2026-10-26: a 502 HTML page failed a "bought" click on /procurement). */
+export async function putNotesOnce(
+  orderId: string,
+  notesPayload: Record<string, unknown>,
+  desired: ReadonlyMap<string, LineItemStatus>,
+): Promise<unknown> {
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await veeqoFetch(`/orders/${orderId}`, {
+        method: "PUT",
+        body: JSON.stringify({ order: notesPayload }),
+      });
+    } catch (e) {
+      if (!isVeeqoTransientError(e) || attempt >= MAX_ATTEMPTS) throw e;
+      await new Promise((r) => setTimeout(r, 1000 * attempt));
+      const order = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
+      const landed = parseProcurementBlock(
+        getInternalNotes(order as Record<string, unknown>),
+      ).items;
+      if (sameStatuses(landed, desired)) return null;
+      console.warn("[procurement] notes PUT failed and did not land, re-sending", {
+        orderId,
+        attempt,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
 }
 
 function managedDiff(
