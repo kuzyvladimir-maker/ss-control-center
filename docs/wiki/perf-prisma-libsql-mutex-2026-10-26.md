@@ -267,3 +267,43 @@ Concurrency stays 5. Veeqo answered 429 fifty times between 08:00 and 10:00
 ET, and each order also PUTs its package (not retried). The quote POST is now
 retried on 429/5xx like a GET (`readOnlyPost`, a42324cf3); nothing else that
 POSTs is.
+
+## 16:10–16:45 ET: Turso write stalls, and two regressions of mine fixed on the way
+
+**Summary 500s (16:11–16:14).** Once the summary spread its reads in
+parallel, the trackingNumber-index count (index seek, then ~2.5k fat-row
+reads) ran past the 30 s deadline on a cold cache. That failed the whole
+summary, so the SWR cache never filled.
+
+Fixed in f5c3686a2:
+
+- Take the 300 newest tracked rowids from the index alone (covering;
+  `ORDER BY +rowid` keeps the planner off a full rowid-order scan).
+- Read only those rows: 2.2 s cold, 0.09 s warm, same count (21).
+- On error it returns null, never a 500.
+
+**Write stalls.** Turso's status page said "operational", yet a 0-row
+`UPDATE` took 21.6 s, 19 s, a Turso 502 after 11 s, then 56 ms. Reads stayed
+at ~50 ms. Nothing on our side was writing heavily. The plan's 11 draft
+inserts sat in a row on one pool client, and the plan 500'd after 45–170 s,
+so the page had no rates.
+
+- `createMany` and `createManyAndReturn` both open a transaction (spied on a
+  local copy of the schema), and transactions are what hang. They are out.
+- Fix (ee5079d0d): the inserts run in parallel on a dedicated 8-client
+  `prismaBulk`, with ids chosen up front. An insert of unknown outcome is
+  looked up by id and re-sent only if missing.
+- Buy safety in the same commit: after Veeqo sells the label, a failing
+  `shippingPlanItem.update(... "bought")` used to put the order in `errors`.
+  That was "Buy failed" for a paid label, with no tracking number, inviting
+  a second purchase. Now the buy is reported with its tracking number and
+  the bookkeeping is retried in the background (`after()`, 3 tries).
+
+**After (16:45, prod, 5 page-load rounds, everything 200):**
+
+| Call | Result |
+|---|---|
+| list | 0.6–1.8 s (8.2 s once: Veeqo product probes 7.7 s) |
+| plan | 7.3–13 s, of which Veeqo quotes 25–28 s summed over 10 orders and `db_save` 0.3–0.9 s |
+| summary | 0.17–4.7 s |
+| NAN / pending / alerts | 0.17–0.45 s |
