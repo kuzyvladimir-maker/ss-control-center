@@ -920,6 +920,20 @@ export default function ShippingLabelsPage() {
   >(null);
   const [profileSaving, setProfileSaving] = useState(false);
 
+  // Height of the pinned command bar, so the selection/Buy bar can pin right
+  // under it. Measured live: the bar wraps to two or three rows on a narrow
+  // window, and a hardcoded offset would slide the Buy bar under it.
+  const commandBarRef = useRef<HTMLDivElement>(null);
+  const [commandBarH, setCommandBarH] = useState(0);
+  useEffect(() => {
+    const el = commandBarRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setCommandBarH(el.offsetHeight));
+    ro.observe(el);
+    setCommandBarH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
   // Frozen Analytics v2 alerts (Phase 3 integration). We pull all currently
   // pending alerts at low+ severity and index by orderNumber so each row can
   // surface the predicted risk + recommendations next to its Buy button.
@@ -3384,7 +3398,10 @@ export default function ShippingLabelsPage() {
           re-pull from Veeqo) used to scroll away with the header, so both
           now ride along. The negative margins let the bar span the full
           content width and paint over the rows sliding underneath it. */}
-      <div className="sticky top-0 z-30 -mx-4 border-b border-rule bg-bg/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+      <div
+        ref={commandBarRef}
+        className="sticky top-0 z-30 -mx-4 border-b border-rule bg-bg/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8"
+      >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 shrink-0 items-baseline gap-2">
             <h1
@@ -3951,7 +3968,15 @@ export default function ShippingLabelsPage() {
           button is "Buy selected"; in the awaiting-ship-confirm tab it
           flips to "Mark shipped" so the same checkbox column drives both
           flows without a separate UI. */}
-      <div className="flex items-center justify-between rounded-md border border-rule bg-surface px-3 py-2">
+      {/* PINNED right under the command bar (owner, 2026-10-25): selection,
+          Sort, Print and Buy selected stay on screen while the list scrolls.
+          `top` follows the command bar's real height, which changes when it
+          wraps on a narrow window. z-20 keeps it under the command bar (z-30)
+          and above the rows; the native Sort <select> opens as an OS popup. */}
+      <div
+        className="sticky z-20 flex flex-wrap items-center justify-between gap-2 rounded-md border border-rule bg-surface px-3 py-2 shadow-sm"
+        style={{ top: commandBarH }}
+      >
         <label className="flex items-center gap-2 text-[12.5px] text-ink-2">
           <input
             type="checkbox"
@@ -3966,7 +3991,7 @@ export default function ShippingLabelsPage() {
               ? `Select all awaiting (${selected.size}/${selectableIds.size})`
               : `Select all ready (${selected.size}/${selectableIds.size})`}
         </label>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Sort — like Veeqo's sortable columns. */}
           <label className="flex items-center gap-1 text-[11px] text-ink-3">
             Sort
