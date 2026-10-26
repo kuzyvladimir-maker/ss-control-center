@@ -146,12 +146,14 @@ export async function GET() {
     const idList = [...productIds];
 
     // Prisma ProductTypeOverride lookup — fast single query.
+    const tOverrides = Date.now();
     const overrides = idList.length
       ? await prisma.productTypeOverride.findMany({
           where: { productId: { in: idList } },
         })
       : [];
     const overrideByPid = new Map(overrides.map((o) => [o.productId, o.type]));
+    mark("db_overrides", tOverrides);
 
     // Fetch Veeqo product details for products without an override. Veeqo
     // rate-limits aggressively, so cap at 5 in flight — but as a SLIDING
@@ -279,12 +281,14 @@ export async function GET() {
         );
       }
     }
+    const tPacking = Date.now();
     const packingProfiles = signatures.size
       ? await prisma.packingProfile.findMany({
           where: { signature: { in: [...signatures] } },
         })
       : [];
     const profileBySig = new Set(packingProfiles.map((p) => p.signature));
+    mark("db_packing", tPacking);
 
     // ── Lookup SKU rows so we know which orders are missing SKU data.
     const skuList = new Set<string>();
@@ -293,6 +297,7 @@ export async function GET() {
     }
     // Only membership is needed (skuByCode.has below), so select just the sku
     // column and build a Set — avoids materializing every column of every row.
+    const tSku = Date.now();
     const skuRows = skuList.size
       ? await prisma.skuShippingData.findMany({
           where: { sku: { in: [...skuList] } },
@@ -300,6 +305,7 @@ export async function GET() {
         })
       : [];
     const skuByCode = new Set(skuRows.map((r) => r.sku));
+    mark("db_sku", tSku);
 
     // ── Per-order classification + assembly ─────────────────────────────
     const storeTotals = new Map<
@@ -361,6 +367,7 @@ export async function GET() {
     const orderNumbers = veeqoOrders.map((o) => String(o.number ?? o.id));
     const walmartPoByCustomer = new Map<string, string>();
     const walmartShippedCustomerIds = new Set<string>();
+    const tWm = Date.now();
     if (orderNumbers.length > 0) {
       const wmRows = await prisma.walmartOrder.findMany({
         where: { customerOrderId: { in: orderNumbers } },
@@ -385,6 +392,8 @@ export async function GET() {
     // don't yet have a PO for, look it up straight from Walmart and cache it
     // (so the next load + the cron don't re-fetch). Bounded + fully non-fatal:
     // a lookup failure just leaves the order as before.
+    mark("db_walmart_orders", tWm);
+    const tWmLookup = Date.now();
     const unresolvedWalmart = veeqoOrders.filter(
       (o) =>
         (o.channel?.type_code ?? "").toLowerCase() === "walmart" &&
@@ -462,6 +471,7 @@ export async function GET() {
       }
     }
 
+    mark("walmart_po_lookup", tWmLookup);
     // Ensure the Veeqo product-type probe (kicked off above, overlapping the
     // DB + Walmart work) has finished before the loop reads veeqoProductType.
     const tProbe = Date.now();
@@ -472,6 +482,7 @@ export async function GET() {
     // manual class wins over the Veeqo tag on the card, exactly as in the
     // plan. A missing table / read error just leaves the old tag labels.
     const manualClassBySku = new Map<string, string>();
+    const tTemp = Date.now();
     try {
       const allSkus = [
         ...new Set(
@@ -494,6 +505,7 @@ export async function GET() {
         e instanceof Error ? e.message : e,
       );
     }
+    mark("db_temp_class", tTemp);
 
     const orders = [];
     for (const o of veeqoOrders) {
