@@ -59,3 +59,11 @@ test("Shopify admin link: by order id, else a search by number", () => {
   assert.equal(nanAdminOrderUrl("6543210987", "#1374"), "https://admin.shopify.com/store/1bndby-p8/orders/6543210987");
   assert.equal(nanAdminOrderUrl(null, "#1374"), "https://admin.shopify.com/store/1bndby-p8/orders?query=1374");
 });
+
+test("UPS® / FedEx® prefixes are not repeated in the service name", () => {
+  const r = normalizeNanRates([
+    { carrier: "UPS", service: "UPS® Standard", price_usd: 21.26, eta_text: "3 business days" },
+    ["FedEx® Ground Economy", 6.98, "4-5d"],
+  ]);
+  assert.deepEqual(r.map((x) => `${x.carrier}|${x.service}`), ["FedEx|Ground Economy", "UPS|Standard"]);
+});

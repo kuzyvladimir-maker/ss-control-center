@@ -45,13 +45,12 @@ function carrierOf(full: string, given: string): { carrier: string; service: str
   );
   if (known) {
     // Drop a repeated carrier prefix from the service ("UPS Ground" → "Ground").
-    const svc = full.trim().replace(new RegExp(`^${known}\\s+`, "i"), "");
+    const svc = full.trim().replace(new RegExp(`^${known}[®™]?\\s+`, "i"), "");
     return { carrier: known, service: svc || full.trim() };
   }
   for (const c of NAN_CARRIERS) {
-    if (full.trim().toLowerCase().startsWith(c.toLowerCase() + " ")) {
-      return { carrier: c, service: full.trim().slice(c.length).trim() };
-    }
+    const m = new RegExp(`^${c}[®™]?\\s+`, "i").exec(full.trim());
+    if (m) return { carrier: c, service: full.trim().slice(m[0].length).trim() };
   }
   return { carrier: g, service: full.trim() };
 }

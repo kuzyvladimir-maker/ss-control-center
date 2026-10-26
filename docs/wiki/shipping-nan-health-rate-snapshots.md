@@ -51,3 +51,44 @@ by `scripts/turso-migrate-nan-rate-snapshot.mjs`. The older one-off
 - `src/app/api/shipping/nan-rates/**`
 - `src/proxy.ts`
 - `src/app/shipping/page.tsx`
+
+## Live collector (2026-10-26, 02:10 ET)
+
+**Script.** `scripts/server/nan_rates_http.py` in the repo. It runs from
+`/root/.openclaw/workspace/scripts/` on the server and uses only HTTP: no
+browser and no iMac.
+
+**How it works.**
+1. It reads the open, unfulfilled NAN orders through the official Admin API,
+   using the NAN app's client credentials. It gets each order's address and
+   total weight.
+2. For each order it replays the admin's internal `FetchShippingRates` call.
+   Jackie captured the template once and stored it with the cookies and the
+   csrf token in `.secrets/nan_shopify_session.json`. The template keeps the
+   captured label id and swaps in the order's destination and weight. Shopify
+   returns that order's rates; a test with a different address and weight gave
+   a different, correct set.
+3. It posts the rates to `/api/shipping/nan-rates`.
+
+**Auth.** The `JACKIE_API_TOKEN` bearer, the same one the other server scripts
+use. It also sends `x-nan-rates-secret` once that secret exists in Vercel.
+
+**Schedule (server crontab).**
+
+| Tag | When | What |
+|---|---|---|
+| `NAN_RATES_PENDING` | every 2 min | Only the orders where "Обновить" was pressed |
+| `NAN_RATES_ALL` | :03, :18, :33 and :48 | All open NAN orders, so snapshots stay under 30 min |
+
+The log is `/var/log/nan-rates.log`.
+
+**Session expiry.** If Shopify answers 401 or 403, the script posts a single
+alert to Telegram topic 135, guarded by a flag file. Rates then stop
+refreshing until the session is renewed by logging into the NAN admin again
+and updating `.secrets/nan_shopify_session.json`.
+
+**Known limits.**
+- The package is the captured 12x10x6 box; the weight is the order weight
+  plus 0.5 lb.
+- For international orders, the customs HS code and origin come from the
+  template, because the app has no `read_products` scope.
