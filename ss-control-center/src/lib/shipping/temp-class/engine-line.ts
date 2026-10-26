@@ -60,23 +60,27 @@ export interface EngineLine {
 }
 
 /**
- * Background/foreground for the engine line by temperature (owner 2026-10-26):
- * a gradient from dark blue (frost) through light blue to light/dark red
- * (heat), so a glance shows whether the cold season has arrived.
+ * Colours for the engine line by temperature (owner 2026-10-26): a soft pastel
+ * fill with dark text, and a strong accent stripe that carries the gradient —
+ * dark blue in frost … dark red in heat. The first version filled the whole
+ * block with saturated colour and was too loud on a long list.
  */
-export function tempTone(c: number | null | undefined): { bg: string; fg: string } {
-  if (c == null || !Number.isFinite(c)) return { bg: "#eef0f3", fg: "#1f2328" };
-  if (c <= -10) return { bg: "#1e3a8a", fg: "#ffffff" }; // deep frost
-  if (c <= -5) return { bg: "#1d4ed8", fg: "#ffffff" };
-  if (c <= 0) return { bg: "#3b82f6", fg: "#ffffff" };
-  if (c <= 5) return { bg: "#93c5fd", fg: "#0b1f44" };
-  if (c <= 10) return { bg: "#bfdbfe", fg: "#0b1f44" };
-  if (c <= 15) return { bg: "#dbeafe", fg: "#0b1f44" }; // cool
-  if (c <= 20) return { bg: "#f1f5f9", fg: "#1f2328" }; // mild
-  if (c <= 24) return { bg: "#fee2e2", fg: "#5c0b0b" }; // warm
-  if (c <= 28) return { bg: "#fca5a5", fg: "#4a0606" };
-  if (c <= 32) return { bg: "#ef4444", fg: "#ffffff" }; // hot
-  return { bg: "#991b1b", fg: "#ffffff" }; // extreme heat
+export function tempTone(
+  c: number | null | undefined,
+): { bg: string; fg: string; accent: string } {
+  const fg = "#1f2328";
+  if (c == null || !Number.isFinite(c)) return { bg: "#f4f5f7", fg, accent: "#cbd5e1" };
+  if (c <= -10) return { bg: "#e3e9f6", fg, accent: "#1e3a8a" }; // deep frost
+  if (c <= -5) return { bg: "#e6edf8", fg, accent: "#1d4ed8" };
+  if (c <= 0) return { bg: "#eaf1fb", fg, accent: "#3b82f6" };
+  if (c <= 5) return { bg: "#edf4fc", fg, accent: "#60a5fa" };
+  if (c <= 10) return { bg: "#f0f6fd", fg, accent: "#93c5fd" };
+  if (c <= 15) return { bg: "#f3f8fd", fg, accent: "#bfdbfe" }; // cool
+  if (c <= 20) return { bg: "#f4f5f7", fg, accent: "#cbd5e1" }; // mild
+  if (c <= 24) return { bg: "#fdf5f5", fg, accent: "#fca5a5" }; // warm
+  if (c <= 28) return { bg: "#fcefef", fg, accent: "#f87171" };
+  if (c <= 32) return { bg: "#fbe8e8", fg, accent: "#dc2626" }; // hot
+  return { bg: "#f9e0e0", fg, accent: "#991b1b" }; // extreme heat
 }
 
 const deg = (c: number | null | undefined) =>

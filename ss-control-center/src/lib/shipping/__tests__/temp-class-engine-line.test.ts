@@ -65,12 +65,12 @@ test("no forecast; engine off (Summer); dry", () => {
   assert.equal(formatEngineLine({ tempClass: "DRY" })?.mode, "dry");
 });
 
-test("tone: dark blue in frost → light blue when cool → neutral mild → light red warm → dark red heat", () => {
-  assert.equal(tempTone(-12).bg, "#1e3a8a");
-  assert.equal(tempTone(3).bg, "#93c5fd");
-  assert.equal(tempTone(18).bg, "#f1f5f9");
-  assert.equal(tempTone(22).bg, "#fee2e2");
-  assert.equal(tempTone(28).bg, "#fca5a5");
-  assert.equal(tempTone(35).bg, "#991b1b");
-  assert.equal(tempTone(null).bg, "#eef0f3");
+test("tone: soft fill + accent stripe — dark blue frost … dark red heat; text always dark", () => {
+  assert.equal(tempTone(-12).accent, "#1e3a8a");
+  assert.equal(tempTone(3).accent, "#60a5fa");
+  assert.equal(tempTone(18).accent, "#cbd5e1");
+  assert.equal(tempTone(22).accent, "#fca5a5");
+  assert.equal(tempTone(28).accent, "#f87171");
+  assert.equal(tempTone(35).accent, "#991b1b");
+  for (const c of [-12, 3, 18, 28, 35, null]) assert.equal(tempTone(c).fg, "#1f2328");
 });

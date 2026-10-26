@@ -5660,6 +5660,7 @@ function OrderRow({
               ? {
                   background: tempTone(engineLine.toneC).bg,
                   color: tempTone(engineLine.toneC).fg,
+                  borderLeft: `4px solid ${tempTone(engineLine.toneC).accent}`,
                 }
               : undefined
           }
@@ -5683,7 +5684,7 @@ function OrderRow({
             )}
           </div>
           {engineDetailsOpen && engineLine.details.length > 0 && (
-            <div className="mt-1 space-y-0.5 text-[length:var(--ship-badge)] opacity-90">
+            <div className="mt-1 space-y-0.5 text-[length:var(--ship-badge)] text-ink-3">
               {engineLine.details.map((d) => (
                 <div key={d}>{d}</div>
               ))}
