@@ -4,63 +4,53 @@ import { formatEngineLine } from "../temp-class/engine-line";
 
 const base = {
   originMaxC: 28.4,
-  routeMaxC: 24.2,
-  allowedDays: 2,
+  routeMaxC: 28.2,
+  allowedDays: 4,
   extraIce: 0,
-  iceBase: 9,
-  iceTotal: 9,
+  iceBase: 5,
+  iceTotal: 5,
   iceWeightDeltaLb: 0,
   noForecast: false,
-  destCity: "Ypsilanti",
-  destState: "MI",
-  destMaxC: 23.9,
-  pick: { service: "FedEx 2Day®", price: 40.33, calDays: 2 },
-  summerPrice: 18.12,
-  savingsUsd: -22.21,
-  longerTransitPrices: [{ calDays: 3, price: 18.12 }],
+  destCity: "Loveland",
+  destState: "CO",
+  destMaxC: 20.1,
+  pick: { service: "UPS Ground Saver", price: 13.98, calDays: 4 },
+  summerPrice: 24.15,
+  savingsUsd: 10.17,
+  longerTransitPrices: [{ calDays: 3, price: 18.5 }, { calDays: 4, price: 13.98 }],
+  reasonRu: "охлаждёнка: 3 дн. как у заморозки +1 = 4 дн. (макс. 5)",
 };
 
-test("owner's card: route, class, day limit and the engine's pick vs current price on ONE line", () => {
-  const r = formatEngineLine({ tempClass: "FROZEN", shadow: base });
+test("owner format: one short line — temps at send/delivery · class · max days · chosen rate; no brackets", () => {
+  const r = formatEngineLine({
+    tempClass: "CHILLED",
+    rateProfile: "live",
+    selected: { service: "UPS Ground Saver", price: 13.98, calDays: 4 },
+    shadow: base,
+  });
   assert.equal(
     r?.text,
-    "Clearwater 28°C → Ypsilanti, MI 24°C · Frozen · до 2 дн. в пути · движок: FedEx 2Day® $40.33, 2 дн. (дороже на $22.21)",
+    "Clearwater 28°C при отправке → Loveland, CO 20°C при доставке · Chilled · макс. 4 дн. · тариф: UPS Ground Saver $13.98, 4 дн.",
   );
-  assert.equal(r?.mode, "rules");
+  assert.ok(!/[()]/.test(r!.text), "no explanations in brackets on the line");
   assert.deepEqual(r?.details, [
-    "Лёд: 9 шт (обычная норма)",
-    "Сейчас по правилам лета: $18.12",
-    "Самые дешёвые тарифы по сроку в пути: 3 дн. $18.12",
+    "Почему 4 дн.: охлаждёнка: 3 дн. как у заморозки +1 = 4 дн. (макс. 5)",
+    "Максимум по пути (середина маршрута и получатель): 28°C",
+    "Лёд: 5 шт",
+    "По летним правилам: $24.15 — экономия $10.17",
+    "Самые дешёвые по сроку: 3 дн. $18.50 · 4 дн. $13.98",
   ]);
 });
 
-test("route max shown only when it differs from the destination; savings and extra ice", () => {
-  const r = formatEngineLine({
-    tempClass: "CHILLED",
-    shadow: {
-      ...base,
-      routeMaxC: 9.2,
-      destMaxC: 4.1,
-      allowedDays: 4,
-      extraIce: 2,
-      iceTotal: 11,
-      iceWeightDeltaLb: 2,
-      pick: { service: "UPS® Ground", price: 13.1, calDays: 4 },
-      savingsUsd: 5.02,
-    },
-  });
-  assert.match(r!.text, /→ Ypsilanti, MI 4°C · по пути до 9°C · Chilled · до 4 дн\. в пути · движок: UPS® Ground \$13\.10, 4 дн\. \(дешевле на \$5\.02\)$/);
-  assert.equal(r?.details[0], "Лёд: 9 + 2 доп. = 11 шт (+2 lb к весу этикетки)");
+test("shadow says what the engine WOULD buy", () => {
+  const r = formatEngineLine({ tempClass: "FROZEN", rateProfile: "shadow", shadow: { ...base, allowedDays: 3 } });
+  assert.match(r!.text, /· Frozen · макс\. 3 дн\. · движок выбрал бы: UPS Ground Saver \$13\.98, 4 дн\.$/);
 });
 
-test("engine not run → the same line with the exact reason", () => {
+test("engine not run → the same place, the exact reason", () => {
   assert.equal(
     formatEngineLine({ tempClass: "FROZEN", shadow: null, engineSkip: "box_unrecognized", boxSize: "30x30x30" })?.text,
     "Frozen · движок не запущен: коробка 30x30x30 больше любого кулера (XS–XL) — правила лета",
-  );
-  assert.equal(
-    formatEngineLine({ tempClass: "FROZEN", shadow: null, engineSkip: "no_box" })?.text,
-    "Frozen · движок не запущен: у заказа не задан размер коробки — правила лета",
   );
   assert.equal(
     formatEngineLine({ tempClass: "FROZEN", shadow: null })?.text,

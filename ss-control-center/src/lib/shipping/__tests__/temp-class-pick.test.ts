@@ -216,7 +216,7 @@ test("summer floor: hot weather (Clearwater 28°C, route 24°C) never makes Live
   const floored = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: hot, summerCapDays: 3 });
   assert.equal(floored.allowedDays, 3);
   assert.equal(floored.rate?.title, "UPS Ground");
-  assert.match(floored.reasonRu ?? "", /не строже летних правил: до 3 дн\./);
+  assert.match(floored.reasonRu ?? "", /как летом: 3 дн\./);
   // A Frozen Analytics heat alert (summer cap 2) still keeps it at 2.
   const alert = selectTempAwareRate({ rates, tempClass: "FROZEN", size: "M", deliveryBy: DEADLINE, shipDay: mon, weather: hot, summerCapDays: 2 });
   assert.equal(alert.rate?.title, "FedEx 2Day");

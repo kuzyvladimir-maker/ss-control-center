@@ -97,18 +97,13 @@ export function selectTempAwareRate(args: {
   const { rates, tempClass, size, deliveryBy, shipDay, weather, hasIncident } =
     args;
 
-  const dr = { ...allowedDays({ tempClass, size, weather, hasIncident }) };
-  if (
-    tempClass !== "DRY" &&
-    args.summerCapDays != null &&
-    Number.isFinite(dr.allowedDays) &&
-    dr.allowedDays < args.summerCapDays
-  ) {
-    dr.reasonRu = `не строже летних правил: до ${args.summerCapDays} дн. (по таблице было ${dr.allowedDays}: ${dr.reasonRu ?? dr.reason})`;
-    dr.reason = `summer floor ${args.summerCapDays}d (table ${dr.allowedDays}d: ${dr.reason})`;
-    dr.allowedDays = args.summerCapDays;
-    dr.extraIce = 0; // summer packs the base ice for its own window
-  }
+  const dr = allowedDays({
+    tempClass,
+    size,
+    weather,
+    hasIncident,
+    summerCapDays: args.summerCapDays,
+  });
   const base = {
     allowedDays: dr.allowedDays,
     extraIce: dr.extraIce,

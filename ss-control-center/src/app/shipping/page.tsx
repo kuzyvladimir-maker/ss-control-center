@@ -4951,6 +4951,18 @@ function OrderRow({
         rateProfile: plan.rateProfile,
         engineSkip: plan.engineSkip,
         boxSize: plan.boxSize,
+        // What is actually bought in Live: the plan's selected rate.
+        selected:
+          plan.price != null && plan.edd && plan.actualShipDay
+            ? {
+                service: plan.service,
+                price: plan.price,
+                calDays: Math.round(
+                  (Date.parse(plan.edd) - Date.parse(plan.actualShipDay)) /
+                    86_400_000,
+                ),
+              }
+            : null,
         shadow: plan.shadow ?? null,
       })
     : null;
@@ -5633,14 +5645,12 @@ function OrderRow({
           block nobody read. */}
       {engineLine && (
         <div
-          className={`mt-2 ml-6 rounded px-2 py-1.5 text-[length:var(--ship-row)] ${
-            engineLine.mode === "summer"
-              ? "bg-warn-tint text-warn-strong"
-              : "bg-info-tint text-ink-2"
+          className={`mt-2 ml-6 text-[length:var(--ship-row)] ${
+            engineLine.mode === "summer" ? "text-warn-strong" : "text-ink"
           }`}
         >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-medium tabular-nums">{engineLine.text}</span>
+            <span className="font-semibold tabular-nums">{engineLine.text}</span>
             <span
               className="cursor-help rounded-full border border-current px-1.5 text-[10px] leading-4 opacity-70"
               title={ENGINE_RULE_TOOLTIP}

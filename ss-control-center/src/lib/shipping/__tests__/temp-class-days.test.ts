@@ -63,14 +63,11 @@ test("hot Clearwater (A>25) caps the window: 2 days when M>10, else 3", () => {
   assert.deepEqual(frozen("M", 5, 30), { days: 3, ice: 0 });
 });
 
-test("XS/S hard cap of 3 days", () => {
-  // Chilled would push XS to 4 in COOL (3+1), capped back to 3.
-  const r = allowedDays({
-    tempClass: "CHILLED",
-    size: "XS",
-    weather: { originMaxC: 10, routeMaxC: 5 },
-  });
-  assert.equal(r.allowedDays, 3);
+test("XS/S hard cap of 3 days applies to FROZEN; CHILLED gets its +1 on top (owner 2026-10-26)", () => {
+  const frozen = allowedDays({ tempClass: "FROZEN", size: "XS", weather: { originMaxC: 10, routeMaxC: 5 } });
+  assert.equal(frozen.allowedDays, 3);
+  const chilled = allowedDays({ tempClass: "CHILLED", size: "XS", weather: { originMaxC: 10, routeMaxC: 5 } });
+  assert.equal(chilled.allowedDays, 4);
 });
 
 test("prior-incident SKU gets one day less", () => {
@@ -106,20 +103,16 @@ test("CHILLED = frozen +1 day, capped at 5", () => {
   assert.equal(xl.allowedDays, 5);
 });
 
-test("CHILLED heat (M>20): 3 days with +1 ice; a cooler that can't take ice → 2 days", () => {
-  const m = allowedDays({
-    tempClass: "CHILLED",
-    size: "M",
-    weather: { originMaxC: 24, routeMaxC: 25 },
-  });
-  assert.deepEqual({ d: m.allowedDays, ice: m.extraIce }, { d: 3, ice: 1 });
-  // XS has zero extra-ice capacity → "unavailable ice → cell without ice" → 2 days
-  const xs = allowedDays({
-    tempClass: "CHILLED",
-    size: "XS",
-    weather: { originMaxC: 24, routeMaxC: 25 },
-  });
-  assert.deepEqual({ d: xs.allowedDays, ice: xs.extraIce }, { d: 2, ice: 0 });
+test("CHILLED in autumn warmth (route 20–28°C, Clearwater 28°C) is NOT cut to 2: summer 3 +1 = 4 (owner 2026-10-26)", () => {
+  // Order 111-0144634-8326602: S cooler (12x12x6), Clearwater 28°C, route 28°C.
+  const s = allowedDays({ tempClass: "CHILLED", size: "S", weather: { originMaxC: 28, routeMaxC: 28 }, summerCapDays: 3 });
+  assert.equal(s.allowedDays, 4);
+  // Order 111-9725021-4213819: XS cooler, route 25°C.
+  const xs = allowedDays({ tempClass: "CHILLED", size: "XS", weather: { originMaxC: 28, routeMaxC: 25 }, summerCapDays: 3 });
+  assert.equal(xs.allowedDays, 4);
+  // Same weather, FROZEN stays at the summer 3.
+  const f = allowedDays({ tempClass: "FROZEN", size: "S", weather: { originMaxC: 28, routeMaxC: 28 }, summerCapDays: 3 });
+  assert.equal(f.allowedDays, 3);
 });
 
 test("CHILLED extreme heat (A>30 AND M>25): 2 days", () => {
@@ -165,8 +158,8 @@ test("no forecast → NaN (caller falls back to summer)", () => {
 test("owner's Uncrustables card: FROZEN M cooler, Clearwater 28°C, route 24°C → 2 days, reason in Russian", () => {
   const r = allowedDays({ tempClass: "FROZEN", size: "M", weather: { originMaxC: 28, routeMaxC: 24 } });
   assert.equal(r.allowedDays, 2);
-  // Route above 20°C already gives 2 days; Clearwater 28°C is named too.
-  assert.equal(r.reasonRu, "по пути 24°C (> 20°C), в Clearwater 28°C (> 25°C)");
+  // Without the summer floor the table alone says 2 (route > 20°C).
+  assert.match(r.reasonRu ?? "", /по пути 24°C/);
 });
 
 test("CHILLED keeps its +1 day under a hot Clearwater (3 instead of 2), extreme heat still 2", () => {
@@ -179,5 +172,5 @@ test("CHILLED keeps its +1 day under a hot Clearwater (3 instead of 2), extreme 
 test("hot Clearwater is what caps a cool-route frozen order", () => {
   const r = allowedDays({ tempClass: "FROZEN", size: "M", weather: { originMaxC: 28, routeMaxC: 15 } });
   assert.equal(r.allowedDays, 2);
-  assert.equal(r.reasonRu, "жарко в Clearwater: 28°C (> 25°C) и по пути 15°C (> 10°C)");
+  assert.equal(r.reasonRu, "жарко в Clearwater (28°C) → 2 дн.");
 });

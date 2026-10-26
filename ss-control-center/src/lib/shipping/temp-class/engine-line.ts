@@ -26,6 +26,8 @@ export interface EngineLineInput {
   rateProfile?: string | null;
   engineSkip?: EngineSkipReason | null;
   boxSize?: string | null;
+  /** The rate actually selected for purchase (shown in Live). */
+  selected?: { service: string | null; price: number; calDays: number } | null;
   shadow?: {
     originMaxC: number | null;
     routeMaxC: number | null;
@@ -120,53 +122,58 @@ export function formatEngineLine(input: EngineLineInput): EngineLine | null {
     };
   }
 
+  // Owner format (2026-10-26), one short line, no explanations in brackets:
+  //   Clearwater 28°C при отправке → Lodi, CA 23°C при доставке · Chilled ·
+  //   макс. 4 дн. · тариф: UPS Ground Saver $13.98, 4 дн.
   const place =
     [s.destCity, s.destState].filter(Boolean).join(", ") || "получатель";
-  const parts = [`Clearwater ${deg(s.originMaxC)} → ${place} ${deg(s.destMaxC)}`];
-  // The engine decides on the ROUTE max (midpoint + destination); show it when
-  // it differs from the destination so the day limit is explained.
+  const parts = [
+    `Clearwater ${deg(s.originMaxC)} при отправке → ${place} ${deg(s.destMaxC)} при доставке`,
+    label(cls),
+    s.allowedDays == null || !Number.isFinite(s.allowedDays)
+      ? "без лимита дней"
+      : `макс. ${s.allowedDays} дн.`,
+  ];
+  // Live: the rate actually chosen for purchase. Shadow: what the engine
+  // WOULD buy (the purchase still goes by summer).
+  const live = (input.rateProfile ?? "") === "live";
+  const chosen = live && input.selected ? input.selected : s.pick ?? null;
+  if (chosen) {
+    parts.push(
+      `${live ? "тариф" : "движок выбрал бы"}: ${chosen.service ?? "?"} ${money(chosen.price)}, ${chosen.calDays} дн.`,
+    );
+  } else {
+    parts.push("нет тарифа в лимите — летний выбор");
+  }
+
+  const details: string[] = [];
+  if (s.reasonRu) details.push(`Почему ${s.allowedDays} дн.: ${s.reasonRu}`);
   if (
     s.routeMaxC != null &&
     (s.destMaxC == null || Math.round(s.routeMaxC) !== Math.round(s.destMaxC))
   ) {
-    parts.push(`по пути до ${deg(s.routeMaxC)}`);
+    details.push(`Максимум по пути (середина маршрута и получатель): ${deg(s.routeMaxC)}`);
   }
-  parts.push(label(cls));
-  parts.push(
-    s.allowedDays == null || !Number.isFinite(s.allowedDays)
-      ? "без лимита дней"
-      : `до ${s.allowedDays} дн. в пути` +
-          (s.reasonRu ? ` (${s.reasonRu})` : ""),
-  );
-  if (s.pick) {
-    const diff = s.savingsUsd;
-    const delta =
-      diff == null || Math.abs(diff) < 0.01
-        ? "тот же тариф"
-        : diff > 0
-          ? `дешевле на ${money(diff)}`
-          : `дороже на ${money(-diff)}`;
-    parts.push(
-      `движок: ${s.pick.service ?? "?"} ${money(s.pick.price)}, ${s.pick.calDays} дн. (${delta})`,
-    );
-  } else {
-    parts.push("движок: нет тарифа в лимите — берётся летний");
-  }
-
-  const details: string[] = [];
   if (s.iceBase != null) {
     details.push(
       s.extraIce > 0
-        ? `Лёд: ${s.iceBase} + ${s.extraIce} доп. = ${s.iceTotal ?? s.iceBase + s.extraIce} шт (+${s.iceWeightDeltaLb ?? s.extraIce} lb к весу этикетки)`
-        : `Лёд: ${s.iceBase} шт (обычная норма)`,
+        ? `Лёд: ${s.iceBase} + ${s.extraIce} доп. = ${s.iceTotal ?? s.iceBase + s.extraIce} шт (+${s.iceWeightDeltaLb ?? s.extraIce} lb к весу)`
+        : `Лёд: ${s.iceBase} шт`,
     );
   }
-  if (s.summerPrice != null) {
-    details.push(`Сейчас по правилам лета: ${money(s.summerPrice)}`);
+  if (s.summerPrice != null && chosen) {
+    const diff = s.summerPrice - chosen.price;
+    details.push(
+      Math.abs(diff) < 0.01
+        ? `По летним правилам: ${money(s.summerPrice)} — так же`
+        : diff > 0
+          ? `По летним правилам: ${money(s.summerPrice)} — экономия ${money(diff)}`
+          : `По летним правилам: ${money(s.summerPrice)} — дороже на ${money(-diff)}`,
+    );
   }
   if (s.longerTransitPrices && s.longerTransitPrices.length > 0) {
     details.push(
-      "Самые дешёвые тарифы по сроку в пути: " +
+      "Самые дешёвые по сроку: " +
         s.longerTransitPrices
           .map((p) => `${p.calDays} дн. ${money(p.price)}`)
           .join(" · "),
