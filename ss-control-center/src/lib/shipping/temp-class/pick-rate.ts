@@ -71,6 +71,7 @@ export interface TempAwareSelection {
   allowedDays: number;
   extraIce: number;
   reason: string;
+  reasonRu?: string;
   /** NaN allowedDays means "no forecast" — caller must use the summer profile. */
   noForecast: boolean;
   diagnostic: string;
@@ -97,6 +98,7 @@ export function selectTempAwareRate(args: {
     allowedDays: dr.allowedDays,
     extraIce: dr.extraIce,
     reason: dr.reason,
+    reasonRu: dr.reasonRu,
   };
 
   if (Number.isNaN(dr.allowedDays)) {

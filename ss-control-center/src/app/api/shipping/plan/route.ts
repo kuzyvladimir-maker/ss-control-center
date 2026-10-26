@@ -53,6 +53,7 @@ import {
   selectTempAwareRate,
   ICE_WEIGHT_PER_PIECE_LB,
   type EngineSkipReason,
+  type CoolerSize,
   iceMarker,
   type ShadowResult,
   type RateProfile,
@@ -848,6 +849,14 @@ export async function GET(request: NextRequest) {
       // label weight (≈1 lb each) and carried to the warehouse note as
       // "[ice +N]" in the plan notes; the buy route reads it from there.
       let liveIceExtra = 0;
+      // LIVE + forecast: what the Monday-shift needs to re-run the weather
+      // engine for a Monday ship day (owner 2026-10-25: the shift must work in
+      // Live, with the weather/ice table, measured from the real ship day).
+      let liveEngineCtx: {
+        coolerSize: CoolerSize;
+        destZip: string;
+        tempClass: TempClass;
+      } | null = null;
 
       // Per-order diagnostic for non-Amazon-non-Walmart paths. We log
       // every gate the order passes/fails so we can see in Vercel logs
@@ -1105,9 +1114,8 @@ export async function GET(request: NextRequest) {
                   destMaxC: weather.destMaxC,
                 };
                 if (rateProfile === "live" && !shadow.noForecast) {
-                  // Live: buy the temperature-aware pick. Disables the Monday
-                  // shift (tryMonday gated on summer below) to avoid mixing the
-                  // two engines; the forecast is re-checked at buy time.
+                  // Live: buy the temperature-aware pick. The Monday-shift below
+                  // then compares it with a Monday pick made by the SAME engine.
                   const liveSel = selectTempAwareRate({
                     rates,
                     tempClass: tempClass as TempClass,
@@ -1116,6 +1124,11 @@ export async function GET(request: NextRequest) {
                     shipDay: effectiveShipDay,
                     weather,
                   });
+                  liveEngineCtx = {
+                    coolerSize,
+                    destZip,
+                    tempClass: tempClass as TempClass,
+                  };
                   if (liveSel.rate) {
                     selectedRate = liveSel.rate;
                     // The ice-extended day is always the cell's top day, so
@@ -1176,7 +1189,9 @@ export async function GET(request: NextRequest) {
           //   * monDeadlineDays >= 1 — Monday must still beat the deadline.
           //   * dayInfo.dayName !== "Mon" — today IS Monday → "next Monday" is a
           //     full week out, don't shift.
-          const nextMonday = nextMondayFrom(today);
+          // From the real ship day, not "today": planning on Sunday for a
+          // Monday ship day must not look at the Monday a week later.
+          const nextMonday = nextMondayFrom(effectiveShipDay);
           const monDeadlineDays = nextMonday
             ? Math.round(
                 (new Date(deliveryBy + "T00:00:00").getTime() -
@@ -1190,9 +1205,8 @@ export async function GET(request: NextRequest) {
             isAmazon &&
             monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon" &&
-            // Live temp-engine uses its own today pick; don't let the summer
-            // Monday-shift override it (the two engines must not mix).
-            rateProfile !== "live";
+            // Already shipping on a Monday → nothing to shift to.
+            new Date(`${effectiveShipDay}T12:00:00`).getDay() !== 1;
 
           if (tryMonday) {
             try {
@@ -1214,15 +1228,45 @@ export async function GET(request: NextRequest) {
                 );
               }
               const mondayRates = mondayResp.available as unknown as VeeqoRate[];
-              const mondaySel = selectBestRate(
-                mondayRates,
-                productType,
-                deliveryBy,
-                nextMonday,
-                "Mon",
-                false,
-                frozenRiskLevel,
-              );
+              // Live: the Monday option goes through the SAME weather/ice engine
+              // (Monday weather, transit measured from Monday). Summer/shadow:
+              // the v3.5 rule as before.
+              let mondaySel: { rate: VeeqoRate | null; diagnostic: string | null };
+              let mondayIceExtra = 0;
+              if (liveEngineCtx) {
+                const monWeather = await getRouteWeather(
+                  liveEngineCtx.destZip,
+                  nextMonday,
+                );
+                const ms = selectTempAwareRate({
+                  rates: mondayRates,
+                  tempClass: liveEngineCtx.tempClass,
+                  size: liveEngineCtx.coolerSize,
+                  deliveryBy,
+                  shipDay: nextMonday,
+                  weather: monWeather,
+                });
+                if (ms.rate) {
+                  const monDays = Math.round(
+                    (Date.parse(veeqoDateToLocal(ms.rate.delivery_promise_date)) -
+                      Date.parse(nextMonday)) /
+                      86_400_000,
+                  );
+                  mondayIceExtra =
+                    ms.extraIce > 0 && monDays >= ms.allowedDays ? ms.extraIce : 0;
+                }
+                mondaySel = { rate: ms.rate, diagnostic: ms.diagnostic };
+              } else {
+                mondaySel = selectBestRate(
+                  mondayRates,
+                  productType,
+                  deliveryBy,
+                  nextMonday,
+                  "Mon",
+                  false,
+                  frozenRiskLevel,
+                );
+              }
               const mondayPick = mondaySel.rate;
               // The today-vs-Monday comparison itself lives in
               // @/lib/shipping/rate-selection so the merged-group quote makes
@@ -1236,7 +1280,13 @@ export async function GET(request: NextRequest) {
 
               if (takeMonday && mondayPick) {
                 selectedRate = mondayPick;
-                if (mondaySel.diagnostic) frozenRateDebug = `mon: ${mondaySel.diagnostic}`;
+                if (liveEngineCtx) liveIceExtra = mondayIceExtra;
+                if (mondaySel.diagnostic)
+                  frozenRateDebug =
+                    `mon: ${mondaySel.diagnostic}` +
+                    (liveEngineCtx && mondayIceExtra > 0
+                      ? ` ${iceMarker(mondayIceExtra)}`
+                      : "");
                 shipDateNote = `Shifted to Mon ${nextMonday}: ${switchReason}`;
               }
             } catch (e) {

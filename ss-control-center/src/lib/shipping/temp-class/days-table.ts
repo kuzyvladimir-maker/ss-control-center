@@ -35,6 +35,8 @@ export interface DaysResult {
   extraIce: number;
   /** Short human trace of which rule produced the number (for the card). */
   reason: string;
+  /** The same, in plain Russian for the owner's card line. */
+  reasonRu?: string;
 }
 
 // ── Route bands (M) ──
@@ -158,22 +160,40 @@ export function allowedDays(args: {
   // FROZEN base resolution.
   let { days, extraIce } = resolveFrozenCell(FROZEN[band][size], size, originMaxC);
   let reason = `frozen ${band.toLowerCase()} M${routeMaxC.toFixed(0)}/A${originMaxC.toFixed(0)} → ${days}d`;
+  const c = (n: number) => `${n.toFixed(0)}°C`;
+  const bandRu =
+    routeMaxC > 20
+      ? "> 20°C"
+      : routeMaxC > 10
+        ? "10–20°C"
+        : routeMaxC > 0
+          ? "0–10°C"
+          : routeMaxC > -5
+            ? "−5…0°C"
+            : "< −5°C";
+  let reasonRu =
+    `по пути ${c(routeMaxC)} (${bandRu})` +
+    (originMaxC > 25 ? `, в Clearwater ${c(originMaxC)} (> 25°C)` : "") +
+    (extraIce > 0 ? `, с доп. льдом +${extraIce}` : "");
 
   // CHILLED: +1 day (cap 5), then the heat overrides.
   if (tempClass === "CHILLED") {
     days = Math.min(days + 1, CHILLED_CAP);
     extraIce = 0;
     reason = `chilled ${band.toLowerCase()} +1 → ${days}d (cap ${CHILLED_CAP})`;
+    reasonRu = `охлаждёнка: +1 день к frozen (по пути до ${c(routeMaxC)})`;
     if (routeMaxC > 20) {
       // Heat: 3 days, only WITH +1 ice. No capacity → fall to 2 days, no ice.
       if (ICE_EXTRA_CAPACITY[size] >= 1) {
         days = 3;
         extraIce = 1;
         reason = `chilled heat M${routeMaxC.toFixed(0)} → 3d with +1 ice`;
+        reasonRu = `охлаждёнка, по пути ${c(routeMaxC)} (> 20°C): 3 дня только с доп. льдом +1`;
       } else {
         days = 2;
         extraIce = 0;
         reason = `chilled heat, ${size} can't take ice → 2d`;
+        reasonRu = `охлаждёнка, по пути ${c(routeMaxC)} (> 20°C), в кулер ${size} доп. лёд не влезает → 2 дня`;
       }
     }
     if (originMaxC > 30 && routeMaxC > 25) {
@@ -181,16 +201,27 @@ export function allowedDays(args: {
       days = 2;
       extraIce = ICE_EXTRA_CAPACITY[size] >= 1 ? 1 : 0;
       reason = `chilled extreme heat A${originMaxC.toFixed(0)}/M${routeMaxC.toFixed(0)} → 2d`;
+      reasonRu = `сильная жара: Clearwater ${c(originMaxC)} (> 30°C) и по пути ${c(routeMaxC)} (> 25°C)`;
     }
   }
 
-  // Hot Clearwater override (FROZEN & CHILLED): origin > 25 °C caps the window.
+  // Hot Clearwater override: origin > 25 °C caps the window. CHILLED gets
+  // its +1 day here too (owner 2026-10-23: "+1 day to every threshold, 3
+  // instead of 2 in summer"); the extreme-heat rule above still yields 2.
   if (originMaxC > 25) {
-    const cap = routeMaxC > 10 ? 2 : 3;
+    const extremeChilled =
+      tempClass === "CHILLED" && originMaxC > 30 && routeMaxC > 25;
+    const cap =
+      (routeMaxC > 10 ? 2 : 3) +
+      (tempClass === "CHILLED" && !extremeChilled ? 1 : 0);
     if (days > cap) {
       days = cap;
       extraIce = 0;
       reason = `hot origin A${originMaxC.toFixed(0)} caps → ${cap}d`;
+      reasonRu =
+        `жарко в Clearwater: ${c(originMaxC)} (> 25°C)` +
+        (routeMaxC > 10 ? ` и по пути ${c(routeMaxC)} (> 10°C)` : "") +
+        (tempClass === "CHILLED" && !extremeChilled ? ", охлаждёнка +1 день" : "");
     }
   }
 
@@ -199,16 +230,18 @@ export function allowedDays(args: {
     days = XS_S_CAP;
     extraIce = 0;
     reason = `${size} cap → ${XS_S_CAP}d`;
+    reasonRu = `кулер ${size}: не больше ${XS_S_CAP} дней`;
   }
 
   // Prior-incident SKU: one day less (min 1).
   if (hasIncident && days > 1) {
     days = days - 1;
     reason = `${reason} · incident −1 → ${days}d`;
+    reasonRu = `${reasonRu}; товар уже подтаивал −1 день`;
   }
 
   // Defence-in-depth: never request more ice than fits.
   if (extraIce > ICE_EXTRA_CAPACITY[size]) extraIce = ICE_EXTRA_CAPACITY[size];
 
-  return { allowedDays: days, extraIce, reason };
+  return { allowedDays: days, extraIce, reason, reasonRu };
 }

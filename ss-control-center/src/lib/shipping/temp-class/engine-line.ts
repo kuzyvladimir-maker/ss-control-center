@@ -42,6 +42,7 @@ export interface EngineLineInput {
     summerPrice?: number | null;
     savingsUsd?: number | null;
     longerTransitPrices?: Array<{ calDays: number; price: number }>;
+    reasonRu?: string;
   } | null;
 }
 
@@ -134,7 +135,8 @@ export function formatEngineLine(input: EngineLineInput): EngineLine | null {
   parts.push(
     s.allowedDays == null || !Number.isFinite(s.allowedDays)
       ? "без лимита дней"
-      : `до ${s.allowedDays} дн. в пути`,
+      : `до ${s.allowedDays} дн. в пути` +
+          (s.reasonRu ? ` (${s.reasonRu})` : ""),
   );
   if (s.pick) {
     const diff = s.savingsUsd;

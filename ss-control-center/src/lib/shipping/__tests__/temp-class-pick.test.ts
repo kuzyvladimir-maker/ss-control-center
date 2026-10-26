@@ -180,3 +180,24 @@ test("buildShadowResult: savings vs summer, ice note, longer-transit prices", ()
   // 4-day price is surfaced (summer never quoted it)
   assert.ok(shadow.longerTransitPrices.some((p) => p.calDays === 4 && p.price === 14));
 });
+
+test("Thu ship, UPS Ground arrives Mon (4 calendar days over the weekend): allowed when the table allows 4", () => {
+  const thu = "2026-10-29";
+  const rates = [
+    rate({ title: "FedEx 2Day", price: 32.61, eddYmd: "2026-10-31" }), // Sat, 2d
+    rate({ title: "UPS Ground", price: 13.18, eddYmd: "2026-11-02" }), // Mon, 4d
+  ];
+  // Cold route (−2°C), Clearwater 20°C, M cooler → table: 4 days.
+  const cold = selectTempAwareRate({
+    rates, tempClass: "FROZEN", size: "M", deliveryBy: "2026-11-05", shipDay: thu,
+    weather: { originMaxC: 20, routeMaxC: -2 },
+  });
+  assert.equal(cold.allowedDays, 4);
+  assert.equal(cold.rate?.title, "UPS Ground"); // the weekend inside the window does not drop it
+  // Warm route (24°C) → table: 2 days → Ground is (correctly) not allowed.
+  const warm = selectTempAwareRate({
+    rates, tempClass: "FROZEN", size: "M", deliveryBy: "2026-11-05", shipDay: thu,
+    weather: { originMaxC: 20, routeMaxC: 24 },
+  });
+  assert.equal(warm.rate?.title, "FedEx 2Day");
+});

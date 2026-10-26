@@ -254,6 +254,7 @@ interface ShadowInfo {
   iceNote: string;
   reason: string;
   noForecast: boolean;
+  reasonRu?: string;
   destCity?: string | null;
   destState?: string | null;
   destMaxC?: number | null;
@@ -5290,8 +5291,21 @@ function OrderRow({
                     className="rounded bg-warn-tint px-1.5 py-px text-[length:var(--ship-date)] font-semibold text-warn-strong"
                     title="Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
                   >
-                    · 📦 Physical {fmtDate(physicalShipDate ?? "")}
+                    · 📦 Ship Day {new Date(`${physicalShipDate ?? ""}T12:00:00`).toLocaleDateString("en-US", { weekday: "short" })}{" "}
+                    {fmtDate(physicalShipDate ?? "")}
                   </span>
+                  {/* Why the engine moved it — straight from the plan note
+                      ("Shifted to Mon YYYY-MM-DD: <reason>"). */}
+                  {(() => {
+                    const why = /Shifted to Mon \S+: ([^|]+)/.exec(
+                      plan.notes ?? "",
+                    )?.[1];
+                    return why ? (
+                      <span className="text-[length:var(--ship-date)] text-warn-strong">
+                        ({why.trim()})
+                      </span>
+                    ) : null;
+                  })()}
                 </>
               );
             })()}

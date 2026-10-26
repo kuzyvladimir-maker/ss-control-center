@@ -40,6 +40,8 @@ export interface ShadowResult {
   longerTransitPrices: Array<{ service: string; price: number; calDays: number; edd: string }>;
   iceNote: string;
   reason: string;
+  /** Why this day limit, in plain Russian (card line). */
+  reasonRu?: string;
   diagnostic: string;
   noForecast: boolean;
   /** Destination shown on the card's engine line (set by the plan route). */
@@ -169,6 +171,7 @@ export function buildShadowResult(args: {
     longerTransitPrices,
     iceNote: iceNoteText(tempClass, size, ice.base, ice.extra),
     reason: sel.reason,
+    reasonRu: sel.reasonRu,
     diagnostic: sel.diagnostic,
     noForecast: sel.noForecast,
   };

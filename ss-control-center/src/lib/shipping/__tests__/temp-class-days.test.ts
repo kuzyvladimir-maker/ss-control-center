@@ -161,3 +161,23 @@ test("no forecast → NaN (caller falls back to summer)", () => {
     ),
   );
 });
+
+test("owner's Uncrustables card: FROZEN M cooler, Clearwater 28°C, route 24°C → 2 days, reason in Russian", () => {
+  const r = allowedDays({ tempClass: "FROZEN", size: "M", weather: { originMaxC: 28, routeMaxC: 24 } });
+  assert.equal(r.allowedDays, 2);
+  // Route above 20°C already gives 2 days; Clearwater 28°C is named too.
+  assert.equal(r.reasonRu, "по пути 24°C (> 20°C), в Clearwater 28°C (> 25°C)");
+});
+
+test("CHILLED keeps its +1 day under a hot Clearwater (3 instead of 2), extreme heat still 2", () => {
+  const warm = allowedDays({ tempClass: "CHILLED", size: "M", weather: { originMaxC: 28, routeMaxC: 18 } });
+  assert.equal(warm.allowedDays, 3);
+  const extreme = allowedDays({ tempClass: "CHILLED", size: "M", weather: { originMaxC: 31, routeMaxC: 26 } });
+  assert.equal(extreme.allowedDays, 2);
+});
+
+test("hot Clearwater is what caps a cool-route frozen order", () => {
+  const r = allowedDays({ tempClass: "FROZEN", size: "M", weather: { originMaxC: 28, routeMaxC: 15 } });
+  assert.equal(r.allowedDays, 2);
+  assert.equal(r.reasonRu, "жарко в Clearwater: 28°C (> 25°C) и по пути 15°C (> 10°C)");
+});
