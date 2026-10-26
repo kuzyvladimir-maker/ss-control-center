@@ -149,3 +149,73 @@ and past the 30 s deadline in production (logged
 
 Old draft plans (never bought) could also be pruned. That would be an
 irreversible delete, so it is only a proposal.
+
+## 15:10 ET: /shipping 504 again — the summary count, fixed without the index
+
+The owner saw `HTTP 504` on `/shipping` with every counter at 0.
+
+**Measured 15:13–15:16 ET.** `/api/shipping/dashboard` took 142 s and 196 s.
+Its own stages were small (`db_stores` 48 ms, `veeqo_orders` 293 ms, probe
+0 ms), and each of its DB queries is an index seek of 50–65 ms (EXPLAIN on
+Turso). The rest was queueing.
+
+The sidebar polls `/api/dashboard/summary` every 60 s from every open tab.
+That fires ~25 queries in one synchronous slice, so they all land on one pool
+client. Among them, the "bought today" count scanned the whole 150k-row
+`ShippingPlanItem` table:
+
+| Query | Time on Turso |
+|---|---|
+| full scan | 70–87 s |
+| previous run | logged `aborted due to timeout` at 30 s |
+
+The scan held its client the whole time, and `/shipping`'s 50 ms queries
+queued behind it.
+
+**Fix without a schema change (bd1ad6449).** Every bought row carries a
+tracking number (bought rows with `trackingNumber IS NULL`: 0), and
+`ShippingPlanItem_trackingNumber_idx` already exists. Adding
+`trackingNumber > ''` moves the planner to `SEARCH … USING INDEX
+ShippingPlanItem_trackingNumber_idx (trackingNumber>?)`. The count drops to
+~0.1 s warm, with 16 s once on a cold cache during the incident. drive-backfill
+got the same filter.
+
+| Call (prod) | Before (15:13) | After (15:29–15:30) |
+|---|---|---|
+| /api/shipping/dashboard | 142 / 196 s | 0.52–0.65 s |
+| /api/dashboard/summary | 500 at 30–31 s | 200, 0.75 s warm (23 s once, cold) |
+| plan, all ready orders | — | 4.3–8.5 s |
+| plan, 2 orders | — | 0.5–2.2 s |
+| pending / alerts | 0.18–1.9 s | 0.18–0.25 s |
+
+The `(status, updatedAt)` index is still not applied. The owner gave a go at
+15:28, but the local Claude Code guard refuses production schema changes.
+It is no longer needed for speed. The lesson stands: on this table any filter
+without an indexed column is a 70 s scan while Turso is degraded.
+
+### Same session: Veeqo 502 on /procurement (c85843cc4)
+
+There was one occurrence in 3 h, at 14:01:42 ET. Two "Bought" clicks on two
+lines of order 2221739393 came 1.5 s apart. Both read the order's notes and
+appended a rewritten `[PROCUREMENT]` block in parallel, and the second got
+Veeqo's gateway 502. The 502 was an HTML page, which ended up in the red
+banner. This was not our rate limit, which Veeqo answers with 429.
+
+What changed:
+
+- The error text drops HTML pages (`Veeqo API error 502: Veeqo is temporarily
+  unavailable, try again`) and caps other bodies at 500 characters.
+- GET backoff is 0.5 / 1.5 / 4.5 s.
+- The notes PUT appends, so it is never blindly re-sent. After a 5xx it
+  re-reads the order and re-sends only when the latest block doesn't already
+  hold the desired state.
+- The card's error banner has a "Try again" button.
+- Actions on lines of one order are queued client-side.
+
+### Same session: NAN "Buy label" grey (e4dfdb47a)
+
+In Shopify mode the button only opens Shopify admin, yet it was gated by the
+Veeqo plan. Whenever the page's plan failed (the 504 above) or hadn't loaded,
+it was grey. It is now gated by a fresh Shopify rate snapshot
+(`NAN_RATES_STALE_MIN` = 30). When it can't be bought, the card says why: no
+snapshot, refresh in flight, or stale with the capture time.
