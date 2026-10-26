@@ -103,6 +103,12 @@ function isMixedOrder(items: Array<{ knownType: string | null }>): boolean {
 export async function GET() {
   try {
     const refreshedAt = new Date().toISOString();
+    // Stage timings (owner 2026-10-26: "/shipping is very slow"): returned in
+    // the Server-Timing header and logged, so slow loads show WHERE they wait.
+    const t0 = Date.now();
+    const timing: Record<string, number> = {};
+    const mark = (k: string, since: number) => (timing[k] = Date.now() - since);
+    const tStores = Date.now();
     const stores = await prisma.store.findMany({
       where: { active: true },
     });
@@ -120,7 +126,10 @@ export async function GET() {
       );
     };
 
+    mark("db_stores", tStores);
+    const tVeeqo = Date.now();
     const veeqoOrders: any[] = await fetchAllOrders("awaiting_fulfillment");
+    mark("veeqo_orders", tVeeqo);
 
     // ── Bulk-fetch the tagged Veeqo products to figure out Frozen/Dry tags
     // without N requests. Dedupe by productId.
@@ -455,7 +464,9 @@ export async function GET() {
 
     // Ensure the Veeqo product-type probe (kicked off above, overlapping the
     // DB + Walmart work) has finished before the loop reads veeqoProductType.
+    const tProbe = Date.now();
     await productProbeDone;
+    mark("veeqo_product_probe_wait", tProbe);
 
     // Manual temperature class per SKU (topic 135). One batch read; the
     // manual class wins over the Veeqo tag on the card, exactly as in the
@@ -780,7 +791,13 @@ export async function GET() {
       a.storeName.localeCompare(b.storeName)
     );
 
+    mark("total", t0);
+    console.log(`[timing] /api/shipping/dashboard ${JSON.stringify(timing)} orders=${orders.length}`);
+    const serverTiming = Object.entries(timing)
+      .map(([k, v]) => `${k};dur=${v}`)
+      .join(", ");
     return NextResponse.json({
+      timing,
       refreshedAt,
       storeBreakdown,
       timeBuckets,
@@ -788,7 +805,7 @@ export async function GET() {
       // Commit the server runs — the page reloads itself when its own bundle
       // is older (see next.config.ts NEXT_PUBLIC_BUILD_SHA).
       buildSha: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
-    });
+    }, { headers: { "Server-Timing": serverTiming } });
   } catch (err) {
     console.error("[api/shipping/dashboard]", err);
     if (isVeeqoAuthError(err)) {

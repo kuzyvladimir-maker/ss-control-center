@@ -171,6 +171,19 @@ export async function GET(request: NextRequest) {
     );
     const isAfterNoon = nowNY.getHours() >= 12;
 
+    // Stage timings (owner 2026-10-26: "/shipping is very slow"): summed per
+    // stage across all orders (parallel work adds up beyond wall time),
+    // returned in debug.timing and logged.
+    const tPlan = Date.now();
+    const tStage: Record<string, number> = {};
+    const timed = async <T,>(k: string, p: Promise<T>): Promise<T> => {
+      const t = Date.now();
+      try {
+        return await p;
+      } finally {
+        tStage[k] = (tStage[k] ?? 0) + (Date.now() - t);
+      }
+    };
     let skuDatabase: SkuRow[] = [];
     // SKU data lives in the internal DB (SkuShippingData) since the
     // 2026-05-12 Google Sheets migration. A non-empty skuLoadError almost
@@ -178,7 +191,7 @@ export async function GET(request: NextRequest) {
     // missing GOOGLE_SHEETS_* env vars (now irrelevant).
     let skuLoadError: string | null = null;
     try {
-      skuDatabase = await fetchSkuDatabase();
+      skuDatabase = await timed("db_sku_database", fetchSkuDatabase());
     } catch (e) {
       skuLoadError = e instanceof Error ? e.message : String(e);
       console.error("Failed to fetch SKU database:", e);
@@ -190,7 +203,7 @@ export async function GET(request: NextRequest) {
     const rateProfile: RateProfile = await getRateProfile(prisma);
     const tempEngineOn = rateProfile !== "summer";
 
-    const orders = await fetchAllOrders();
+    const orders = await timed("veeqo_orders", fetchAllOrders());
 
     // Pull pending FrozenRiskAlert rows for every order we're about to
     // quote, keyed by Veeqo order number — selectBestRate uses the
@@ -979,21 +992,21 @@ export async function GET(request: NextRequest) {
           let shipDayProjected = false;
           if (useNewRateApi) {
             if (effectiveShipDay > today) {
-              const resp = await getRatesForLaterShipDay(
+              const resp = await timed("veeqo_rates", getRatesForLaterShipDay(
                 order,
                 effectiveShipDay,
                 today,
                 newApiParcel,
-              );
+              ));
               rates = resp.available as unknown as VeeqoRate[];
               shipDayProjected = !resp.anchorHonored;
               if (shipDayProjected) quoteAnchorDay = resp.quoteAnchorYmd;
             } else {
-              const resp = await getRatesForShipDate(
+              const resp = await timed("veeqo_rates", getRatesForShipDate(
                 order,
                 `${effectiveShipDay}T16:00:00Z`,
                 newApiParcel,
-              );
+              ));
               rates = resp.available as unknown as VeeqoRate[];
             }
           } else {
@@ -1097,7 +1110,7 @@ export async function GET(request: NextRequest) {
             const destZip = pickDestZip(order);
             if (coolerSize && destZip) {
               try {
-                const weather = await getRouteWeather(destZip, effectiveShipDay);
+                const weather = await timed("weather", getRouteWeather(destZip, effectiveShipDay));
                 shadow = {
                   ...buildShadowResult({
                     rates,
@@ -1217,13 +1230,13 @@ export async function GET(request: NextRequest) {
               // the "Monday" EDDs are really "shipped today" and transit from
               // Monday comes out absurdly short (Ground Saver FL→WA "1 day").
               // Never auto-shift on a projected quote — ship today instead.
-              const mondayResp = await getRatesForLaterShipDay(
+              const mondayResp = await timed("veeqo_rates_monday", getRatesForLaterShipDay(
                 order,
                 nextMonday,
                 effectiveShipDay,
                 newApiParcel,
                 shipDayProjected ? undefined : (rates as never),
-              );
+              ));
               if (!mondayResp.anchorHonored) {
                 throw new Error(
                   "Veeqo ignored the Monday ship date — no honest Monday EDDs, shipping today",
@@ -1236,10 +1249,10 @@ export async function GET(request: NextRequest) {
               let mondaySel: { rate: VeeqoRate | null; diagnostic: string | null };
               let mondayIceExtra = 0;
               if (liveEngineCtx) {
-                const monWeather = await getRouteWeather(
+                const monWeather = await timed("weather", getRouteWeather(
                   liveEngineCtx.destZip,
                   nextMonday,
-                );
+                ));
                 const ms = selectTempAwareRate({
                   rates: mondayRates,
                   tempClass: liveEngineCtx.tempClass,
@@ -1590,7 +1603,10 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    const timing = { ...tStage, total: Date.now() - tPlan };
+    console.log(`[timing] /api/shipping/plan ${JSON.stringify(timing)} orders=${plan.items.length}`);
     return NextResponse.json({
+      timing,
       planId: plan.id,
       date: today,
       dispatchDate: dispatchTarget,

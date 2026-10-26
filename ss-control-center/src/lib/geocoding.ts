@@ -11,6 +11,7 @@ export async function zipToCoords(zip: string): Promise<GeoResult | null> {
   try {
     const res = await fetch(`https://api.zippopotam.us/us/${zip}`, {
       next: { revalidate: 86400 }, // cache 24h
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return null;
 

@@ -39,7 +39,7 @@ export async function geocodeFallback(
   if (!/^\d{5}$/.test(cleaned)) return null;
   try {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${cleaned}&country=US&count=1`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const data = (await res.json()) as {
       results?: Array<{
@@ -63,6 +63,16 @@ export async function geocodeFallback(
   }
 }
 
+// ZIP → place barely changes; keep answers (and misses) in memory so a plan
+// pass doesn't re-ask the geocoders for every order every time.
+const zipCache = new Map<string, { at: number; v: ZipLocation | null }>();
+const ZIP_TTL_MS = 12 * 60 * 60 * 1000;
+
 export async function resolveZip(zip: string): Promise<ZipLocation | null> {
-  return (await lookupZip(zip)) ?? (await geocodeFallback(zip));
+  const key = zip.trim().slice(0, 5);
+  const hit = zipCache.get(key);
+  if (hit && Date.now() - hit.at < ZIP_TTL_MS) return hit.v;
+  const v = (await lookupZip(zip)) ?? (await geocodeFallback(zip));
+  zipCache.set(key, { at: Date.now(), v });
+  return v;
 }

@@ -66,7 +66,10 @@ export async function fetchForecast(
   url.searchParams.set("start_date", startDate);
   url.searchParams.set("end_date", endDate);
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    // Never let a slow weather API hold a shipping plan open (2026-10-26).
+    signal: AbortSignal.timeout(6000),
+  });
   if (!res.ok) throw new Error(`Open-Meteo forecast failed: ${res.status}`);
   const data = (await res.json()) as {
     daily?: {
@@ -108,7 +111,10 @@ export async function fetchClimateNormals(
   url.searchParams.set("temperature_unit", "fahrenheit");
 
   try {
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), {
+    // Never let a slow weather API hold a shipping plan open (2026-10-26).
+    signal: AbortSignal.timeout(6000),
+  });
     if (!res.ok) {
       console.warn(`[frozen-v2] climate normals unavailable: ${res.status}`);
       return [];

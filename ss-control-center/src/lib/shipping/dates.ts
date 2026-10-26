@@ -138,6 +138,7 @@ export function computeLabelDate(shipByYMD: string): string {
 // Shipment hit against Walmart's metrics).
 export function effectiveBusinessDay(ymd: string): string {
   const d = new Date(`${ymd}T12:00:00`);
+  if (Number.isNaN(d.getTime())) throw new Error(`effectiveBusinessDay: bad date "${ymd}"`);
   while (!isBusinessDay(d)) {
     d.setDate(d.getDate() + 1);
   }
@@ -151,6 +152,9 @@ export function effectiveBusinessDay(ymd: string): string {
 // within 3 calendar days.
 export function nextMondayFrom(ymd: string): string {
   const d = new Date(`${ymd}T12:00:00`);
+  // An invalid date would spin the loops below forever and freeze the whole
+  // function instance — fail loudly instead.
+  if (Number.isNaN(d.getTime())) throw new Error(`nextMondayFrom: bad date "${ymd}"`);
   do {
     d.setDate(d.getDate() + 1);
   } while (d.getDay() !== 1);
@@ -190,7 +194,8 @@ export function pickupGapBusinessDays(baseYmd: string, laterYmd: string): number
   if (to <= from) return 0;
   const d = new Date(`${from}T12:00:00`);
   let n = 0;
-  while (ymdFromDate(d) < to) {
+  // Bounded: a ship day is never more than a few weeks out.
+  for (let guard = 0; ymdFromDate(d) < to && guard < 400; guard++) {
     d.setDate(d.getDate() + 1);
     if (isBusinessDay(d)) n++;
   }
