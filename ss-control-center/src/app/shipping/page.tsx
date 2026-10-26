@@ -5144,6 +5144,25 @@ function OrderRow({
     : null;
   const [engineDetailsOpen, setEngineDetailsOpen] = useState(false);
   const nanAge = snapshotAge(nanSnapshot?.capturedAt ?? null);
+  // NAN in Shopify mode is bought in Shopify admin, so the Veeqo plan must not
+  // gate its Buy button — a fresh Shopify rate snapshot does. The button was
+  // grey whenever the Veeqo plan for the page failed or hadn't loaded (owner,
+  // 2026-10-26). null = buyable; otherwise the reason, shown as the tooltip.
+  const nanBuyBlock: string | null = !nanMode
+    ? null
+    : !nanRate || !nanSnapshot?.capturedAt
+      ? nanSnapshot?.refreshRequestedAt
+        ? "Shopify rates are being refreshed — usually within ~2 min."
+        : "No Shopify rates for this order yet — click the carrier and press Refresh rates."
+      : nanAge.stale
+        ? `Shopify rates are stale (captured ${new Date(
+            nanSnapshot.capturedAt,
+          ).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: "America/New_York",
+          })} ET) — click the carrier and press Refresh rates.`
+        : null;
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -6006,7 +6025,17 @@ function OrderRow({
 
       {isReady && !inGroup && !wmBought && !wmShipped && (
         <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
-          {planStop && rateOverride ? (
+          {nanMode ? (
+            nanBuyBlock ? (
+              <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong">
+                {nanBuyBlock}
+              </span>
+            ) : (
+              <span className="text-[length:var(--ship-badge)] text-ink-3">
+                Shopify rate ready — buy it in Shopify admin
+              </span>
+            )
+          ) : planStop && rateOverride ? (
             // Algorithm stopped this order (e.g. no rate meets the deadline),
             // but the operator manually picked a rate — let them buy it and
             // just warn that it may ship late. The override is the operator
@@ -6057,13 +6086,18 @@ function OrderRow({
             onClick={onBuy}
             disabled={
               buying ||
-              // Buyable when the algorithm has a pending rate, OR the operator
-              // manually overrode a stopped order (buy their pick anyway).
-              !(planPending || (planStop && rateOverride)) ||
-              !!walmartStatus?.labelLookupFailed
+              (nanMode
+                ? !!nanBuyBlock
+                : // Buyable when the algorithm has a pending rate, OR the
+                  // operator manually overrode a stopped order (buy their
+                  // pick anyway).
+                  !(planPending || (planStop && rateOverride)) ||
+                  !!walmartStatus?.labelLookupFailed)
             }
             title={
-              walmartStatus?.labelLookupFailed
+              nanMode
+                ? (nanBuyBlock ?? "Opens this order in Shopify admin — buy the label there.")
+                : walmartStatus?.labelLookupFailed
                 ? `Can't verify if a label was already bought (${walmartStatus.labelLookupError ?? "Walmart lookup failed"}). Re-quote before buying to avoid a double charge.`
                 : planStop && rateOverride
                   ? "Buy your manually-picked rate even though no rate meets the deadline (may ship late)."
