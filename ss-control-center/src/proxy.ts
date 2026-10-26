@@ -2,6 +2,10 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
+import {
+  isNanRatesSecretValid,
+  NAN_RATES_SECRET_HEADER,
+} from "@/lib/shipping/nan-rates-auth";
 import { parseAccessCookie } from "@/lib/rbac/access-cookie";
 import {
   canAccessModule,
@@ -41,6 +45,19 @@ export function proxy(request: NextRequest) {
       }
     }
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // NAN Health rates collector (server-side, Jackie): a dedicated shared
+  // secret for exactly two calls — posting snapshots and reading the refresh
+  // queue. Any other path, or a wrong secret, falls through to the normal
+  // session/token checks below.
+  if (
+    (pathname === "/api/shipping/nan-rates" && request.method === "POST") ||
+    (pathname === "/api/shipping/nan-rates/pending" && request.method === "GET")
+  ) {
+    if (isNanRatesSecretValid(request.headers.get(NAN_RATES_SECRET_HEADER))) {
+      return NextResponse.next();
+    }
   }
 
   // ── 1. API key auth (Authorization: Bearer SSCC_API_TOKEN) ──────────

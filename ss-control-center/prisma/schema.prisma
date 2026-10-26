@@ -192,6 +192,24 @@ model ShippingRateSnapshot {
   @@index([orderNumber])
 }
 
+// Live NAN Health (Shopify) rates — the LATEST snapshot per order, posted by
+// the collector (scripts/nan_rates_collector.py on the server) that reads the
+// Shopify admin "Buy shipping label" page through the iMac Chrome session (no
+// purchase). refreshRequestedAt = the owner pressed "Обновить"; the collector
+// polls GET /api/shipping/nan-rates/pending and clears it by posting a newer
+// snapshot. Supersedes ShippingRateSnapshot (kept, unused).
+model NanRateSnapshot {
+  id                 String    @id @default(cuid())
+  orderNumber        String    @unique // without "#", e.g. "1374"
+  shopifyOrderId     String?
+  capturedAt         DateTime?
+  destJson           String? // {city,state,country}
+  packageJson        String? // {l,w,h,unit,weight_lb}
+  ratesJson          String    @default("[]") // [{carrier,service,price,eta,cheapest,fastest}]
+  refreshRequestedAt DateTime?
+  updatedAt          DateTime  @updatedAt
+}
+
 // ── Merge Orders ────────────────────────────────────────────────────────
 //
 // Two orders going to the SAME address can ship in one box on one label.

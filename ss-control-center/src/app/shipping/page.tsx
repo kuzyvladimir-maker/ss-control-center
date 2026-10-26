@@ -49,7 +49,12 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
-import { normOrderNumber } from "@/lib/shipping/rate-snapshot";
+import {
+  NAN_CARRIERS,
+  nanAdminOrderUrl,
+  normOrderNumber,
+  snapshotAge,
+} from "@/lib/shipping/nan-rates";
 import {
   formatEngineLine,
   tempTone,
@@ -276,14 +281,22 @@ interface PlanResponse {
  * rate-limited re-quote left the cell reading "Set weight/size" again, which
  * is indistinguishable from "my Save did nothing".
  */
-// Admin-UI rate snapshot for a NAN Health order (see /api/shipping/rate-snapshots).
+// Latest NAN Health (Shopify) rates for an order (see /api/shipping/nan-rates).
 interface RateSnapshotView {
   orderNumber: string;
-  capturedAt: string;
-  dest: string | null;
-  pkg: string | null;
-  source: string | null;
-  rates: Array<{ carrier: string; service: string; price: number; transit: string }>;
+  shopifyOrderId: string | null;
+  capturedAt: string | null;
+  refreshRequestedAt: string | null;
+  dest: { city?: string; state?: string; country?: string } | null;
+  pkg: Record<string, unknown> | null;
+  rates: Array<{
+    carrier: string;
+    service: string;
+    price: number;
+    eta: string;
+    cheapest: boolean;
+    fastest: boolean;
+  }>;
 }
 
 interface SavedPackage {
@@ -1387,7 +1400,7 @@ export default function ShippingLabelsPage() {
         .map((o) => normOrderNumber(o.orderNumber));
       if (nanNums.length > 0) {
         void fetch(
-          `/api/shipping/rate-snapshots?orders=${encodeURIComponent(nanNums.join(","))}`,
+          `/api/shipping/nan-rates?orders=${encodeURIComponent(nanNums.join(","))}`,
         )
           .then((r) => (r.ok ? r.json() : null))
           .then((j) => {
@@ -3379,7 +3392,37 @@ export default function ShippingLabelsPage() {
       onToggleSelected={() => toggleOne(o.orderId)}
       onClassify={() => setClassifyModal(o)}
       onManual={() => setManualModal(o)}
+      isNan={/nan/i.test(`${o.channel ?? ""} ${o.storeName ?? ""}`)}
       rateSnapshot={rateSnapshots[normOrderNumber(o.orderNumber)] ?? null}
+      onRefreshNanRates={async () => {
+        const num = normOrderNumber(o.orderNumber);
+        const prev = rateSnapshots[num];
+        const res = await fetch("/api/shipping/nan-rates/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order: o.orderNumber,
+            shopifyOrderId: prev?.shopifyOrderId ?? undefined,
+          }),
+        }).catch(() => null);
+        const j = res && res.ok ? await res.json() : null;
+        if (j?.refreshRequestedAt) {
+          setRateSnapshots((p) => ({
+            ...p,
+            [num]: {
+              ...(p[num] ?? {
+                orderNumber: num,
+                shopifyOrderId: null,
+                capturedAt: null,
+                dest: null,
+                pkg: null,
+                rates: [],
+              }),
+              refreshRequestedAt: j.refreshRequestedAt,
+            },
+          }));
+        }
+      }}
       onSetTempClass={async (cls: string) => {
         const sku = o.items[0]?.sku;
         if (!sku) return;
@@ -4878,6 +4921,8 @@ function OrderRow({
   onManual,
   onSetTempClass,
   rateSnapshot,
+  isNan,
+  onRefreshNanRates,
   onPacking,
   onSku,
   onEditPackage,
@@ -4930,6 +4975,8 @@ function OrderRow({
   // (topic 135). null when the engine is off.
   onSetTempClass: ((cls: string) => void) | null;
   rateSnapshot: RateSnapshotView | null;
+  isNan: boolean;
+  onRefreshNanRates: () => void;
   onPacking: () => void;
   onSku: () => void;
   onEditPackage: () => void;
@@ -5003,6 +5050,7 @@ function OrderRow({
     : null;
   const [engineDetailsOpen, setEngineDetailsOpen] = useState(false);
   const [snapshotOpen, setSnapshotOpen] = useState(false);
+  const [nanCarrier, setNanCarrier] = useState<string>("all");
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -5728,51 +5776,96 @@ function OrderRow({
         </div>
       )}
 
-      {/* NAN Health (Shopify) rates — read from the Shopify admin "Buy label"
-          page by a browser session (Shopify's API won't list them and can't
-          buy FedEx). Reference only: the owner buys these in Shopify. */}
-      {rateSnapshot && rateSnapshot.rates.length > 0 && (
-        <div className="mt-2 ml-6 rounded-md border border-rule bg-surface px-2.5 py-1.5 text-[length:var(--ship-badge)]">
-          <div className="flex flex-wrap items-baseline gap-x-2 text-ink-2">
-            <span className="font-semibold text-ink">Тарифы Shopify</span>
-            <span className="text-ink-3">
-              снимок {rateSnapshot.capturedAt}
-              {rateSnapshot.pkg ? ` · ${rateSnapshot.pkg}` : ""} · покупка
-              вручную в Shopify
-            </span>
-          </div>
-          <div className="mt-1 grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2">
-            {(snapshotOpen
-              ? rateSnapshot.rates
-              : rateSnapshot.rates.slice(0, 6)
-            ).map((r, i) => (
-              <div
-                key={`${r.carrier}-${r.service}-${i}`}
-                className={`flex justify-between gap-2 tabular-nums ${
-                  i === 0 ? "font-semibold text-green-ink" : "text-ink-2"
-                }`}
-              >
-                <span className="truncate">
-                  {r.carrier} {r.service}
-                  {r.transit ? (
-                    <span className="text-ink-3"> · {r.transit}</span>
-                  ) : null}
+      {/* NAN Health (Shopify) rates — the latest snapshot the server-side
+          collector read from the Shopify admin "Buy label" page (Shopify's API
+          won't list rates or buy FedEx). "Обновить" queues a re-read; the
+          owner buys in Shopify — nothing here buys anything. */}
+      {isNan && (() => {
+        const snap = rateSnapshot;
+        const age = snapshotAge(snap?.capturedAt ?? null);
+        const rates = (snap?.rates ?? []).filter(
+          (r) => nanCarrier === "all" || r.carrier === nanCarrier,
+        );
+        const carriers = NAN_CARRIERS.filter((c) =>
+          (snap?.rates ?? []).some((r) => r.carrier === c),
+        );
+        return (
+          <div className="mt-2 ml-6 rounded-md border border-rule bg-surface px-2.5 py-1.5 text-[length:var(--ship-badge)]">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-semibold text-ink">Тарифы</span>
+              <span className={age.stale ? "text-ink-3" : "text-ink-2"}>
+                {snap?.capturedAt ? `снимок ${age.text}` : age.text}
+                {snap?.capturedAt && age.stale ? " · устарел" : ""}
+              </span>
+              {snap?.refreshRequestedAt && (
+                <span className="text-ink-3">· обновление запрошено</span>
+              )}
+              {carriers.length > 1 && (
+                <span className="ml-1 inline-flex overflow-hidden rounded border border-rule">
+                  {(["all", ...carriers] as const).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setNanCarrier(c)}
+                      className={`px-1.5 py-px ${
+                        nanCarrier === c ? "bg-ink text-white" : "text-ink-2 hover:bg-bg-elev"
+                      }`}
+                    >
+                      {c === "all" ? "Все" : c}
+                    </button>
+                  ))}
                 </span>
-                <span>${r.price.toFixed(2)}</span>
+              )}
+              <span className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onRefreshNanRates}
+                  className="rounded border border-rule px-2 py-px text-ink-2 hover:bg-bg-elev"
+                >
+                  Обновить
+                </button>
+                <a
+                  href={nanAdminOrderUrl(snap?.shopifyOrderId, order.orderNumber)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded bg-ink px-2 py-px font-medium text-white hover:opacity-90"
+                >
+                  Купить в Shopify
+                </a>
+              </span>
+            </div>
+            {rates.length > 0 && (
+              <div className={`mt-1 grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2 ${age.stale ? "opacity-60" : ""}`}>
+                {(snapshotOpen ? rates : rates.slice(0, 6)).map((r, i) => (
+                  <div
+                    key={`${r.carrier}-${r.service}-${i}`}
+                    className={`flex justify-between gap-2 tabular-nums ${
+                      r.cheapest ? "font-semibold text-green-ink" : "text-ink-2"
+                    }`}
+                  >
+                    <span className="truncate">
+                      {r.carrier} {r.service}
+                      {r.eta ? <span className="text-ink-3"> · {r.eta}</span> : null}
+                      {r.cheapest ? <span className="ml-1 text-green-ink">· дешевле всех</span> : null}
+                      {r.fastest ? <span className="ml-1 text-[#0071dc]">· быстрее всех</span> : null}
+                    </span>
+                    <span>${r.price.toFixed(2)}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+            {rates.length > 6 && (
+              <button
+                type="button"
+                onClick={() => setSnapshotOpen((v) => !v)}
+                className="mt-0.5 text-ink-3 underline hover:text-ink"
+              >
+                {snapshotOpen ? "скрыть" : `все ${rates.length}`}
+              </button>
+            )}
           </div>
-          {rateSnapshot.rates.length > 6 && (
-            <button
-              type="button"
-              onClick={() => setSnapshotOpen((v) => !v)}
-              className="mt-0.5 text-ink-3 underline hover:text-ink"
-            >
-              {snapshotOpen ? "скрыть" : `все ${rateSnapshot.rates.length}`}
-            </button>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* Action area per state */}
       {isAttn && (
