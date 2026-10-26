@@ -100,7 +100,7 @@ def to_lb(value, unit):
     return value
 
 
-def build_body(template, order):
+def build_body(template, order, override=None):
     b = copy.deepcopy(template)
     sh = b["variables"]["shippingLabels"][0]["shipment"]
     a = order.get("shippingAddress") or {}
@@ -116,6 +116,12 @@ def build_body(template, order):
         grams = 0
     goods_lb = grams / 453.592 if grams else 0
     sh["package"]["weight"] = round(goods_lb + PACKAGE_LB, 2) if goods_lb else sh["package"]["weight"]
+    if override:
+        # The box/weight the owner set on the card's Package tile wins.
+        sh["package"]["length"] = override["l"]
+        sh["package"]["width"] = override["w"]
+        sh["package"]["height"] = override["h"]
+        sh["package"]["weight"] = override["weight_lb"]
     sh["shippingDate"] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     tmpl_items = sh.get("customsLineItems") or []
     if (a.get("countryCodeV2") or "US") == "US":
@@ -193,8 +199,9 @@ def main():
     if os.path.exists(INGEST_ENV):
         secret_hdr["x-nan-rates-secret"] = env(INGEST_ENV).get("NAN_RATES_INGEST_SECRET", "")
     only = None
+    _, p = http_json(f"{CC}/api/shipping/nan-rates/pending", headers=secret_hdr)
+    overrides = p.get("packages") or {}
     if "--pending" in sys.argv:
-        _, p = http_json(f"{CC}/api/shipping/nan-rates/pending", headers=secret_hdr)
         only = {x["order_name"].lstrip("#") for x in p.get("pending", [])}
         if not only:
             return
@@ -206,7 +213,9 @@ def main():
     payload = {"captured_at": captured, "orders": []}
     for o in orders:
         try:
-            rates = fetch_rates(url, headers, build_body(template, o))
+            ov = overrides.get(o["name"].lstrip("#"))
+            body = build_body(template, o, ov)
+            rates = fetch_rates(url, headers, body)
         except SessionExpired as e:
             alert_once(
                 "⚠️ Тарифы NAN: сессия админки Shopify NAN истекла "
@@ -217,8 +226,13 @@ def main():
         payload["orders"].append({
             "order_name": o["name"], "shopify_order_id": o["legacyResourceId"],
             "dest": {"city": a.get("city"), "state": a.get("provinceCode"), "country": a.get("countryCodeV2")},
-            "package": {"l": 12, "w": 10, "h": 6, "in": True,
-                        "weight_lb": build_body(template, o)["variables"]["shippingLabels"][0]["shipment"]["package"]["weight"]},
+            "package": {
+                "l": body["variables"]["shippingLabels"][0]["shipment"]["package"]["length"],
+                "w": body["variables"]["shippingLabels"][0]["shipment"]["package"]["width"],
+                "h": body["variables"]["shippingLabels"][0]["shipment"]["package"]["height"],
+                "in": True,
+                "weight_lb": body["variables"]["shippingLabels"][0]["shipment"]["package"]["weight"],
+            },
             "rates": rates,
         })
     if os.path.exists(ALERT_FLAG):

@@ -29,3 +29,13 @@ await client.execute(
 );
 console.log("✓ NanRateSnapshot ready");
 client.close();
+// 2026-10-26: package override from the card's Package tile.
+{
+  const cols = await createClient({ url, authToken }).execute(`PRAGMA table_info("NanRateSnapshot")`);
+  if (!cols.rows.some((r) => r.name === "packageOverrideJson")) {
+    const c2 = createClient({ url, authToken });
+    await c2.execute(`ALTER TABLE "NanRateSnapshot" ADD COLUMN "packageOverrideJson" TEXT`);
+    console.log("+ packageOverrideJson");
+    c2.close();
+  }
+}

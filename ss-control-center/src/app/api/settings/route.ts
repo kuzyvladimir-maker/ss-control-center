@@ -7,6 +7,9 @@ const ALLOWED_SETTINGS_KEYS = new Set([
   "ai_primary_provider",
   "ai_claude_model",
   "ai_openai_model",
+  // NAN Health (Shopify) orders: allow buying labels through Veeqo. Off by
+  // default — NAN labels are bought in Shopify (owner, 2026-10-26).
+  "nan_buy_via_veeqo",
 ]);
 
 // GET /api/settings?keys=cogs_percent,replacement_label_cost

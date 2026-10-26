@@ -207,6 +207,9 @@ model NanRateSnapshot {
   packageJson        String? // {l,w,h,unit,weight_lb}
   ratesJson          String    @default("[]") // [{carrier,service,price,eta,cheapest,fastest}]
   refreshRequestedAt DateTime?
+  // Package the owner set on the card ({l,w,h,weight_lb}); the collector
+  // quotes Shopify with it instead of the default box.
+  packageOverrideJson String?
   updatedAt          DateTime  @updatedAt
 }
 

@@ -273,7 +273,25 @@ export async function POST(request: NextRequest) {
     // shared sinks below (`results.bought` / `results.errors`) are plain array
     // pushes on a single-threaded runtime, so there is no cross-order state to
     // race on. The one-POST-per-order, no-retry rule is untouched.
+    // NAN Health (Shopify) labels are bought in Shopify by default — Veeqo's
+    // rates for these orders don't match Shopify's (owner, 2026-10-26). The
+    // Veeqo buy is allowed only when Settings → "Allow buying NAN Health
+    // labels through Veeqo" is on.
+    const nanViaVeeqo =
+      (
+        await prisma.setting.findUnique({ where: { key: "nan_buy_via_veeqo" } })
+      )?.value === "true";
+
     await mapPool(itemsToBuy, BUY_CONCURRENCY, async (rawItem) => {
+      if (/nan/i.test(rawItem.channel ?? "") && !nanViaVeeqo) {
+        results.errors.push({
+          orderNumber: rawItem.orderNumber,
+          error:
+            "NAN Health order — labels are bought in Shopify. Turn on Settings → \"Allow buying NAN Health labels through Veeqo\" to buy it through Veeqo.",
+          itemId: rawItem.id,
+        });
+        return;
+      }
       // Hard guard: never buy a Walmart-channel order through Veeqo unless the
       // operator explicitly opted in via the Walmart buy-source toggle. The UI
       // already routes Walmart→Walmart by default; this is the server-side

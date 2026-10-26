@@ -804,6 +804,64 @@ function SpApiStoresPanel() {
 }
 
 // ---------------------------------------------------------------------------
+// NAN Health buy source
+// ---------------------------------------------------------------------------
+// NAN Health (Shopify) labels are bought in Shopify by default — Veeqo's rates
+// for these orders don't match Shopify's. This switch re-enables the Veeqo buy
+// for NAN orders (Setting nan_buy_via_veeqo = "true").
+function NanBuySourcePanel() {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/settings?keys=nan_buy_via_veeqo")
+      .then((r) => r.json())
+      .then((d) => setEnabled((d.values || {}).nan_buy_via_veeqo === "true"))
+      .catch(() => setEnabled(false));
+  }, []);
+  const toggle = async () => {
+    if (enabled === null) return;
+    const next = !enabled;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values: { nan_buy_via_veeqo: next ? "true" : "false" } }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setEnabled(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <Card>
+      <CardContent className="space-y-2 pt-6">
+        <div className="text-sm font-semibold">NAN Health — label purchase</div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={enabled === true}
+            disabled={enabled === null || saving}
+            onChange={toggle}
+          />
+          Allow buying NAN Health labels through Veeqo
+        </label>
+        <p className="text-xs text-muted-foreground">
+          Off (default): NAN orders show Shopify rates and are bought in
+          Shopify. On: the Veeqo buy is allowed for NAN orders too.
+        </p>
+        {error && <p className="text-xs text-red-600">{error}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Loss calculation settings panel
 // ---------------------------------------------------------------------------
 // Reads and writes two values from the Setting table that the losses endpoint
@@ -2144,6 +2202,8 @@ export default function SettingsPage() {
         </div>
 
         <LossSettingsPanel />
+
+        <NanBuySourcePanel />
 
         <TelegramRoutingPanel />
 

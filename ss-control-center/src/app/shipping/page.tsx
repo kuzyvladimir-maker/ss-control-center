@@ -1036,6 +1036,84 @@ export default function ShippingLabelsPage() {
   const [rateSnapshots, setRateSnapshots] = useState<
     Record<string, RateSnapshotView>
   >({});
+  // NAN Health labels are bought in Shopify unless Settings allows Veeqo
+  // (owner, 2026-10-26). null = not loaded yet → treated as "Shopify".
+  const [nanViaVeeqo, setNanViaVeeqo] = useState<boolean | null>(null);
+  useEffect(() => {
+    fetch("/api/settings?keys=nan_buy_via_veeqo")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setNanViaVeeqo(d?.values?.nan_buy_via_veeqo === "true"))
+      .catch(() => setNanViaVeeqo(false));
+  }, []);
+  // Shopify rate the operator picked per NAN order (index into the snapshot's
+  // rates); default = the cheapest one.
+  const [nanChoice, setNanChoice] = useState<Record<string, number>>({});
+  const [nanPicker, setNanPicker] = useState<DashboardOrder | null>(null);
+  const isNanOrder = useCallback(
+    (o: { channel?: string | null; storeName?: string | null }) =>
+      /nan/i.test(`${o.channel ?? ""} ${o.storeName ?? ""}`),
+    [],
+  );
+  // NAN order in "Shopify" mode → its label is bought in Shopify, not Veeqo.
+  const nanShopifyMode = useCallback(
+    (o: { channel?: string | null; storeName?: string | null }) =>
+      isNanOrder(o) && nanViaVeeqo !== true,
+    [isNanOrder, nanViaVeeqo],
+  );
+  const nanRateFor = useCallback(
+    (orderNumber: string) => {
+      const snap = rateSnapshots[normOrderNumber(orderNumber)];
+      if (!snap || snap.rates.length === 0) return null;
+      const i = nanChoice[normOrderNumber(orderNumber)];
+      if (i != null && snap.rates[i]) return snap.rates[i];
+      return snap.rates.find((r) => r.cheapest) ?? snap.rates[0];
+    },
+    [rateSnapshots, nanChoice],
+  );
+  const requestNanRefresh = useCallback(
+    async (
+      o: DashboardOrder,
+      pkg?: { l: number; w: number; h: number; weight_lb: number },
+    ) => {
+      const num = normOrderNumber(o.orderNumber);
+      const res = await fetch("/api/shipping/nan-rates/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order: o.orderNumber,
+          shopifyOrderId: rateSnapshots[num]?.shopifyOrderId ?? undefined,
+          package: pkg,
+        }),
+      }).catch(() => null);
+      const j = res && res.ok ? await res.json() : null;
+      if (!j?.refreshRequestedAt) return;
+      setRateSnapshots((p) => ({
+        ...p,
+        [num]: {
+          ...(p[num] ?? {
+            orderNumber: num,
+            shopifyOrderId: null,
+            capturedAt: null,
+            dest: null,
+            pkg: null,
+            rates: [],
+          }),
+          refreshRequestedAt: j.refreshRequestedAt,
+        },
+      }));
+      // The collector picks the request up within ~2 min; re-read then.
+      setTimeout(() => {
+        void fetch(`/api/shipping/nan-rates?orders=${num}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d?.snapshots?.[num])
+              setRateSnapshots((p) => ({ ...p, [num]: d.snapshots[num] }));
+          })
+          .catch(() => {});
+      }, 150_000);
+    },
+    [rateSnapshots],
+  );
 
   // Rate-shop ONE Walmart order through Walmart's API at a given ship date and
   // fold the result into the walmartRates / walmartBuyInfo / walmartStatus
@@ -2322,6 +2400,8 @@ export default function ShippingLabelsPage() {
             // bulk-buy target). Mutually exclusive sets so the same checkbox
             // column does both jobs cleanly.
             if (viewScope === "awaiting") return isAwaitingShipConfirm(o);
+            // NAN in Shopify mode is bought in Shopify — never in a Veeqo bulk buy.
+            if (nanShopifyMode(o)) return false;
             return o.state === "ready_to_buy";
           })
           .map((o) => o.orderId)
@@ -2332,6 +2412,7 @@ export default function ShippingLabelsPage() {
       isAwaitingShipConfirm,
       mergeMode,
       mergeCandidateIds,
+      nanShopifyMode,
     ]
   );
 
@@ -3392,37 +3473,10 @@ export default function ShippingLabelsPage() {
       onToggleSelected={() => toggleOne(o.orderId)}
       onClassify={() => setClassifyModal(o)}
       onManual={() => setManualModal(o)}
-      isNan={/nan/i.test(`${o.channel ?? ""} ${o.storeName ?? ""}`)}
-      rateSnapshot={rateSnapshots[normOrderNumber(o.orderNumber)] ?? null}
-      onRefreshNanRates={async () => {
-        const num = normOrderNumber(o.orderNumber);
-        const prev = rateSnapshots[num];
-        const res = await fetch("/api/shipping/nan-rates/refresh", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            order: o.orderNumber,
-            shopifyOrderId: prev?.shopifyOrderId ?? undefined,
-          }),
-        }).catch(() => null);
-        const j = res && res.ok ? await res.json() : null;
-        if (j?.refreshRequestedAt) {
-          setRateSnapshots((p) => ({
-            ...p,
-            [num]: {
-              ...(p[num] ?? {
-                orderNumber: num,
-                shopifyOrderId: null,
-                capturedAt: null,
-                dest: null,
-                pkg: null,
-                rates: [],
-              }),
-              refreshRequestedAt: j.refreshRequestedAt,
-            },
-          }));
-        }
-      }}
+      nanMode={nanShopifyMode(o)}
+      nanRate={nanShopifyMode(o) ? nanRateFor(o.orderNumber) : null}
+      nanSnapshot={rateSnapshots[normOrderNumber(o.orderNumber)] ?? null}
+      onPickNanRate={() => setNanPicker(o)}
       onSetTempClass={async (cls: string) => {
         const sku = o.items[0]?.sku;
         if (!sku) return;
@@ -3472,7 +3526,21 @@ export default function ShippingLabelsPage() {
           return next;
         });
       }}
-      onBuy={() => buyOne(o)}
+      onBuy={() => {
+        // NAN in Shopify mode: the label is bought in Shopify admin.
+        if (nanShopifyMode(o)) {
+          window.open(
+            nanAdminOrderUrl(
+              rateSnapshots[normOrderNumber(o.orderNumber)]?.shopifyOrderId,
+              o.orderNumber,
+            ),
+            "_blank",
+            "noopener",
+          );
+          return;
+        }
+        void buyOne(o);
+      }}
     />
   );
 
@@ -4334,6 +4402,15 @@ export default function ShippingLabelsPage() {
             const ord = editPackageModal;
             const num = ord.orderNumber;
             setEditPackageModal(null);
+            // NAN in Shopify mode: re-quote Shopify with the new box/weight.
+            if (refresh && saved && nanShopifyMode(ord)) {
+              void requestNanRefresh(ord, {
+                l: saved.length,
+                w: saved.width,
+                h: saved.height,
+                weight_lb: saved.weight,
+              });
+            }
             if (refresh) {
               // Weight/box changed → re-quote ONLY this order, not the whole
               // list. The new dims were persisted to the catalog by
@@ -4359,6 +4436,19 @@ export default function ShippingLabelsPage() {
               }
             }
           }}
+        />
+      )}
+      {nanPicker && (
+        <NanShopifyRateDialog
+          order={nanPicker}
+          snapshot={rateSnapshots[normOrderNumber(nanPicker.orderNumber)] ?? null}
+          chosen={nanRateFor(nanPicker.orderNumber)}
+          onPick={(i) => {
+            setNanChoice((p) => ({ ...p, [normOrderNumber(nanPicker.orderNumber)]: i }));
+            setNanPicker(null);
+          }}
+          onRefresh={() => void requestNanRefresh(nanPicker)}
+          onClose={() => setNanPicker(null)}
         />
       )}
       {pickRateModal && pickRateModal.isWalmart && (
@@ -4920,9 +5010,10 @@ function OrderRow({
   onClassify,
   onManual,
   onSetTempClass,
-  rateSnapshot,
-  isNan,
-  onRefreshNanRates,
+  nanMode,
+  nanRate,
+  nanSnapshot,
+  onPickNanRate,
   onPacking,
   onSku,
   onEditPackage,
@@ -4974,9 +5065,12 @@ function OrderRow({
   // Set the temperature class (FROZEN/CHILLED/DRY) for this order's first SKU
   // (topic 135). null when the engine is off.
   onSetTempClass: ((cls: string) => void) | null;
-  rateSnapshot: RateSnapshotView | null;
-  isNan: boolean;
-  onRefreshNanRates: () => void;
+  // NAN Health in "Shopify" mode: Label cost / Carrier show the Shopify rate,
+  // Carrier opens the Shopify rate picker, Buy label opens Shopify admin.
+  nanMode: boolean;
+  nanRate: RateSnapshotView["rates"][number] | null;
+  nanSnapshot: RateSnapshotView | null;
+  onPickNanRate: () => void;
   onPacking: () => void;
   onSku: () => void;
   onEditPackage: () => void;
@@ -5049,8 +5143,7 @@ function OrderRow({
       })
     : null;
   const [engineDetailsOpen, setEngineDetailsOpen] = useState(false);
-  const [snapshotOpen, setSnapshotOpen] = useState(false);
-  const [nanCarrier, setNanCarrier] = useState<string>("all");
+  const nanAge = snapshotAge(nanSnapshot?.capturedAt ?? null);
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -5063,7 +5156,9 @@ function OrderRow({
   // algorithm's pick. Without this the Carrier cell showed the operator's
   // chosen rate while Label cost kept displaying the old algorithmic price —
   // they looked inconsistent. Both the displayed cost and the margin use it.
-  const effectivePrice = rateOverride?.price ?? plan?.price ?? null;
+  const effectivePrice = nanMode
+    ? (nanRate?.price ?? null)
+    : (rateOverride?.price ?? plan?.price ?? null);
 
   // Margin sanity: customer paid X for shipping, label costs Y. Positive
   // margin = we made money on shipping; negative = we ate the difference.
@@ -5573,6 +5668,8 @@ function OrderRow({
                   <Loader2 size={12} className="animate-spin" />
                   <span className="text-[length:var(--ship-badge)] font-normal">recalculating…</span>
                 </span>
+              ) : nanMode ? (
+                effectivePrice != null ? fmt$(effectivePrice) : "—"
               ) : planLoading && !plan ? (
                 "loading…"
               ) : effectivePrice != null ? (
@@ -5604,9 +5701,15 @@ function OrderRow({
           // bought rows still display the captured carrier as before.
           <button
             type="button"
-            onClick={isReady ? onPickRate : undefined}
+            onClick={isReady ? (nanMode ? onPickNanRate : onPickRate) : undefined}
             disabled={!isReady}
-            title={isReady ? "Click to change carrier/service manually" : ""}
+            title={
+              isReady
+                ? nanMode
+                  ? "Shopify rates — click to choose the carrier"
+                  : "Click to change carrier/service manually"
+                : ""
+            }
             className={cn(
               "rounded px-2 py-1.5 text-left transition-colors",
               rateOverride
@@ -5631,7 +5734,15 @@ function OrderRow({
                 rateOverride ? "text-green-ink" : "text-ink",
               )}
             >
-              {isRequoting ? (
+              {nanMode ? (
+                nanRate ? (
+                  `${nanRate.carrier} ${nanRate.service}`
+                ) : nanSnapshot?.refreshRequestedAt ? (
+                  "Shopify: updating…"
+                ) : (
+                  "no Shopify rates yet"
+                )
+              ) : isRequoting ? (
                 <span className="inline-flex items-center gap-1 text-ink-3">
                   <Loader2 size={12} className="animate-spin" />
                   <span className="text-[length:var(--ship-badge)] font-normal">re-quoting…</span>
@@ -5651,6 +5762,14 @@ function OrderRow({
             <div className="flex items-center justify-between gap-1 text-[length:var(--ship-sub)] text-ink-3">
               <span>
                 {(() => {
+                  if (nanMode) {
+                    // Shopify quotes days in transit, not a date.
+                    return nanRate
+                      ? `${nanRate.eta ? `${nanRate.eta} · ` : ""}Shopify · ${nanAge.text}${nanAge.stale ? " · stale" : ""}`
+                      : nanSnapshot?.capturedAt
+                        ? `Shopify · ${nanAge.text}`
+                        : "";
+                  }
                   const edd = rateOverride?.edd ?? plan?.edd ?? null;
                   // Transit time in calendar days, anchored to the day the
                   // rate selector actually measured transit from — i.e.
@@ -5727,7 +5846,7 @@ function OrderRow({
           When the engine didn't run, the same line says why. Replaces the
           long blue rule paragraph and the multi-line "New logic (shadow)"
           block nobody read. */}
-      {engineLine && (
+      {engineLine && engineLine.mode !== "dry" && (
         <div
           className={`mt-2 ml-6 rounded-md px-2.5 py-1.5 text-[length:var(--ship-row)] ${
             engineLine.mode === "rules"
@@ -5775,97 +5894,6 @@ function OrderRow({
           )}
         </div>
       )}
-
-      {/* NAN Health (Shopify) rates — the latest snapshot the server-side
-          collector read from the Shopify admin "Buy label" page (Shopify's API
-          won't list rates or buy FedEx). "Обновить" queues a re-read; the
-          owner buys in Shopify — nothing here buys anything. */}
-      {isNan && (() => {
-        const snap = rateSnapshot;
-        const age = snapshotAge(snap?.capturedAt ?? null);
-        const rates = (snap?.rates ?? []).filter(
-          (r) => nanCarrier === "all" || r.carrier === nanCarrier,
-        );
-        const carriers = NAN_CARRIERS.filter((c) =>
-          (snap?.rates ?? []).some((r) => r.carrier === c),
-        );
-        return (
-          <div className="mt-2 ml-6 rounded-md border border-rule bg-surface px-2.5 py-1.5 text-[length:var(--ship-badge)]">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="font-semibold text-ink">Тарифы</span>
-              <span className={age.stale ? "text-ink-3" : "text-ink-2"}>
-                {snap?.capturedAt ? `снимок ${age.text}` : age.text}
-                {snap?.capturedAt && age.stale ? " · устарел" : ""}
-              </span>
-              {snap?.refreshRequestedAt && (
-                <span className="text-ink-3">· обновление запрошено</span>
-              )}
-              {carriers.length > 1 && (
-                <span className="ml-1 inline-flex overflow-hidden rounded border border-rule">
-                  {(["all", ...carriers] as const).map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setNanCarrier(c)}
-                      className={`px-1.5 py-px ${
-                        nanCarrier === c ? "bg-ink text-white" : "text-ink-2 hover:bg-bg-elev"
-                      }`}
-                    >
-                      {c === "all" ? "Все" : c}
-                    </button>
-                  ))}
-                </span>
-              )}
-              <span className="ml-auto flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={onRefreshNanRates}
-                  className="rounded border border-rule px-2 py-px text-ink-2 hover:bg-bg-elev"
-                >
-                  Обновить
-                </button>
-                <a
-                  href={nanAdminOrderUrl(snap?.shopifyOrderId, order.orderNumber)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded bg-ink px-2 py-px font-medium text-white hover:opacity-90"
-                >
-                  Купить в Shopify
-                </a>
-              </span>
-            </div>
-            {rates.length > 0 && (
-              <div className={`mt-1 grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2 ${age.stale ? "opacity-60" : ""}`}>
-                {(snapshotOpen ? rates : rates.slice(0, 6)).map((r, i) => (
-                  <div
-                    key={`${r.carrier}-${r.service}-${i}`}
-                    className={`flex justify-between gap-2 tabular-nums ${
-                      r.cheapest ? "font-semibold text-green-ink" : "text-ink-2"
-                    }`}
-                  >
-                    <span className="truncate">
-                      {r.carrier} {r.service}
-                      {r.eta ? <span className="text-ink-3"> · {r.eta}</span> : null}
-                      {r.cheapest ? <span className="ml-1 text-green-ink">· дешевле всех</span> : null}
-                      {r.fastest ? <span className="ml-1 text-[#0071dc]">· быстрее всех</span> : null}
-                    </span>
-                    <span>${r.price.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {rates.length > 6 && (
-              <button
-                type="button"
-                onClick={() => setSnapshotOpen((v) => !v)}
-                className="mt-0.5 text-ink-3 underline hover:text-ink"
-              >
-                {snapshotOpen ? "скрыть" : `все ${rates.length}`}
-              </button>
-            )}
-          </div>
-        );
-      })()}
 
       {/* Action area per state */}
       {isAttn && (
@@ -8219,6 +8247,103 @@ interface WalmartRateLite {
   amount: number | null;
   deliveryDate: string | null;
   deliveryPromiseFulfilled?: boolean;
+}
+
+// Shopify rates for a NAN Health order (the server-side collector reads them
+// from Shopify admin). Picking one sets Label cost / Carrier on the card; the
+// label itself is bought in Shopify.
+function NanShopifyRateDialog({
+  order,
+  snapshot,
+  chosen,
+  onPick,
+  onRefresh,
+  onClose,
+}: {
+  order: DashboardOrder;
+  snapshot: RateSnapshotView | null;
+  chosen: RateSnapshotView["rates"][number] | null;
+  onPick: (index: number) => void;
+  onRefresh: () => void;
+  onClose: () => void;
+}) {
+  const [carrier, setCarrier] = useState<string>("all");
+  const age = snapshotAge(snapshot?.capturedAt ?? null);
+  const rates = (snapshot?.rates ?? [])
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => carrier === "all" || r.carrier === carrier);
+  const carriers = NAN_CARRIERS.filter((c) =>
+    (snapshot?.rates ?? []).some((r) => r.carrier === c),
+  );
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>Shopify rates · {order.orderNumber}</DialogTitle>
+          <DialogDescription>
+            {snapshot?.capturedAt
+              ? `Quoted by Shopify ${age.text}${age.stale ? " · stale" : ""}`
+              : "No Shopify quote yet"}
+            {snapshot?.refreshRequestedAt ? " · refresh requested" : ""}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-wrap items-center gap-2 text-[12px]">
+          {carriers.length > 1 && (
+            <span className="inline-flex overflow-hidden rounded border border-rule">
+              {(["all", ...carriers] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCarrier(c)}
+                  className={`px-2 py-0.5 ${carrier === c ? "bg-ink text-white" : "text-ink-2 hover:bg-bg-elev"}`}
+                >
+                  {c === "all" ? "All" : c}
+                </button>
+              ))}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="ml-auto rounded border border-rule px-2 py-0.5 text-ink-2 hover:bg-bg-elev"
+          >
+            Refresh rates
+          </button>
+        </div>
+        <div className="max-h-[50vh] space-y-1 overflow-y-auto">
+          {rates.length === 0 ? (
+            <div className="py-6 text-center text-[12px] text-ink-3">
+              No rates — press Refresh rates; Shopify answers within ~2 min.
+            </div>
+          ) : (
+            rates.map(({ r, i }) => {
+              const isChosen = chosen === r;
+              return (
+                <button
+                  key={`${r.carrier}-${r.service}-${i}`}
+                  type="button"
+                  onClick={() => onPick(i)}
+                  className={`flex w-full items-center justify-between gap-3 rounded border px-3 py-2 text-left text-[12.5px] ${
+                    isChosen ? "border-[#0071dc] bg-[#0071dc]/5" : "border-rule hover:bg-bg-elev"
+                  }`}
+                >
+                  <span>
+                    <span className="font-medium text-ink">
+                      {r.carrier} {r.service}
+                    </span>
+                    {r.eta ? <span className="text-ink-3"> · {r.eta}</span> : null}
+                    {r.cheapest ? <span className="ml-1 text-green-ink">· cheapest</span> : null}
+                    {r.fastest ? <span className="ml-1 text-[#0071dc]">· fastest</span> : null}
+                  </span>
+                  <span className="font-semibold tabular-nums text-ink">${r.price.toFixed(2)}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function WalmartPickRateDialog({
