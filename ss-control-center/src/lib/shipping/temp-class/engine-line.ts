@@ -55,6 +55,28 @@ export interface EngineLine {
   mode: "rules" | "summer" | "dry" | "off";
   /** Folded "подробнее" lines. */
   details: string[];
+  /** Temperature (°C) that colours the line; absent when not weather-based. */
+  toneC?: number | null;
+}
+
+/**
+ * Background/foreground for the engine line by temperature (owner 2026-10-26):
+ * a gradient from dark blue (frost) through light blue to light/dark red
+ * (heat), so a glance shows whether the cold season has arrived.
+ */
+export function tempTone(c: number | null | undefined): { bg: string; fg: string } {
+  if (c == null || !Number.isFinite(c)) return { bg: "#eef0f3", fg: "#1f2328" };
+  if (c <= -10) return { bg: "#1e3a8a", fg: "#ffffff" }; // deep frost
+  if (c <= -5) return { bg: "#1d4ed8", fg: "#ffffff" };
+  if (c <= 0) return { bg: "#3b82f6", fg: "#ffffff" };
+  if (c <= 5) return { bg: "#93c5fd", fg: "#0b1f44" };
+  if (c <= 10) return { bg: "#bfdbfe", fg: "#0b1f44" };
+  if (c <= 15) return { bg: "#dbeafe", fg: "#0b1f44" }; // cool
+  if (c <= 20) return { bg: "#f1f5f9", fg: "#1f2328" }; // mild
+  if (c <= 24) return { bg: "#fee2e2", fg: "#5c0b0b" }; // warm
+  if (c <= 28) return { bg: "#fca5a5", fg: "#4a0606" };
+  if (c <= 32) return { bg: "#ef4444", fg: "#ffffff" }; // hot
+  return { bg: "#991b1b", fg: "#ffffff" }; // extreme heat
 }
 
 const deg = (c: number | null | undefined) =>
@@ -122,30 +144,26 @@ export function formatEngineLine(input: EngineLineInput): EngineLine | null {
     };
   }
 
-  // Owner format (2026-10-26), one short line, no explanations in brackets:
-  //   Clearwater 28°C при отправке → Lodi, CA 23°C при доставке · Chilled ·
-  //   макс. 4 дн. · тариф: UPS Ground Saver $13.98, 4 дн.
+  // Owner format (2026-10-26): temperatures and the day limit only — the
+  // carrier/price/days already sit in the Carrier box right above.
+  //   Clearwater 28°C → Loveland, CO 20°C · Chilled · макс. 4 дн.
   const place =
     [s.destCity, s.destState].filter(Boolean).join(", ") || "получатель";
   const parts = [
-    `Clearwater ${deg(s.originMaxC)} при отправке → ${place} ${deg(s.destMaxC)} при доставке`,
+    `Clearwater ${deg(s.originMaxC)} → ${place} ${deg(s.destMaxC)}`,
     label(cls),
     s.allowedDays == null || !Number.isFinite(s.allowedDays)
       ? "без лимита дней"
       : `макс. ${s.allowedDays} дн.`,
   ];
   // Live: the rate actually chosen for purchase. Shadow: what the engine
-  // WOULD buy (the purchase still goes by summer).
+  // WOULD buy — kept for the details only.
   const live = (input.rateProfile ?? "") === "live";
   const chosen = live && input.selected ? input.selected : s.pick ?? null;
-  if (chosen) {
-    parts.push(
-      `${live ? "тариф" : "движок выбрал бы"}: ${chosen.service ?? "?"} ${money(chosen.price)}, ${chosen.calDays} дн.`,
-    );
-  } else {
-    parts.push("нет тарифа в лимите — летний выбор");
+  if (!live && s.pick) {
+    // Shadow: the purchase goes by summer, so say what the engine would buy.
+    parts.push(`движок выбрал бы ${s.pick.calDays} дн. за ${money(s.pick.price)}`);
   }
-
   const details: string[] = [];
   if (s.reasonRu) details.push(`Почему ${s.allowedDays} дн.: ${s.reasonRu}`);
   if (
@@ -179,5 +197,8 @@ export function formatEngineLine(input: EngineLineInput): EngineLine | null {
           .join(" · "),
     );
   }
-  return { text: parts.join(" · "), mode: "rules", details };
+  // Tone follows the warmest point the engine decided on (route incl.
+  // destination), falling back to the destination.
+  const toneC = s.routeMaxC ?? s.destMaxC ?? null;
+  return { text: parts.join(" · "), mode: "rules", details, toneC };
 }

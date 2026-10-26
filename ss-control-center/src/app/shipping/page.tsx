@@ -51,6 +51,7 @@ import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
 import {
   formatEngineLine,
+  tempTone,
   type EngineSkipReason,
 } from "@/lib/shipping/temp-class/engine-line";
 
@@ -5645,9 +5646,23 @@ function OrderRow({
           block nobody read. */}
       {engineLine && (
         <div
-          className={`mt-2 ml-6 text-[length:var(--ship-row)] ${
-            engineLine.mode === "summer" ? "text-warn-strong" : "text-ink"
+          className={`mt-2 ml-6 rounded-md px-2.5 py-1.5 text-[length:var(--ship-row)] ${
+            engineLine.mode === "rules"
+              ? ""
+              : engineLine.mode === "summer"
+                ? "bg-warn-tint text-warn-strong"
+                : "bg-bg-elev text-ink-2"
           }`}
+          // Weather-based line: fill by temperature — dark blue in frost …
+          // dark red in heat (owner 2026-10-26).
+          style={
+            engineLine.mode === "rules"
+              ? {
+                  background: tempTone(engineLine.toneC).bg,
+                  color: tempTone(engineLine.toneC).fg,
+                }
+              : undefined
+          }
         >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-semibold tabular-nums">{engineLine.text}</span>
@@ -5668,7 +5683,7 @@ function OrderRow({
             )}
           </div>
           {engineDetailsOpen && engineLine.details.length > 0 && (
-            <div className="mt-1 space-y-0.5 text-[length:var(--ship-badge)] text-ink-3">
+            <div className="mt-1 space-y-0.5 text-[length:var(--ship-badge)] opacity-90">
               {engineLine.details.map((d) => (
                 <div key={d}>{d}</div>
               ))}
