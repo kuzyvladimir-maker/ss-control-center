@@ -219,3 +219,51 @@ Veeqo plan. Whenever the page's plan failed (the 504 above) or hadn't loaded,
 it was grey. It is now gated by a fresh Shopify rate snapshot
 (`NAN_RATES_STALE_MIN` = 30). When it can't be bought, the card says why: no
 snapshot, refresh in flight, or stale with the capture time.
+
+## 15:30–16:05 ET: the remaining 10+ s (Jackie measured 16.3 s)
+
+All stages are now marked in `Server-Timing` (f19634756, 3f9101541):
+`/api/shipping/dashboard` per DB stage, `/api/dashboard/summary` per batch.
+
+**/shipping list (`/api/shipping/dashboard`).** It takes 0.5–1.7 s. The
+outliers were Veeqo's own order list once at 8.4 s, and DB stages queued
+behind the summary (next point).
+
+**Summary.** Its ~29 reads ran in one `Promise.all`, which is one slice, so
+they all landed on one pool client. Several of them are full scans:
+
+| Read | Cold time |
+|---|---|
+| `WalmartPerformanceSnapshot` | 6.5 s |
+| `FrozenRiskAlert` | 5.4 s |
+| `SyncLog` | 3.9 s |
+| `ShippingAdjustment` | 1.9–3.7 s |
+| "bought today" via the trackingNumber index | 29 s cold (0.1 s warm) |
+
+"Bought today" is slow cold because it still fetches ~2.5k fat rows to check
+`status`/`updatedAt`. Serially the summary took 25–65 s cold and held that
+client the whole time.
+
+Fix (9ce15a7e4):
+
+- `prismaReports` is a separate set of 4 clients, rotated per property access
+  so independent reads spread.
+- The summary is stale-while-revalidate per instance: fresh 30 s, max stale
+  10 min, single-flight rebuild via `after()`.
+
+Locally a cold build took 13.8 s instead of 34–65 s, and a repeat 1 ms. The
+`(status, updatedAt)` index would make "bought today" index-only. It is still
+not applied: the guard refused it again.
+
+**Plan (prices).** It took 11–15 s with 17 ready orders: 5 concurrent orders,
+one Veeqo quote each. Two changes:
+
+- 7 of the 17 were NAN in Shopify mode. The page no longer asks Veeqo for
+  them (50492f53a).
+- With 10 orders it is still 8.4–13.7 s. Veeqo's rate quote alone takes
+  1.9–4.5 s per order right now, measured one order at a time.
+
+Concurrency stays 5. Veeqo answered 429 fifty times between 08:00 and 10:00
+ET, and each order also PUTs its package (not retried). The quote POST is now
+retried on 429/5xx like a GET (`readOnlyPost`, a42324cf3); nothing else that
+POSTs is.
