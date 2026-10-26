@@ -69,3 +69,18 @@ test("a non-transient PUT error is thrown at once", async () => {
   await assert.rejects(putNotesOnce("1", {}, desired), /Veeqo API error 422: \{"error":"bad"\}/);
   assert.equal(calls.length, 1);
 });
+
+test("a read-only POST (rate quote) is retried; any other POST is not", async () => {
+  let calls = mockFetch((_c, n) =>
+    n === 1 ? new Response(HTML, { status: 429 }) : Response.json({ quotes: [] }),
+  );
+  assert.deepEqual(
+    await veeqoFetch("/shipping/api/v1/rates", { method: "POST", body: "{}" }, { readOnlyPost: true }),
+    { quotes: [] },
+  );
+  assert.equal(calls.length, 2);
+
+  calls = mockFetch(() => new Response(HTML, { status: 502 }));
+  await assert.rejects(veeqoFetch("/shipping/shipments", { method: "POST", body: "{}" }), /502/);
+  assert.equal(calls.length, 1);
+});

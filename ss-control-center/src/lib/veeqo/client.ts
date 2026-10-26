@@ -49,14 +49,23 @@ export function isVeeqoAuthError(e: unknown): boolean {
   );
 }
 
-export async function veeqoFetch(path: string, options?: RequestInit) {
+export async function veeqoFetch(
+  path: string,
+  options?: RequestInit,
+  // A POST that only READS (the rate quote) may opt in to retries. Never pass
+  // this for anything that buys, writes or appends.
+  opts?: { readOnlyPost?: boolean },
+) {
   // Only RETRY idempotent reads. GET/HEAD can be safely re-sent; a POST to
   // /shipping/shipments (label purchase) MUST NOT be — a transient error there
   // might mean "label already bought", so re-sending could buy a SECOND label.
   // PUTs (dispatch date / allocation package) are technically idempotent but we
   // keep the conservative GET/HEAD-only rule so the buy POST is never in scope.
   const method = (options?.method || "GET").toUpperCase();
-  const canRetry = method === "GET" || method === "HEAD";
+  const canRetry =
+    method === "GET" ||
+    method === "HEAD" ||
+    (method === "POST" && opts?.readOnlyPost === true);
   const maxAttempts = canRetry ? VEEQO_MAX_ATTEMPTS : 1;
 
   let lastErr: unknown = null;
@@ -404,10 +413,13 @@ export async function getRatesForShipDate(
     include_unavailable_quotes: false,
   };
 
-  const resp = await veeqoFetch(`/shipping/api/v1/rates`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  // A quote buys nothing, so a 429/5xx is retried like a GET — the plan
+  // quotes up to 10 orders at once and Veeqo throttles bursts.
+  const resp = await veeqoFetch(
+    `/shipping/api/v1/rates`,
+    { method: "POST", body: JSON.stringify(body) },
+    { readOnlyPost: true },
+  );
 
   const quotes: unknown[] = resp?.quotes ?? resp?.rates ?? resp?.available ?? [];
   const available = (Array.isArray(quotes) ? quotes : []).map((q) =>
