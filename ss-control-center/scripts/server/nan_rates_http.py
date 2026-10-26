@@ -14,6 +14,7 @@ Read-only: it never buys a label.
 import copy
 import datetime
 import json
+import time
 import os
 import subprocess
 import sys
@@ -40,11 +41,26 @@ def env(path):
     return d
 
 
-def http_json(url, body=None, headers=None, method=None, timeout=40):
+def http_json(url, body=None, headers=None, method=None, timeout=90):
     data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, headers=headers or {}, method=method or ("POST" if data else "GET"))
+    req = urllib.request.Request(url, data=data, headers={"User-Agent": "curl/8.5.0", "Content-Type": "application/json", **(headers or {})}, method=method or ("POST" if data else "GET"))
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, json.load(r)
+
+
+def cc_json(url, body=None, headers=None):
+    """Command Center call with patience: its API is sometimes slow on a cold
+    start (seen 46–90 s). Up to 3 tries, 150 s each. Safe to repeat: GET is a
+    read, and the snapshot POST is an upsert where an older capture never
+    overwrites a newer one."""
+    last = None
+    for attempt in range(3):
+        try:
+            return http_json(url, body, headers, timeout=150)
+        except Exception as e:  # timeout / transient network
+            last = e
+            time.sleep(5 * (attempt + 1))
+    raise last
 
 
 # ── Shopify Admin API (official, app credentials): open orders ──
@@ -199,15 +215,28 @@ def main():
     if os.path.exists(INGEST_ENV):
         secret_hdr["x-nan-rates-secret"] = env(INGEST_ENV).get("NAN_RATES_INGEST_SECRET", "")
     only = None
-    _, p = http_json(f"{CC}/api/shipping/nan-rates/pending", headers=secret_hdr)
+    _, p = cc_json(f"{CC}/api/shipping/nan-rates/pending", headers=secret_hdr)
     overrides = p.get("packages") or {}
     if "--pending" in sys.argv:
         only = {x["order_name"].lstrip("#") for x in p.get("pending", [])}
+    all_open = open_orders(env(APP_ENV))
+    seen_f = f"{WS}/data/nan_seen_orders.json"
+    seen = set(json.load(open(seen_f))) if os.path.exists(seen_f) else None
+    names = {o["name"].lstrip("#") for o in all_open}
+    if seen is None:
+        json.dump(sorted(names), open(seen_f, "w"))
+        seen = names
+    if only is not None:
+        only |= names - seen
         if not only:
             return
-    orders = [o for o in open_orders(env(APP_ENV)) if only is None or o["name"].lstrip("#") in only]
+    orders = [o for o in all_open if only is None or o["name"].lstrip("#") in only]
     if not orders:
         return
+    r = subprocess.run(["xvfb-run", "-a", "python3", f"{WS}/scripts/nan_csrf_harvest.py"], capture_output=True, text=True, timeout=150)
+    if "REFRESH_OK" not in r.stdout:
+        alert_once("⚠️ Тарифы NAN: не удалось обновить CSRF/сессию админки (вход на MacBook протух или SOCKS-прокси лежит). Нужен новый вход в NAN.")
+        raise SystemExit("REFRESH_FAILED")
     url, headers, template = load_session()
     captured = datetime.datetime.now(datetime.timezone.utc).isoformat()
     payload = {"captured_at": captured, "orders": []}
@@ -237,10 +266,12 @@ def main():
         })
     if os.path.exists(ALERT_FLAG):
         os.remove(ALERT_FLAG)  # session works again
+    if not dry:
+        json.dump(sorted(names), open(seen_f, "w"))
     if dry:
         print(json.dumps(payload, ensure_ascii=False)[:3000])
         return
-    st, res = http_json(f"{CC}/api/shipping/nan-rates", payload, secret_hdr)
+    st, res = cc_json(f"{CC}/api/shipping/nan-rates", payload, secret_hdr)
     print(datetime.datetime.now().isoformat(), "POST", st, res.get("saved"))
 
 
