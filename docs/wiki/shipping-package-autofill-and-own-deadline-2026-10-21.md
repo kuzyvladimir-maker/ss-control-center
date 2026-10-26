@@ -89,3 +89,34 @@ date, 2Day doesn't land on a Saturday, so the "(Saturday)" variant wasn't in the
   error names the reason and up to 3 closest live options.
 
 Test: `requote-match.test.ts`.
+
+## 5. FedEx 2Day from Monday showed "EDD 10/29 · 3 days" instead of 10/28 (2026-10-25)
+
+Orders 111-0144634-8326602, 111-9725021-4213819 and 112-5846764-0961066 were
+planned on Sunday 10/25 for shipping Monday 10/26.
+
+**How the Monday quote is checked.** For a later ship day,
+`getRatesForLaterShipDay` (`src/lib/veeqo/client.ts`) compares the "ship
+today" quote with the quote for that later day. If no EDD moved, it decides
+Veeqo ignored `preferred_shipment_date` and projects every EDD forward by the
+gap between the two days. The rule came from the 2026-10-06 incident and is
+kept.
+
+**What went wrong.** Carriers don't pick up on Sunday, so the Sunday quote
+already counted transit from Monday. Both quotes therefore gave the correct
+10/28. The gap was measured in calendar days (Sun→Mon = 1), so the identical
+dates were read as "ignored" and every EDD was pushed one day, to 10/29 ·
+3 days.
+
+**Fix.**
+- `pickupGapBusinessDays` measures the gap in carrier pickup days. Sat→Mon and
+  Sun→Mon give 0, so identical EDDs stand.
+- When the gap is real, `addBusinessDaysYmd` shifts EDDs by business days.
+- Both functions are in `src/lib/shipping/dates.ts`; tests are in
+  `pickup-gap.test.ts`.
+
+**Result.** After re-planning on production, all three orders show FedEx 2Day
+One Rate, EDD 10/28 · 2 days, at the same prices.
+
+The "N days" on the card is our own calculation: EDD minus
+`plan.actualShipDay`, in `page.tsx`. It was right; only the EDD was wrong.
