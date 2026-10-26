@@ -475,9 +475,9 @@ export async function GET(request: NextRequest) {
         // Check local override first (set via "Set Frozen/Dry" button)
         let localOverride: string | null = null;
         if (productId) {
-          const override = await prisma.productTypeOverride.findUnique({
+          const override = await timed("db_type_override", prisma.productTypeOverride.findUnique({
             where: { productId },
-          });
+          }));
           if (override) localOverride = override.type;
         }
 
@@ -486,7 +486,7 @@ export async function GET(request: NextRequest) {
         } else {
           try {
             if (productId) {
-              const product = await getProduct(productId);
+              const product = await timed("veeqo_product", getProduct(productId));
               const tagNames = (product.tags || []).map(
                 (t: { name?: string } | string) =>
                   (typeof t === "string" ? t : t.name || "").toLowerCase()
@@ -560,10 +560,10 @@ export async function GET(request: NextRequest) {
           ];
           const legacyByProduct = new Map<number, string>();
           if (ids.length > 0) {
-            const rows = await prisma.productTypeOverride.findMany({
+            const rows = await timed("db_type_override", prisma.productTypeOverride.findMany({
               where: { productId: { in: ids } },
               select: { productId: true, type: true },
-            });
+            }));
             for (const r of rows) legacyByProduct.set(r.productId, r.type);
           }
           const classInput = await Promise.all(
@@ -573,7 +573,7 @@ export async function GET(request: NextRequest) {
               let tags: string[] = i === 0 ? firstLineTags : [];
               if (i > 0 && !legacy && pid != null && !isWalmart) {
                 try {
-                  const p = await getProduct(pid);
+                  const p = await timed("veeqo_product", getProduct(pid));
                   tags = (p.tags || []).map((t: { name?: string } | string) =>
                     (typeof t === "string" ? t : t.name || "").toLowerCase(),
                   );
@@ -588,9 +588,9 @@ export async function GET(request: NextRequest) {
               };
             }),
           );
-          const oc = await resolveOrderClass(prisma as never, classInput, {
+          const oc = await timed("temp_class", resolveOrderClass(prisma as never, classInput, {
             isWalmart,
-          });
+          }));
           tempClass = oc.tempClass;
           // "default" = some line had no class at all → the card says
           // "type unknown → treated as Frozen" (owner, 2026-10-23).
@@ -696,13 +696,13 @@ export async function GET(request: NextRequest) {
 
       if (requiresPackingProfile(orderLines)) {
         const signature = buildPackingSignature(orderLines);
-        const profile = await prisma.packingProfile.findUnique({
+        const profile = await timed("db_packing", prisma.packingProfile.findUnique({
           where: { signature },
-        });
+        }));
         // No profile yet → reuse the box/weight of a label we already
         // bought for this exact composition (see package-history.ts), and
         // save it as the profile so the next order doesn't need the lookup.
-        const shipped = profile ? null : await shippedPackageFor();
+        const shipped = profile ? null : await timed("db_package_history", shippedPackageFor());
         if (!profile && shipped) {
           skuWeight = shipped.weight;
           skuBoxSize = shipped.boxSize;
@@ -736,7 +736,7 @@ export async function GET(request: NextRequest) {
         // so the SKU is complete from now on. Amazon only: other channels
         // quote from the package already set in Veeqo.
         if (!stopReason && isAmazon && !skuData?.hasCompleteData) {
-          const shipped = await shippedPackageFor();
+          const shipped = await timed("db_package_history", shippedPackageFor());
           const dims = shipped ? resolveBoxDimensions(shipped.boxSize) : null;
           if (shipped && dims) {
             skuData = {
@@ -844,7 +844,7 @@ export async function GET(request: NextRequest) {
       // original error to surface as before.
       if (!isWalmart && allocationId && order.deliver_to?.id) {
         try {
-          const fixed = await normalizeShipToName(order);
+          const fixed = await timed("veeqo_ship_to_fix", normalizeShipToName(order));
           if (fixed)
             console.log(
               `[plan] ${order.number} ShipTo normalized (name="${order.deliver_to.first_name} ${order.deliver_to.last_name}", company="${order.deliver_to.company ?? ""}")`,
@@ -928,12 +928,12 @@ export async function GET(request: NextRequest) {
         const dims = resolveBoxDimensions(skuBoxSize);
         if (dims) {
           try {
-            await updateAllocationPackage(allocationId, {
+            await timed("veeqo_package_put", updateAllocationPackage(allocationId, {
               weightLbs: skuWeight,
               lengthIn: dims.length,
               widthIn: dims.width,
               heightIn: dims.height,
-            });
+            }));
             console.log(
               `[plan] ${order.number} allocation_package pushed: ${dims.length}x${dims.width}x${dims.height} ${skuWeight}lbs`,
             );
@@ -1512,10 +1512,10 @@ export async function GET(request: NextRequest) {
       .map((i) => i.orderNumber)
       .filter((n): n is string => !!n);
     if (orderNumbersForPlan.length > 0) {
-      const boughtRecords = await prisma.shippingPlanItem.findMany({
+      const boughtRecords = await timed("db_bought_overlay", prisma.shippingPlanItem.findMany({
         where: { orderNumber: { in: orderNumbersForPlan }, status: "bought" },
         orderBy: { updatedAt: "desc" },
-      });
+      }));
       const boughtByOrder = new Map<string, (typeof boughtRecords)[number]>();
       for (const b of boughtRecords) {
         if (!boughtByOrder.has(b.orderNumber)) boughtByOrder.set(b.orderNumber, b);
@@ -1536,6 +1536,7 @@ export async function GET(request: NextRequest) {
     // (2026-10-26) every transaction hung while plain statements went
     // through in ~50 ms — the whole page lost its rates over one INSERT.
     // A draft plan is rebuilt on every refresh, so atomicity buys nothing.
+    const tSave = Date.now();
     const planRow = await prisma.shippingPlan.create({
       data: { date: today, status: "draft" },
     });
@@ -1578,6 +1579,7 @@ export async function GET(request: NextRequest) {
       ),
     );
     const plan = { ...planRow, items: planItemRows };
+    tStage.db_save = Date.now() - tSave;
 
     const readyCount = plan.items.filter(
       (i) => i.status === "pending"
