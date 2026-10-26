@@ -150,6 +150,9 @@ interface DashboardOrder {
 interface PlanItem {
   id: string;
   orderNumber: string;
+  // Set when Veeqo ignored the ship day: the pickup day the carrier's
+  // (unchanged) EDD counts from. The card counts transit from it and says so.
+  quoteAnchorDay?: string | null;
   // The plan this item belongs to, when it is NOT the page's batch plan — set
   // on items merged in from a single-order re-quote (which the server answers
   // with a new plan). The buy must send THIS planId, or the server can't find
@@ -5509,7 +5512,15 @@ function OrderRow({
                   // badge to "4 days" for a compliant 3-day rate. Falls
                   // back to physicalShipDate (when actualShipDay is
                   // absent for older plans) and finally shipDateGlobal.
+                  // SHIP DAY is the anchor (EDD − ship day). Only when Veeqo
+                  // ignored the ship day do we count from the pickup day the
+                  // carrier actually quoted — the EDD itself is never moved.
+                  const quoteAnchor =
+                    !rateOverride && plan?.quoteAnchorDay
+                      ? plan.quoteAnchorDay
+                      : null;
                   const transitAnchor =
+                    quoteAnchor ??
                     plan?.actualShipDay ??
                     plan?.physicalShipDate ??
                     shipDate;
@@ -5530,7 +5541,10 @@ function OrderRow({
                       ? `EDD ${fmtDate(rateOverride.edd)}${daysStr} · manual override`
                       : "manual override";
                   }
-                  return plan?.edd ? `EDD ${fmtDate(plan.edd)}${daysStr}` : "";
+                  if (!plan?.edd) return "";
+                  return quoteAnchor
+                    ? `EDD ${fmtDate(plan.edd)}${daysStr} from pickup ${fmtDate(quoteAnchor)} · quote not for ship day`
+                    : `EDD ${fmtDate(plan.edd)}${daysStr}`;
                 })()}
               </span>
               {rateOverride && isReady && (

@@ -309,6 +309,10 @@ export async function GET(request: NextRequest) {
       tempClassSource: string | null;
       walmartColdConflict: boolean;
       shadow: ShadowResult | null;
+      // Set only when Veeqo ignored the ship day: the pickup day the carrier's
+      // (unchanged) EDDs really count from. The card measures "N days" from it
+      // and flags the quote instead of us moving the carrier's date.
+      quoteAnchorDay: string | null;
     }> = [];
 
     // ── Pre-warm rate quotes in parallel ──────────────────────────────────
@@ -832,6 +836,9 @@ export async function GET(request: NextRequest) {
       let frozenRateDebug: string | null = null;
       // Temperature-aware engine output for this order (topic 135).
       let shadow: ShadowResult | null = null;
+      // Pickup day the carrier's EDDs count from, set only when Veeqo ignored
+      // the ship day (else the EDDs are for the ship day itself).
+      let quoteAnchorDay: string | null = null;
       // LIVE only: extra gel-ice pieces the picked transit needs. Added to the
       // label weight (≈1 lb each) and carried to the warehouse note as
       // "[ice +N]" in the plan notes; the buy route reads it from there.
@@ -966,6 +973,7 @@ export async function GET(request: NextRequest) {
               );
               rates = resp.available as unknown as VeeqoRate[];
               shipDayProjected = !resp.anchorHonored;
+              if (shipDayProjected) quoteAnchorDay = resp.quoteAnchorYmd;
             } else {
               const resp = await getRatesForShipDate(
                 order,
@@ -1005,11 +1013,29 @@ export async function GET(request: NextRequest) {
             );
           }
 
+          // Veeqo ignored the ship day → its EDDs are UNCHANGED carrier dates for
+          // pickup `quoteAnchorDay`. Measure transit (the food-safety cap) from
+          // that day — the carrier's real transit — and pull the deadline in by
+          // the same gap so the later ship day still delivers on time. The
+          // carrier's date itself is never moved (owner rule, 2026-10-25).
+          const selShipDay = quoteAnchorDay ?? effectiveShipDay;
+          const selDeliveryBy = quoteAnchorDay
+            ? (() => {
+                const gap = Math.round(
+                  (Date.parse(`${effectiveShipDay}T00:00:00Z`) -
+                    Date.parse(`${quoteAnchorDay}T00:00:00Z`)) /
+                    86_400_000,
+                );
+                const d = new Date(`${deliveryBy}T00:00:00Z`);
+                d.setUTCDate(d.getUTCDate() - Math.max(0, gap));
+                return d.toISOString().slice(0, 10);
+              })()
+            : deliveryBy;
           const todaySel = selectBestRate(
             rates,
             productType,
-            deliveryBy,
-            effectiveShipDay,
+            selDeliveryBy,
+            selShipDay,
             effectiveDayName,
             isAfterNoon,
             frozenRiskLevel,
@@ -1021,7 +1047,7 @@ export async function GET(request: NextRequest) {
           if (shipDayProjected) {
             frozenRateDebug = [
               frozenRateDebug,
-              `EDDs ESTIMATED: Veeqo ignored ship date ${effectiveShipDay}, dates shifted from today`,
+              `QUOTE NOT FOR SHIP DAY: Veeqo ignored ship date ${effectiveShipDay}; carrier EDDs are for pickup ${quoteAnchorDay} (unchanged)`,
             ]
               .filter(Boolean)
               .join(" | ");
@@ -1373,6 +1399,7 @@ export async function GET(request: NextRequest) {
         tempClassSource,
         walmartColdConflict,
         shadow,
+        quoteAnchorDay,
       });
     });
 
@@ -1476,6 +1503,13 @@ export async function GET(request: NextRequest) {
         _productId: src?._productId || null,
         shipDateTrickApplied: src?.shipDateTrickApplied ?? !datesMatch,
         datesMatch,
+        // Not persisted — computed this pass. Without these the card never
+        // saw the temperature class, the shadow block or the engine line.
+        tempClass: src?.tempClass ?? null,
+        tempClassSource: src?.tempClassSource ?? null,
+        walmartColdConflict: src?.walmartColdConflict ?? false,
+        shadow: src?.shadow ?? null,
+        quoteAnchorDay: src?.quoteAnchorDay ?? null,
       };
     });
 

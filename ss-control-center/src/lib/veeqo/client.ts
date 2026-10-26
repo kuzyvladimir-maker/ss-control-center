@@ -1,5 +1,5 @@
 import {
-  addBusinessDaysYmd,
+  effectiveBusinessDay,
   pickupGapBusinessDays,
   todayNY,
   utcToPacificYMD,
@@ -408,10 +408,10 @@ export async function getRatesForShipDate(
  * passed the frozen ≤3-day gate. Food-safety bug.
  *
  * We quote `baseYmd` (today) and `laterYmd`. If no common service's EDD moved,
- * the anchor was ignored → we return `anchorHonored: false` and PROJECT each
- * EDD forward by the calendar-day gap (same transit time as from today), so
- * any transit math stays honest. Callers must not auto-pick a projected rate
- * as a "cheaper Monday" — it is only an estimate.
+ * the anchor was ignored → `anchorHonored: false`. The EDDs are returned
+ * UNCHANGED (owner rule 2026-10-25: never move a carrier date) with
+ * `quoteAnchorYmd` = the pickup day they really count from, so callers measure
+ * transit from there and flag the quote instead of shifting it.
  */
 export async function getRatesForLaterShipDay(
   order: Record<string, any>,
@@ -419,14 +419,21 @@ export async function getRatesForLaterShipDay(
   baseYmd: string,
   parcel?: RateShopParcel,
   baseRates?: VeeqoNormalizedRate[],
-): Promise<{ available: VeeqoNormalizedRate[]; anchorHonored: boolean }> {
+): Promise<{
+  available: VeeqoNormalizedRate[];
+  anchorHonored: boolean;
+  /** The pickup day the returned EDDs actually count from: `laterYmd` when
+   *  Veeqo honoured it, else the next business day on/after `baseYmd`. */
+  quoteAnchorYmd: string;
+}> {
   const later = await getRatesForShipDate(order, `${laterYmd}T16:00:00Z`, parcel);
-  // Measured in carrier PICKUP days, not calendar days: a Sunday/holiday
-  // "today" quote already counts from the next business day, so identical
-  // EDDs for Sun vs Mon are correct, not "ignored" (topic 135, 2026-10-25 —
-  // FedEx 2Day Mon 10/26 showed 10/29 · 3 days instead of 10/28).
+  // Gap in carrier PICKUP days, not calendar days: a Sunday/holiday "today"
+  // quote already counts from the next business day, so identical EDDs for
+  // Sun vs Mon are correct (topic 135, 2026-10-25).
   const gapDays = pickupGapBusinessDays(baseYmd, laterYmd);
-  if (gapDays <= 0) return { available: later.available, anchorHonored: true };
+  if (gapDays <= 0) {
+    return { available: later.available, anchorHonored: true, quoteAnchorYmd: laterYmd };
+  }
 
   const base =
     baseRates ??
@@ -442,23 +449,22 @@ export async function getRatesForLaterShipDay(
   }
   // Nothing to compare against → can't prove the anchor worked; treat as ignored.
   const anchorHonored = common > 0 && moved > 0;
-  if (anchorHonored) return { available: later.available, anchorHonored };
+  if (anchorHonored) {
+    return { available: later.available, anchorHonored, quoteAnchorYmd: laterYmd };
+  }
 
-  const projected = later.available.map((r) => {
-    const t = Date.parse(r.delivery_promise_date);
-    if (Number.isNaN(t)) return r;
-    // Same transit as from today, re-anchored by business days: shift the
-    // EDD's Pacific date and keep Veeqo's time-of-day encoding.
-    const ymd = utcToPacificYMD(r.delivery_promise_date);
-    const shifted = addBusinessDaysYmd(ymd, gapDays);
-    const shiftMs =
-      Date.parse(`${shifted}T00:00:00Z`) - Date.parse(`${ymd}T00:00:00Z`);
-    return { ...r, delivery_promise_date: new Date(t + shiftMs).toISOString() };
-  });
+  // Owner rule (2026-10-25): the carrier's EDD is NEVER moved. The quote is
+  // returned exactly as Veeqo gave it, flagged as counting from the earlier
+  // pickup day; callers measure transit from `quoteAnchorYmd` and must not
+  // auto-pick it as a "cheaper later day".
   console.warn(
-    `[veeqo] preferred_shipment_date ${laterYmd} IGNORED for order ${order.number} — EDDs projected +${gapDays} business day(s) from ${baseYmd}`,
+    `[veeqo] preferred_shipment_date ${laterYmd} IGNORED for order ${order.number} — EDDs are for pickup ${effectiveBusinessDay(baseYmd)}, left unchanged`,
   );
-  return { available: projected, anchorHonored: false };
+  return {
+    available: later.available,
+    anchorHonored: false,
+    quoteAnchorYmd: effectiveBusinessDay(baseYmd),
+  };
 }
 
 // Extract Value-Added-Service flags from a Veeqo rate object so the
