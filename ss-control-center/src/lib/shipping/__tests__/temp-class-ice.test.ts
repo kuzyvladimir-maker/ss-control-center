@@ -41,10 +41,10 @@ test("canFitExtraIce honours capacity", () => {
   assert.ok(!canFitExtraIce("XS", 1));
 });
 
-test("coolerSizeFromBox recognises named coolers only", () => {
+test("coolerSizeFromBox: named coolers, and small custom boxes map to the cooler they fit", () => {
   assert.equal(coolerSizeFromBox("XL"), "XL");
   assert.equal(coolerSizeFromBox("m"), "M");
-  assert.equal(coolerSizeFromBox("7×7×6"), null);
+  assert.equal(coolerSizeFromBox("7×7×6"), "XS"); // fits inside XS (11×6×8)
   assert.equal(coolerSizeFromBox(null), null);
 });
 
@@ -54,4 +54,19 @@ test("ice marker round-trips through plan notes; absent → 0", () => {
   assert.equal(iceMarker(0), "");
   assert.equal(iceExtraFromNotes("today: [frozen-rate v3.5] picked FedEx"), 0);
   assert.equal(iceExtraFromNotes(null), 0);
+});
+
+test("cooler from DIMENSIONS (the 'engine not run' bug): presets in any orientation, others → smallest cooler that fits", () => {
+  assert.equal(coolerSizeFromBox("11x6x8"), "XS");
+  assert.equal(coolerSizeFromBox("11x8x6"), "XS");
+  assert.equal(coolerSizeFromBox("12x12x10"), "S");
+  assert.equal(coolerSizeFromBox("10x12x12"), "S");
+  assert.equal(coolerSizeFromBox("13x13x15"), "M");
+  assert.equal(coolerSizeFromBox("18×13×14"), "L");
+  assert.equal(coolerSizeFromBox("24x13x16"), "XL");
+  assert.equal(coolerSizeFromBox("12x12x6"), "S"); // fits inside S
+  assert.equal(coolerSizeFromBox("10x8x8"), "S");
+  assert.equal(coolerSizeFromBox("30x30x30"), null); // bigger than XL
+  assert.equal(coolerSizeFromBox("M"), "M");
+  assert.equal(coolerSizeFromBox(""), null);
 });

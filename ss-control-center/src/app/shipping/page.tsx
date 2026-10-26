@@ -49,7 +49,15 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
-import { formatEngineLine } from "@/lib/shipping/temp-class/engine-line";
+import {
+  formatEngineLine,
+  type EngineSkipReason,
+} from "@/lib/shipping/temp-class/engine-line";
+
+// The rule behind the engine line, kept as a tooltip instead of a paragraph
+// on every card (owner, 2026-10-25).
+const ENGINE_RULE_TOOLTIP =
+  "Как выбирается тариф для Frozen/Chilled: самый дешёвый, который доставит не позже срока маркетплейса и уложится в окно безопасности (дни в пути зависят от погоды на маршруте и в Clearwater, размера кулера и льда). Более быстрый берётся, если дороже не больше чем на $1 ($3 в жару). Summer — старые правила: до 3 дней (2 в жару), доплата за скорость до $3, перенос на понедельник при экономии от 15%.";
 import {
   applyManualClass,
   isStaleBuild,
@@ -153,6 +161,10 @@ interface PlanItem {
   // Set when Veeqo ignored the ship day: the pickup day the carrier's
   // (unchanged) EDD counts from. The card counts transit from it and says so.
   quoteAnchorDay?: string | null;
+  // Why the temperature engine didn't run on a cold order, and the profile
+  // the plan ran under (summer = engine off). Not persisted.
+  engineSkip?: EngineSkipReason | null;
+  rateProfile?: string | null;
   // The plan this item belongs to, when it is NOT the page's batch plan — set
   // on items merged in from a single-order re-quote (which the server answers
   // with a new plan). The buy must send THIS planId, or the server can't find
@@ -4931,10 +4943,17 @@ function OrderRow({
   // this order has status="stop", we show the stop reason from the plan.
   const planPending = plan && plan.status === "pending";
   const cardClass = strictestCardClass(order.items);
-  const engineLine = formatEngineLine({
-    tempClass: plan?.tempClass,
-    shadow: plan?.shadow ?? null,
-  });
+  const engineLine = plan
+    ? formatEngineLine({
+        tempClass: plan.tempClass,
+        productType: plan.productType,
+        rateProfile: plan.rateProfile,
+        engineSkip: plan.engineSkip,
+        boxSize: plan.boxSize,
+        shadow: plan.shadow ?? null,
+      })
+    : null;
+  const [engineDetailsOpen, setEngineDetailsOpen] = useState(false);
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -5591,90 +5610,45 @@ function OrderRow({
         )}
       </div>
 
-      {/* Frozen rate-selection rationale — explain why the agent didn't
-          pick the absolute cheapest rate when the order is Frozen. The
-          ≤3-calendar-days rule comes from food-safety constraints
-          (MASTER_PROMPT v3.1); without this note the operator sees
-          "Vika showed UPS Ground at $39.93" and assumes the agent is
-          wrong. */}
-      {isReady && plan?.productType === "Frozen" && (
-        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[length:var(--ship-badge)] text-info">
-          Frozen — the agent keeps the cheapest rate that meets two
-          conditions: it delivers on/before the marketplace deadline, and
-          within the food-safety window (3 calendar days, tightened to 2 when
-          it&apos;s hot at the destination). A faster rate is preferred when it
-          costs no more than $3 extra. The package physically ships next Monday
-          (label still dated today) when Monday is faster in transit at no more
-          than $3 extra, or more than 15% cheaper — both options always stay
-          inside the food-safety window.
-        </div>
-      )}
-
-      {/* Temperature-aware engine (topic 135) — shadow view. Shows what the
-          weather-driven logic WOULD pick + the saving, without changing the
-          purchase (that only happens in "live"). */}
-      {plan?.shadow && (
-        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[length:var(--ship-badge)] text-info">
-          <div className="font-semibold text-ink">
-            New logic (shadow) · {plan.shadow.tempClass.charAt(0)}
-            {plan.shadow.tempClass.slice(1).toLowerCase()} · {plan.shadow.size}{" "}
-            cooler
+      {/* Temperature engine line (topic 135, owner 2026-10-25): ONE line in
+          ONE place on every card — route & temperatures · class · day limit ·
+          what the engine picks and the price difference. Ice, prices by
+          transit length and the rule fold into "подробнее" / the (i) tooltip.
+          When the engine didn't run, the same line says why. Replaces the
+          long blue rule paragraph and the multi-line "New logic (shadow)"
+          block nobody read. */}
+      {engineLine && (
+        <div
+          className={`mt-2 ml-6 rounded px-2 py-1.5 text-[length:var(--ship-row)] ${
+            engineLine.mode === "summer"
+              ? "bg-warn-tint text-warn-strong"
+              : "bg-info-tint text-ink-2"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-medium tabular-nums">{engineLine.text}</span>
+            <span
+              className="cursor-help rounded-full border border-current px-1.5 text-[10px] leading-4 opacity-70"
+              title={ENGINE_RULE_TOOLTIP}
+            >
+              i
+            </span>
+            {engineLine.details.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setEngineDetailsOpen((v) => !v)}
+                className="text-[length:var(--ship-badge)] underline opacity-80 hover:opacity-100"
+              >
+                {engineDetailsOpen ? "скрыть" : "подробнее"}
+              </button>
+            )}
           </div>
-          {plan.shadow.noForecast ? (
-            <div className="text-ink-3">
-              No forecast available → summer profile used.
+          {engineDetailsOpen && engineLine.details.length > 0 && (
+            <div className="mt-1 space-y-0.5 text-[length:var(--ship-badge)] text-ink-3">
+              {engineLine.details.map((d) => (
+                <div key={d}>{d}</div>
+              ))}
             </div>
-          ) : (
-            <>
-              <div className="text-ink-2">
-                Route {plan.shadow.routeMaxC?.toFixed(0) ?? "?"}°C / Clearwater{" "}
-                {plan.shadow.originMaxC?.toFixed(0) ?? "?"}°C → up to{" "}
-                {plan.shadow.allowedDays ?? "∞"} days in transit · ice{" "}
-                {plan.shadow.iceBase}
-                {plan.shadow.extraIce > 0 ? `+${plan.shadow.extraIce}` : ""} ={" "}
-                {plan.shadow.iceTotal}
-                {plan.shadow.iceWeightDeltaLb > 0
-                  ? ` (+${plan.shadow.iceWeightDeltaLb} lb on label)`
-                  : ""}
-              </div>
-              {plan.shadow.pick ? (
-                <div className="text-ink-2">
-                  Would pick{" "}
-                  <span className="font-medium text-ink">
-                    {plan.shadow.pick.service} $
-                    {plan.shadow.pick.price.toFixed(2)} /{" "}
-                    {plan.shadow.pick.calDays}d
-                  </span>{" "}
-                  (EDD {plan.shadow.pick.edd})
-                  {plan.shadow.savingsUsd != null &&
-                    (plan.shadow.savingsUsd > 0.01 ? (
-                      <span className="ml-1 font-semibold text-ink">
-                        — saves ${plan.shadow.savingsUsd.toFixed(2)} vs current $
-                        {plan.shadow.summerPrice?.toFixed(2)}
-                      </span>
-                    ) : plan.shadow.savingsUsd < -0.01 ? (
-                      <span className="ml-1 text-ink-3">
-                        — ${Math.abs(plan.shadow.savingsUsd).toFixed(2)} more than
-                        current ${plan.shadow.summerPrice?.toFixed(2)}
-                      </span>
-                    ) : (
-                      <span className="ml-1 text-ink-3">— same as current</span>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-ink-3">
-                  No rate fits the weather window — summer pick stands.
-                </div>
-              )}
-              {plan.shadow.longerTransitPrices.length > 0 && (
-                <div className="text-ink-3">
-                  Longer-transit prices (not quoted before):{" "}
-                  {plan.shadow.longerTransitPrices
-                    .map((p) => `${p.calDays}d $${p.price.toFixed(2)}`)
-                    .join(" · ")}
-                </div>
-              )}
-            </>
           )}
         </div>
       )}
@@ -5834,20 +5808,6 @@ function OrderRow({
                 : planLoading
                   ? "Calculating best rate…"
                   : "Awaiting rate"}
-            </span>
-          )}
-          {/* Temperature engine line (topic 135): what the weather engine
-              decided for this order, BEFORE buying — origin → destination
-              temps, class, the day cap and any extra ice. Same in shadow and
-              live; built from data the plan already computed. */}
-          {engineLine && (
-            <span
-              className={`flex-1 text-center text-[length:var(--ship-row)] font-medium tabular-nums ${
-                engineLine.mode === "summer" ? "text-warn-strong" : "text-ink-2"
-              }`}
-              title="Temperature-aware engine: Clearwater max (ship day + next) → destination max over the transit, the route max it decides on, the order's strictest class, the most transit days it allows and the extra gel ice needed."
-            >
-              {engineLine.text}
             </span>
           )}
           <Button

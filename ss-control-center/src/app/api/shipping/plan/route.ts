@@ -52,6 +52,7 @@ import {
   buildShadowResult,
   selectTempAwareRate,
   ICE_WEIGHT_PER_PIECE_LB,
+  type EngineSkipReason,
   iceMarker,
   type ShadowResult,
   type RateProfile,
@@ -313,6 +314,9 @@ export async function GET(request: NextRequest) {
       // (unchanged) EDDs really count from. The card measures "N days" from it
       // and flags the quote instead of us moving the carrier's date.
       quoteAnchorDay: string | null;
+      // Why the temperature engine did NOT run for a cold order (null when it
+      // ran, or for Dry). Shown on the card instead of a generic message.
+      engineSkip: EngineSkipReason | null;
     }> = [];
 
     // ── Pre-warm rate quotes in parallel ──────────────────────────────────
@@ -839,6 +843,7 @@ export async function GET(request: NextRequest) {
       // Pickup day the carrier's EDDs count from, set only when Veeqo ignored
       // the ship day (else the EDDs are for the ship day itself).
       let quoteAnchorDay: string | null = null;
+      let engineSkip: EngineSkipReason | null = null;
       // LIVE only: extra gel-ice pieces the picked transit needs. Added to the
       // label weight (≈1 lb each) and carried to the warehouse note as
       // "[ice +N]" in the plan notes; the buy route reads it from there.
@@ -1058,10 +1063,24 @@ export async function GET(request: NextRequest) {
           // list. In "shadow" it only annotates the card (purchase unchanged);
           // in "live" it replaces the pick. DRY needs no weather. No forecast
           // or no cooler size → we leave the summer pick alone.
+          const coldClass = tempClass === "FROZEN" || tempClass === "CHILLED";
+          if (tempEngineOn && coldClass) {
+            engineSkip = !isAmazon
+              ? "not_amazon"
+              : !skuBoxSize
+                ? "no_box"
+                : !coolerSizeFromBox(skuBoxSize)
+                  ? "box_unrecognized"
+                  : !pickDestZip(order)
+                    ? "no_zip"
+                    : rates.length === 0
+                      ? "no_rates"
+                      : null;
+          }
           if (
             tempEngineOn &&
             isAmazon &&
-            (tempClass === "FROZEN" || tempClass === "CHILLED") &&
+            coldClass &&
             skuBoxSize &&
             rates.length > 0
           ) {
@@ -1116,6 +1135,7 @@ export async function GET(request: NextRequest) {
                   }
                 }
               } catch (e) {
+                engineSkip = "error";
                 console.warn(
                   `[temp-class] ${order.number} shadow compute failed:`,
                   e instanceof Error ? e.message : e,
@@ -1400,6 +1420,7 @@ export async function GET(request: NextRequest) {
         walmartColdConflict,
         shadow,
         quoteAnchorDay,
+        engineSkip,
       });
     });
 
@@ -1510,6 +1531,9 @@ export async function GET(request: NextRequest) {
         walmartColdConflict: src?.walmartColdConflict ?? false,
         shadow: src?.shadow ?? null,
         quoteAnchorDay: src?.quoteAnchorDay ?? null,
+        engineSkip: src?.engineSkip ?? null,
+        // Lets the card say "engine is off (Summer)" instead of nothing.
+        rateProfile,
       };
     });
 

@@ -13,6 +13,8 @@
 // The base counts match the packaging cost model already in the repo
 // (src/lib/pricing/cost-model.ts PACKAGING comments: S 5 / M 9 / L 11 / XL 19).
 
+import { BOX_PRESETS, resolveBoxDimensions } from "../box-presets";
+
 export type CoolerSize = "XS" | "S" | "M" | "L" | "XL";
 
 export const COOLER_SIZES: readonly CoolerSize[] = ["XS", "S", "M", "L", "XL"];
@@ -47,16 +49,29 @@ export const ICE_UNIT_COST_USD = 0.1;
  *  SKU's stored shipping weight; only the EXTRA pieces are added here. */
 export const ICE_WEIGHT_PER_PIECE_LB = 1;
 
-/** Normalise a stored box label ("XL", "m", "7×7×6"…) to a CoolerSize, or null
- *  when it isn't one of the five named coolers (custom dimension strings have
- *  no ice profile). */
+/** Normalise a stored box to a CoolerSize. Accepts the named label ("XL",
+ *  "m") AND dimensions ("11x6x8", "12×12×10"): most orders store the box as
+ *  dimensions, and the old label-only check made the engine skip them with
+ *  "no box size" (topic 135, 2026-10-25). Dimensions match a cooler preset in
+ *  any orientation; other boxes map to the smallest cooler they fit inside.
+ *  null = bigger than every cooler, or unreadable. */
 export function coolerSizeFromBox(
   boxSize: string | null | undefined,
 ): CoolerSize | null {
   const s = (boxSize ?? "").trim().toUpperCase();
-  return (COOLER_SIZES as readonly string[]).includes(s)
-    ? (s as CoolerSize)
-    : null;
+  if ((COOLER_SIZES as readonly string[]).includes(s)) return s as CoolerSize;
+  const dims = resolveBoxDimensions(boxSize);
+  if (!dims) return null;
+  const sorted = (a: number[]) => [...a].sort((x, y) => x - y);
+  const box = sorted([dims.length, dims.width, dims.height]);
+  const presets = COOLER_SIZES.map((size) => {
+    const p = BOX_PRESETS.find((b) => b.label === size)!;
+    return { size, dims: sorted([p.l, p.w, p.h]) };
+  });
+  const exact = presets.find((p) => p.dims.every((d, i) => d === box[i]));
+  if (exact) return exact.size;
+  const fits = presets.find((p) => p.dims.every((d, i) => box[i] <= d));
+  return fits ? fits.size : null;
 }
 
 /** Can this cooler physically take `pieces` extra ice above base? */
