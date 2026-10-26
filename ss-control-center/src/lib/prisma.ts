@@ -15,6 +15,45 @@ function cleanEnv(value: string | undefined): string | undefined {
   return value.trim().replace(/^['"]|['"]$/g, "");
 }
 
+// ── Turso over HTTP with a hard timeout (2026-10-26) ───────────────────────
+// A `libsql://` URL makes @libsql/client hold one long-lived WebSocket. On
+// Vercel an instance is frozen between requests, the socket dies silently and
+// the next query waits forever — while holding the adapter mutex (see the pool
+// note below), so every later query on that client hangs as well. /shipping
+// requests sat 120–280 s that way, constantly during Turso's us-east-1
+// "elevated timeouts" incident. HTTP is one request per query / stream step
+// (what Turso recommends for serverless), and every request gets a deadline,
+// so a dead call fails and frees the client instead of wedging it.
+const TURSO_FETCH_TIMEOUT_MS = Math.max(
+  5_000,
+  Number(process.env.TURSO_FETCH_TIMEOUT_MS) || 30_000,
+);
+
+// libsql's HTTP client passes a cross-fetch (node-fetch) Request, which the
+// platform fetch can't take as-is — rebuild it so the timeout signal rides along.
+async function tursoFetch(input: unknown, init?: RequestInit): Promise<Response> {
+  const signal = AbortSignal.timeout(TURSO_FETCH_TIMEOUT_MS);
+  if (typeof input === "string" || input instanceof URL) {
+    return fetch(input, { ...init, signal });
+  }
+  const req = input as {
+    url: string;
+    method: string;
+    headers: Iterable<[string, string]>;
+    arrayBuffer(): Promise<ArrayBuffer>;
+  };
+  const body =
+    req.method === "GET" || req.method === "HEAD"
+      ? undefined
+      : await req.arrayBuffer();
+  return fetch(req.url, {
+    method: req.method,
+    headers: [...req.headers],
+    body,
+    signal,
+  });
+}
+
 function createPrismaClient() {
   // Production (Vercel/Turso): use remote libsql URL + auth token
   // Otherwise prefer DATABASE_URL so runtime and Prisma CLI point to the
@@ -24,7 +63,11 @@ function createPrismaClient() {
   const databaseUrl = cleanEnv(process.env.DATABASE_URL);
 
   if (tursoUrl && tursoToken) {
-    const adapter = new PrismaLibSql({ url: tursoUrl, authToken: tursoToken });
+    const adapter = new PrismaLibSql({
+      url: tursoUrl.replace(/^libsql:\/\//, "https://"),
+      authToken: tursoToken,
+      fetch: tursoFetch,
+    });
     return new PrismaClient({ adapter });
   }
 

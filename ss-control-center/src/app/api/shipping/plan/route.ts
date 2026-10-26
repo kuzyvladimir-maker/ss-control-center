@@ -1530,13 +1530,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Save plan
-    const plan = await prisma.shippingPlan.create({
-      data: {
-        date: today,
-        status: "draft",
-        items: {
-          create: planItems.map((item) => ({
+    // Save plan. The draft row and its items are written as separate
+    // single-statement inserts, not one nested create: a nested create runs
+    // inside a transaction, and during Turso's us-east-1 incident
+    // (2026-10-26) every transaction hung while plain statements went
+    // through in ~50 ms — the whole page lost its rates over one INSERT.
+    // A draft plan is rebuilt on every refresh, so atomicity buys nothing.
+    const planRow = await prisma.shippingPlan.create({
+      data: { date: today, status: "draft" },
+    });
+    const planItemRows = await Promise.all(
+      planItems.map((item) =>
+        prisma.shippingPlanItem.create({
+          data: {
+            planId: planRow.id,
             orderNumber: item.orderNumber,
             orderId: item.orderId,
             channel: item.channel,
@@ -1566,11 +1573,11 @@ export async function GET(request: NextRequest) {
             serviceCarrier: item.serviceCarrier,
             totalNetCharge: item.totalNetCharge,
             baseRate: item.baseRate,
-          })),
-        },
-      },
-      include: { items: true },
-    });
+          },
+        }),
+      ),
+    );
+    const plan = { ...planRow, items: planItemRows };
 
     const readyCount = plan.items.filter(
       (i) => i.status === "pending"
