@@ -70,6 +70,9 @@ export async function runDriveBackfill(opts: {
 
   const candidates = await prisma.shippingPlanItem.findMany({
     where: {
+      // Every bought row has a tracking number and that column is indexed —
+      // without it this scanned all ~150k plan rows (see dashboard/summary).
+      trackingNumber: { gt: "" },
       status: "bought",
       updatedAt: { gte: cutoff },
       OR: [

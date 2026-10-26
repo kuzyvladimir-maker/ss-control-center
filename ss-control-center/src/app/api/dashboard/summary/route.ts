@@ -358,8 +358,20 @@ export async function GET(request: NextRequest) {
       // dedicated purchasedAt column, so updatedAt is the purchase moment.
       // The Dashboard "Shipping progress" panel used the Amazon
       // status=Shipped count instead, which isn't labels at all.
+      //
+      // `trackingNumber > ''` is what keeps this fast: every bought row carries
+      // its tracking number (0 bought rows without one, 2026-10-26) and that
+      // column is indexed, so SQLite seeks ~2.5k rows. Filtering on status +
+      // updatedAt alone scanned all ~150k plan rows — 20 s normally, 70–87 s
+      // during Turso's us-east-1 incident — and every sidebar poll (60 s, per
+      // open tab) held a pool client that long, so /shipping's own 50 ms
+      // queries queued behind it until the page hit 504.
       prisma.shippingPlanItem.count({
-        where: { status: "bought", updatedAt: { gte: todayStart } },
+        where: {
+          trackingNumber: { gt: "" },
+          status: "bought",
+          updatedAt: { gte: todayStart },
+        },
       }),
       // "Charged" on the /adjustments dispute board for its "30 days" preset
       // (today-29 … today ET, by the charge's own adjustmentDate, Amazon
