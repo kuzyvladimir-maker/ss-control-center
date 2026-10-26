@@ -115,6 +115,12 @@ function fmtDay(d: Date): string {
 
 export async function GET(request: NextRequest) {
   try {
+    // Stage timings (2026-10-26): this is polled every 60 s by the sidebar of
+    // every open tab, so a slow stage here is felt everywhere. Returned in
+    // Server-Timing and logged.
+    const t0 = Date.now();
+    const timing: Record<string, number> = {};
+    const mark = (k: string, since: number) => (timing[k] = Date.now() - since);
     const filter = await resolveStoreFilter(request.nextUrl.searchParams);
     const now = new Date();
     const todayStart = startOfTodayET(now);
@@ -306,6 +312,8 @@ export async function GET(request: NextRequest) {
     ]);
 
     // ── Extra signals for the Dashboard (2026-10-18) ──────────────────────
+    mark("db_batch1", t0);
+    const tBatch2 = Date.now();
     const [
       ordersByStoreRaw,
       frozenRiskAlerts,
@@ -514,8 +522,10 @@ export async function GET(request: NextRequest) {
 
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
+    mark("db_batch2", tBatch2);
     let procurementOrdersToBuy = 0;
     let procurementError: string | null = null;
+    const tProcurement = Date.now();
     try {
       const cards = await fetchProcurementCards();
       const distinctOrders = new Set<string>();
@@ -525,6 +535,7 @@ export async function GET(request: NextRequest) {
       console.error("[dashboard/summary] procurement count failed:", err);
       if (isVeeqoAuthError(err)) procurementError = VEEQO_KEY_REJECTED_MESSAGE;
     }
+    mark("veeqo_procurement", tProcurement);
 
     // Match the Account Health hero "At Risk" card: AHR < 200 only.
     const healthIssues = healthSnapshots.filter(
@@ -581,6 +592,9 @@ export async function GET(request: NextRequest) {
     // heartbeat kept it green while store3 orders 403'd for 11 days.
     const syncedAt =
       lastOrdersSync?.completedAt?.toISOString() ?? new Date(0).toISOString();
+    console.log(
+      `[timing] /api/dashboard/summary ${JSON.stringify({ ...timing, total: Date.now() - t0 })}`,
+    );
 
     return NextResponse.json({
       orders: {
@@ -631,6 +645,12 @@ export async function GET(request: NextRequest) {
         ordersStale,
         ordersLastAttemptAt: latestOrdersAttempt?.startedAt.toISOString() ?? null,
         ordersLastError: latestOrdersAttempt?.status === "error" ? latestOrdersAttempt.error : null,
+      },
+    }, {
+      headers: {
+        "Server-Timing": Object.entries({ ...timing, total: mark("total", t0) })
+          .map(([k, v]) => `${k};dur=${v}`)
+          .join(", "),
       },
     });
   } catch (error) {
