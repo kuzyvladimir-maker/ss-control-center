@@ -178,6 +178,35 @@ export async function fetchSkuDatabase(): Promise<SkuRow[]> {
   }
 }
 
+/**
+ * Only the rows for these SKUs — what the shipping plan actually reads (the
+ * first line's SKU of each order). Pulling the whole 5.9k-row table for that
+ * cost 39–41 s on a cold Vercel instance (2026-10-26); a keyed IN-query is one
+ * ~40 ms round trip, and always fresh, so no cross-instance staleness either.
+ */
+export async function fetchSkuRows(skus: string[]): Promise<SkuRow[]> {
+  const wanted = [...new Set(skus.map((s) => s.trim()).filter(Boolean))];
+  const out: SkuRow[] = [];
+  for (let i = 0; i < wanted.length; i += 500) {
+    const rows = await prisma.skuShippingData.findMany({
+      where: { sku: { in: wanted.slice(i, i + 500) } },
+      select: {
+        sku: true,
+        productTitle: true,
+        marketplace: true,
+        category: true,
+        length: true,
+        width: true,
+        height: true,
+        weight: true,
+        weightFedex: true,
+      },
+    });
+    out.push(...rows.map(toSkuRow));
+  }
+  return out;
+}
+
 export async function lookupSku(sku: string): Promise<SkuRow | null> {
   const row = await prisma.skuShippingData.findUnique({ where: { sku } });
   return row ? toSkuRow(row) : null;

@@ -17,7 +17,7 @@ import {
   isVeeqoAuthError,
   VEEQO_KEY_REJECTED_MESSAGE,
 } from "@/lib/veeqo/client";
-import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
+import { fetchSkuRows, type SkuRow } from "@/lib/sku-database";
 import {
   buildPackingSignature,
   requiresPackingProfile,
@@ -184,26 +184,35 @@ export async function GET(request: NextRequest) {
         tStage[k] = (tStage[k] ?? 0) + (Date.now() - t);
       }
     };
-    let skuDatabase: SkuRow[] = [];
-    // SKU data lives in the internal DB (SkuShippingData) since the
-    // 2026-05-12 Google Sheets migration. A non-empty skuLoadError almost
-    // always means a DB connectivity issue; previously it could also mean
-    // missing GOOGLE_SHEETS_* env vars (now irrelevant).
-    let skuLoadError: string | null = null;
-    try {
-      skuDatabase = await timed("db_sku_database", fetchSkuDatabase());
-    } catch (e) {
-      skuLoadError = e instanceof Error ? e.message : String(e);
-      console.error("Failed to fetch SKU database:", e);
-    }
-    const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
-
     // Rate-selection profile (topic 135). "summer" = the engine is OFF (pure
     // Master Prompt v3.5). Read once per pass (60s cached inside).
     const rateProfile: RateProfile = await getRateProfile(prisma);
     const tempEngineOn = rateProfile !== "summer";
 
     const orders = await timed("veeqo_orders", fetchAllOrders());
+
+    let skuDatabase: SkuRow[] = [];
+    // SKU data lives in the internal DB (SkuShippingData) since the
+    // 2026-05-12 Google Sheets migration. A non-empty skuLoadError almost
+    // always means a DB connectivity issue. Only the first-line SKU of each
+    // order is ever read below, so fetch just those rows — the whole-table
+    // pull took 39–41 s on a cold instance (2026-10-26).
+    let skuLoadError: string | null = null;
+    try {
+      skuDatabase = await timed(
+        "db_sku_database",
+        fetchSkuRows(
+          orders.map(
+            (o: { line_items?: { sellable?: { sku_code?: string; sku?: string } }[] }) =>
+              o.line_items?.[0]?.sellable?.sku_code || o.line_items?.[0]?.sellable?.sku || "",
+          ),
+        ),
+      );
+    } catch (e) {
+      skuLoadError = e instanceof Error ? e.message : String(e);
+      console.error("Failed to fetch SKU database:", e);
+    }
+    const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
 
     // Pull pending FrozenRiskAlert rows for every order we're about to
     // quote, keyed by Veeqo order number — selectBestRate uses the
