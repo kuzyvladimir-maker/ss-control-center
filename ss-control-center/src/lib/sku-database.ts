@@ -142,8 +142,22 @@ export async function fetchSkuDatabase(): Promise<SkuRow[]> {
   if (skuCacheInFlight) return skuCacheInFlight;
 
   skuCacheInFlight = (async () => {
+    // Only the shipping columns: the table also carries heavy identify/COGS
+    // text, and pulling every column took ~7 s for 5.9k rows (2026-10-26).
     const rows = await prisma.skuShippingData.findMany({
       orderBy: { sku: "asc" },
+      select: {
+        sku: true,
+        productTitle: true,
+        marketplace: true,
+        category: true,
+        length: true,
+        width: true,
+        height: true,
+        weight: true,
+        weightFedex: true,
+        updatedAt: true,
+      },
     });
     const mapped = rows.map(toSkuRow);
     const maxUpdatedMs = rows.reduce(

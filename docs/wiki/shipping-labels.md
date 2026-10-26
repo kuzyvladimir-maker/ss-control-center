@@ -67,3 +67,5 @@
 - 2026-10-23 — [Temperature-aware rate selection: plan](frozen-weather-rate-selection-plan-2026-10-23.md) · [implementation & go-live](temp-class-rate-engine-implementation-2026-10-23.md)
 
 - 2026-10-26 — [NAN Health (Shopify) rates from admin-UI snapshots](shipping-nan-health-rate-snapshots.md)
+
+- 2026-10-26 — [Slowness: Prisma libsql adapter = one DB lock per client → pool](perf-prisma-libsql-mutex-2026-10-26.md)
