@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse, after } from "next/server";
+// Its own DB clients: these ~29 reads (several full scans) took 25–65 s on a
+// cold Turso cache and must not hold the clients /shipping runs on.
+import { prismaReports as prisma } from "@/lib/prisma";
 import {
   isVeeqoAuthError,
   VEEQO_KEY_REJECTED_MESSAGE,
@@ -113,7 +115,60 @@ function fmtDay(d: Date): string {
   });
 }
 
+// ── Stale-while-revalidate (2026-10-26) ───────────────────────────────────
+// The sidebar of every open tab polls this every 60 s, and a cold rebuild runs
+// 25–65 s while Turso is degraded. Serve the last good answer at once (up to
+// 10 min old) and rebuild in the background, one rebuild per query string at
+// a time; only the very first call on a fresh instance waits for a build.
+const SUMMARY_FRESH_MS = 30_000;
+const SUMMARY_MAX_STALE_MS = 10 * 60_000;
+type CachedSummary = { at: number; body: unknown; timing: string | null };
+const summaryState = globalThis as unknown as {
+  summaryCache?: Map<string, CachedSummary>;
+  summaryBuilds?: Map<string, Promise<NextResponse>>;
+};
+const summaryCache = (summaryState.summaryCache ??= new Map());
+const summaryBuilds = (summaryState.summaryBuilds ??= new Map());
+
+function rebuildSummary(key: string, request: NextRequest): Promise<NextResponse> {
+  let build = summaryBuilds.get(key);
+  if (!build) {
+    build = buildSummary(request)
+      .then(async (res) => {
+        if (res.status === 200) {
+          summaryCache.set(key, {
+            at: Date.now(),
+            body: await res.clone().json(),
+            timing: res.headers.get("Server-Timing"),
+          });
+        }
+        return res;
+      })
+      .finally(() => summaryBuilds.delete(key));
+    summaryBuilds.set(key, build);
+  }
+  return build;
+}
+
 export async function GET(request: NextRequest) {
+  const key = request.nextUrl.search;
+  const hit = summaryCache.get(key);
+  const age = hit ? Date.now() - hit.at : Infinity;
+  if (hit && age < SUMMARY_MAX_STALE_MS) {
+    if (age >= SUMMARY_FRESH_MS) {
+      after(() => rebuildSummary(key, request).then(() => undefined, () => undefined));
+    }
+    return NextResponse.json(hit.body, {
+      headers: {
+        "X-Summary-Age-S": String(Math.round(age / 1000)),
+        ...(hit.timing ? { "Server-Timing": hit.timing } : {}),
+      },
+    });
+  }
+  return (await rebuildSummary(key, request)).clone();
+}
+
+async function buildSummary(request: NextRequest): Promise<NextResponse> {
   try {
     // Stage timings (2026-10-26): this is polled every 60 s by the sidebar of
     // every open tab, so a slow stage here is felt everywhere. Returned in

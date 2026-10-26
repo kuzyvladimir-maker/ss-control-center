@@ -5,6 +5,8 @@ import { resolve } from "path";
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient;
   prismaPool?: PrismaClient[];
+  prismaReports?: PrismaClient;
+  prismaReportsPool?: PrismaClient[];
 };
 
 // Some deploy platforms (incl. Vercel) return env values wrapped in literal
@@ -131,3 +133,32 @@ if (!globalForPrisma.prisma) {
 }
 
 export const prisma = globalForPrisma.prisma;
+
+// ── Separate clients for heavy read-only reports (2026-10-26) ──────────────
+// /api/dashboard/summary fires ~29 counts/aggregates, several of them full
+// scans; on a cold Turso cache they took 25–65 s in a row and held a client of
+// the pool above that long, so /shipping's 50 ms queries landing on it waited
+// too. Reports get their own clients: their slowness stays theirs. Rotated per
+// property access (not per slice) so one Promise.all of independent reads is
+// spread over all of them. Not for transactions — array $transaction elements
+// could land on different clients here.
+const REPORTS_POOL_SIZE = 4;
+if (!globalForPrisma.prismaReportsPool) {
+  globalForPrisma.prismaReportsPool = Array.from(
+    { length: REPORTS_POOL_SIZE },
+    () => createPrismaClient(),
+  );
+}
+const reportsPool = globalForPrisma.prismaReportsPool;
+let reportsRr = 0;
+if (!globalForPrisma.prismaReports) {
+  globalForPrisma.prismaReports = new Proxy(reportsPool[0], {
+    get(_target, prop) {
+      const client = reportsPool[reportsRr++ % reportsPool.length];
+      const value = Reflect.get(client, prop, client);
+      return typeof value === "function" ? value.bind(client) : value;
+    },
+  }) as PrismaClient;
+}
+
+export const prismaReports = globalForPrisma.prismaReports;
