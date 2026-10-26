@@ -23,8 +23,10 @@ touched** — it stays the one-switch rollback, snapshot tag
 - `weather.ts` — Open-Meteo. **A** = Clearwater max (ship day + next). **M** =
   max at route midpoint + destination over the window. 3-hour cache. No forecast
   → engine stands down and the summer pick is used.
-- `pick-rate.ts` — deadline + cold-chain-cap filter, cheapest with a $1 speed
-  premium ($3 when the route is hot), Next-Day never auto-bought.
+- `pick-rate.ts` — deadline + cold-chain-cap filter, then the **cheapest**
+  rate inside the window; a faster rate wins only on an exact price tie.
+  Next-Day is never auto-bought. (Until 2026-10-26 it paid a $1 speed premium,
+  $3 on a hot route; the owner removed it — see below.)
 - `shadow.ts` — the card payload: would-pick, saving vs summer, the 4-/5-day
   prices summer never quoted, and the ice note.
 - `profile.ts` — the `shipping_rate_profile` Setting flag.
@@ -107,3 +109,25 @@ git and `git push origin <branch>`.
 - Verify the shadow numbers for a week.
 - Optionally re-quote the live pick with the ice weight included, so the
   buy-time guard never trips on a heavier package.
+
+## 2026-10-26 — no speed premium in Live
+
+Owner's call: inside the allowed transit window, take the cheapest rate, not
+the fastest. The $1 / $3 premium was picking a 2-day UPS Ground over a cheaper
+3-day UPS Ground Saver that was also inside the limit.
+
+The two orders the owner flagged, Clearwater → Edmond OK and → Virginia
+Beach VA, are Freshpet XS frozen. The limit is 3 days: the weather table gives
+2 (hot origin, A 28 °C), and the summer floor raises it to 3. The deadline is
+10/30.
+
+| Order | Before | After |
+|---|---|---|
+| 111-7440529-1259445 | UPS Ground, 2 d, EDD 10/28, $13.18 | UPS Ground Saver, 3 d, EDD 10/29, $10.48 |
+| 113-3629043-9294601 | UPS Ground, 2 d, EDD 10/28, $11.61 | UPS Ground Saver, 3 d, EDD 10/29, $8.95 |
+
+FedEx Ground Economy (4 d, EDD 10/30) and USPS Ground Advantage (5 d, EDD
+10/31) are cut by the 3-day limit. This was correct before as well.
+
+Summer v3.5 (`rate-selection.ts`, profile `summer`) keeps its $3 rule
+unchanged. Commit e5c108a04.

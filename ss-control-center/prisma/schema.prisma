@@ -157,6 +157,7 @@ model ShippingPlanItem {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
+  @@index([status, updatedAt])
   @@index([planId])
   @@index([orderId])
   // The Shipping Labels archive search (/api/shipping/search) looks orders
