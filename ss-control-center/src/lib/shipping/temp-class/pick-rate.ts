@@ -23,10 +23,12 @@ import type { TempClass } from "./classes";
 import type { CoolerSize } from "./ice";
 import { allowedDays, type WeatherForClass } from "./days-table";
 
-// Speed premium: a faster rate wins if within this many dollars of the
-// cheapest. $1 normally; $3 on a hot route (matches summer's flat $3).
-const SPEED_TOLERANCE_USD = 1;
-const SPEED_TOLERANCE_HOT_USD = 3;
+// No speed premium (owner 2026-10-26): among the rates inside the allowed
+// transit window the CHEAPEST wins; a faster one only on an exact price tie.
+// (It used to pay up to $1, or $3 on a hot route, for a faster rate — e.g. a
+// 2-day UPS Ground $13.18 over a $10.48 3-day rate inside a 3-day limit.)
+const SPEED_TOLERANCE_USD = 0;
+const SPEED_TOLERANCE_HOT_USD = 0;
 
 const NEXT_DAY_RE = /next day|overnight|priority mail express/i;
 
@@ -140,7 +142,7 @@ export function selectTempAwareRate(args: {
   const cheapest = Math.min(...enriched.map((r) => r.price));
   const hot = (weather.routeMaxC ?? -Infinity) > 20;
   const tol = hot ? SPEED_TOLERANCE_HOT_USD : SPEED_TOLERANCE_USD;
-  const candidates = enriched.filter((r) => r.price - cheapest <= tol);
+  const candidates = enriched.filter((r) => r.price - cheapest <= tol + 0.005);
   candidates.sort((a, b) => {
     if (a.calDays !== b.calDays) return a.calDays - b.calDays; // fewer days first
     const dt =

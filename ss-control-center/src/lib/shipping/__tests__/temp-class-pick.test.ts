@@ -57,46 +57,41 @@ test("FROZEN XL / COOL (cap 4): takes cheapest Ground, excludes Next Day", () =>
   assert.equal(sel.rate?.price, 14);
 });
 
-test("speed premium: $1 default picks a faster near-equal rate", () => {
+test("no speed premium: the cheapest rate inside the limit wins, faster only on a price tie", () => {
   const rates = [
     rate({ title: "UPS Ground", price: 14, eddYmd: "2026-10-26" }), // 3d
     rate({ title: "UPS 3 Day Select", price: 14.5, eddYmd: "2026-10-25" }), // 2d, +$0.50
   ];
   const sel = selectTempAwareRate({
-    rates,
-    tempClass: "FROZEN",
-    size: "XL",
-    deliveryBy: DEADLINE,
-    shipDay: SHIP,
-    weather: { originMaxC: 20, routeMaxC: 5 }, // cool, tol = $1
+    rates, tempClass: "FROZEN", size: "XL", deliveryBy: DEADLINE, shipDay: SHIP,
+    weather: { originMaxC: 20, routeMaxC: 5 },
   });
-  assert.equal(sel.rate?.calDays, 2); // faster wins within $1
+  assert.equal(sel.rate?.title, "UPS Ground"); // cheapest, not the faster one
+  const tie = selectTempAwareRate({
+    rates: [
+      rate({ title: "UPS Ground", price: 14, eddYmd: "2026-10-26" }), // 3d
+      rate({ title: "FedEx Home", price: 14, eddYmd: "2026-10-25" }), // 2d, same price
+    ],
+    tempClass: "FROZEN", size: "XL", deliveryBy: DEADLINE, shipDay: SHIP,
+    weather: { originMaxC: 20, routeMaxC: 5 },
+  });
+  assert.equal(tie.rate?.calDays, 2);
 });
 
-test("speed premium: a $2.50 faster rate is NOT taken when cool ($1 tol) but IS when hot ($3 tol)", () => {
+test("owner's Freshpet case: hot route, 3-day limit → the $10.48 3-day rate, not the $13.18 2-day Ground", () => {
+  const mon = "2026-10-26";
   const rates = [
-    rate({ title: "UPS Ground", price: 14, eddYmd: "2026-10-25" }), // 2d
-    rate({ title: "FedEx 2Day", price: 16.5, eddYmd: "2026-10-24" }), // 1d, +$2.50
+    rate({ title: "UPS Ground", price: 13.18, eddYmd: "2026-10-28" }), // 2d
+    rate({ title: "UPS Ground Saver", price: 10.48, eddYmd: "2026-10-29" }), // 3d
+    rate({ title: "FedEx Home Delivery", price: 15.2, eddYmd: "2026-10-30" }), // 4d — over the limit
   ];
-  const cool = selectTempAwareRate({
-    rates,
-    tempClass: "FROZEN",
-    size: "M",
-    deliveryBy: DEADLINE,
-    shipDay: SHIP,
-    weather: { originMaxC: 20, routeMaxC: 5 }, // tol $1
+  const sel = selectTempAwareRate({
+    rates, tempClass: "FROZEN", size: "XS", deliveryBy: "2026-10-30", shipDay: mon,
+    weather: { originMaxC: 28, routeMaxC: 28 }, summerCapDays: 3,
   });
-  assert.equal(cool.rate?.price, 14); // stays cheapest
-
-  const hot = selectTempAwareRate({
-    rates,
-    tempClass: "FROZEN",
-    size: "M",
-    deliveryBy: DEADLINE,
-    shipDay: SHIP,
-    weather: { originMaxC: 24, routeMaxC: 25 }, // M>20 → tol $3 (cap 2 days)
-  });
-  assert.equal(hot.rate?.calDays, 1); // faster within $3
+  assert.equal(sel.allowedDays, 3);
+  assert.equal(sel.rate?.title, "UPS Ground Saver");
+  assert.equal(sel.rate?.price, 10.48);
 });
 
 test("cold-chain cap can empty the pool → null", () => {
