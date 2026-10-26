@@ -5177,6 +5177,24 @@ function OrderRow({
             timeZone: "America/New_York",
           })} ET) — click the carrier and press Refresh rates.`
         : null;
+  // "UPS Ground Saver · $7.57 · box 12×10×6 in · 2.3 lb" — what to choose and
+  // enter on the Shopify label page.
+  const nanPkg = nanSnapshot?.pkg as
+    | { l?: number; w?: number; h?: number; weight_lb?: number }
+    | null
+    | undefined;
+  const nanHandoff = nanRate
+    ? [
+        `${nanRate.carrier} ${nanRate.service}`,
+        fmt$(nanRate.price),
+        nanPkg?.l && nanPkg?.w && nanPkg?.h
+          ? `box ${nanPkg.l}×${nanPkg.w}×${nanPkg.h} in`
+          : null,
+        nanPkg?.weight_lb ? `${nanPkg.weight_lb} lb` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
   // A re-quote is in flight for THIS order (operator changed the package, or
@@ -6045,8 +6063,24 @@ function OrderRow({
                 {nanBuyBlock}
               </span>
             ) : (
-              <span className="text-[length:var(--ship-badge)] text-ink-3">
-                Shopify rate ready — buy it in Shopify admin
+              // Everything the Shopify label page asks for, so nothing has to
+              // be looked up or typed there (owner, 2026-10-26).
+              <span className="inline-flex flex-wrap items-center gap-1.5 text-[length:var(--ship-badge)] text-ink-2">
+                <span className="text-ink-3">In Shopify pick:</span>
+                <span className="font-semibold text-ink">{nanHandoff}</span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-0.5 rounded px-1 text-ink-3 hover:bg-bg-elev hover:text-ink"
+                  title="Copy carrier, price, box and weight"
+                  onClick={() => {
+                    void navigator.clipboard
+                      .writeText(nanHandoff)
+                      .then(() => toast.success("Copied"))
+                      .catch(() => undefined);
+                  }}
+                >
+                  <Copy size={11} /> Copy
+                </button>
               </span>
             )
           ) : planStop && rateOverride ? (
