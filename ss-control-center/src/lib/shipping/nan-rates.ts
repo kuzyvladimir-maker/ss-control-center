@@ -23,6 +23,11 @@ export interface NanRate {
   eta: string;
   cheapest: boolean;
   fastest: boolean;
+  /** Shopify's codes for this rate (e.g. "ups_shipping"/"93"): what the
+   *  official shippingLabelPurchase takes as preferredRateSelection. Absent
+   *  on snapshots captured before 2026-10-26. */
+  carrierCode?: string;
+  serviceCode?: string;
 }
 
 export interface NanOrderSnapshot {
@@ -81,6 +86,8 @@ export function normalizeNanRates(raw: unknown): NanRate[] {
     let eta = "";
     let cheapest = false;
     let fastest = false;
+    let carrierCode = "";
+    let serviceCode = "";
     if (Array.isArray(r)) {
       full = String(r[0] ?? "");
       price = Number(r[1]);
@@ -93,6 +100,8 @@ export function normalizeNanRates(raw: unknown): NanRate[] {
       eta = String(o.eta_text ?? o.eta ?? o.transit ?? "");
       cheapest = o.cheapest === true;
       fastest = o.fastest === true;
+      carrierCode = String(o.carrier_code ?? o.carrierCode ?? "").trim();
+      serviceCode = String(o.service_code ?? o.serviceCode ?? "").trim();
       if (cheapest || fastest) flagged = true;
     }
     if (!full || !Number.isFinite(price) || price <= 0) continue;
@@ -104,6 +113,7 @@ export function normalizeNanRates(raw: unknown): NanRate[] {
       eta: eta.trim(),
       cheapest,
       fastest,
+      ...(carrierCode && serviceCode ? { carrierCode, serviceCode } : {}),
     });
   }
   if (!flagged) {

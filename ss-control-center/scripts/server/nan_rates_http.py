@@ -5,7 +5,9 @@ Shopify's public Admin API has no rate-listing query, so this replays the
 admin's own FetchShippingRates call (captured once; cookies + csrf live in
 .secrets/nan_shopify_session.json) with each open order's destination and
 weight, and posts the rates to the Command Center (/api/shipping/nan-rates).
-Read-only: it never buys a label.
+Read-only: it never buys a label. It also passes each rate's Shopify
+carrier/service codes, which the Command Center uses to buy through Shopify's
+official label API.
 
   nan_rates_http.py --all        every open unfulfilled NAN order
   nan_rates_http.py --pending    only orders the owner asked to refresh
@@ -191,6 +193,10 @@ def fetch_rates(url, headers, body):
             "eta_text": f"{days} дн." if days else "",
             "cheapest": r.get("name") == g.get("lowestCostRateKey"),
             "fastest": r.get("name") == g.get("fastestRateKey"),
+            # What Shopify's official shippingLabelPurchase takes as
+            # preferredRateSelection (Command Center "Buy label", 2026-10-26).
+            "carrier_code": r.get("carrierCode") or "",
+            "service_code": r.get("serviceCode") or "",
         })
     return out
 

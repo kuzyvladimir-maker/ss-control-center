@@ -67,3 +67,13 @@ test("UPS® / FedEx® prefixes are not repeated in the service name", () => {
   ]);
   assert.deepEqual(r.map((x) => `${x.carrier}|${x.service}`), ["FedEx|Ground Economy", "UPS|Standard"]);
 });
+
+test("rate codes for Shopify's label purchase ride along when present", () => {
+  const rates = normalizeNanRates([
+    { carrier: "UPS", service: "UPS® Ground Saver", price_usd: 7.57, carrier_code: "ups_shipping", service_code: "93" },
+    { carrier: "USPS", service: "Ground Advantage", price_usd: 7.58 },
+  ]);
+  assert.equal(rates[0].carrierCode, "ups_shipping");
+  assert.equal(rates[0].serviceCode, "93");
+  assert.equal("carrierCode" in rates[1], false);
+});

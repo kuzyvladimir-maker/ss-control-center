@@ -296,6 +296,8 @@ interface RateSnapshotView {
     eta: string;
     cheapest: boolean;
     fastest: boolean;
+    carrierCode?: string;
+    serviceCode?: string;
   }>;
 }
 
@@ -1077,6 +1079,24 @@ export default function ShippingLabelsPage() {
     },
     [rateSnapshots, nanChoice],
   );
+  // A NAN rate Shopify's official label API can buy: it needs Shopify's rate
+  // codes (collector, 2026-10-26+) and can't buy FedEx. Anything else is
+  // bought in Shopify admin.
+  // Only offered once the server has the NAN app credentials.
+  const [nanApiConfigured, setNanApiConfigured] = useState(false);
+  useEffect(() => {
+    fetch("/api/shipping/nan-buy?config=1")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setNanApiConfigured(d?.configured === true))
+      .catch(() => setNanApiConfigured(false));
+  }, []);
+  const nanApiBuyable = (
+    r: RateSnapshotView["rates"][number] | null,
+  ): r is RateSnapshotView["rates"][number] & { carrierCode: string; serviceCode: string } =>
+    nanApiConfigured &&
+    !!r?.carrierCode &&
+    !!r.serviceCode &&
+    !/^fedex/i.test(r.carrierCode);
   const requestNanRefresh = useCallback(
     async (
       o: DashboardOrder,
@@ -3268,6 +3288,74 @@ export default function ShippingLabelsPage() {
       return next;
     });
 
+    // ── NAN Health via Shopify's official label API ───────────────────────
+    // (owner 2026-10-26: buy NAN here like every other order). The server
+    // checks Shopify for an existing label, locks the order and sends the
+    // purchase once; FedEx never reaches this branch (onBuy opens Shopify).
+    if (nanShopifyMode(o)) {
+      try {
+        const snap = rateSnapshots[normOrderNumber(o.orderNumber)];
+        const rate = nanRateFor(o.orderNumber);
+        if (!nanApiBuyable(rate) || !snap?.pkg) {
+          throw new Error("No Shopify rate to buy — press Refresh rates, or buy it in Shopify.");
+        }
+        const res = await fetch("/api/shipping/nan-buy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderNumber: o.orderNumber,
+            carrierCode: rate.carrierCode,
+            serviceCode: rate.serviceCode,
+            carrier: rate.carrier,
+            service: rate.service,
+            price: rate.price,
+            pkg: snap.pkg,
+            product: o.items[0]?.productTitle,
+            qty: o.items.reduce((n, i) => n + (i.quantity || 0), 0) || 1,
+          }),
+        });
+        const j = await res.json().catch(() => ({}));
+        if (res.status === 202) {
+          const msg = "Shopify is still processing this purchase — do NOT buy again; refresh in a minute.";
+          setBuyMsg(`${o.orderNumber}: ${msg}`);
+          setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+          return;
+        }
+        if (!res.ok || !j?.ok) {
+          throw new Error(j?.error || `NAN label purchase failed (HTTP ${res.status})`);
+        }
+        const success: BuyReportSuccess = {
+          orderNumber: o.orderNumber,
+          tracking: j.tracking ?? "",
+          itemId: o.orderId,
+          labelPath: j.labelUrl ?? null,
+          pdfSaved: !!j.driveFileId,
+          pdfSource: j.driveFileId ? "drive" : "none",
+          driveError: j.driveError ?? null,
+          carrier: j.carrier ?? rate.carrier,
+          service: j.service ?? rate.service,
+          price: j.price ?? rate.price,
+          pdfBase64: j.pdfBase64 ?? null,
+          driveFileId: j.driveFileId ?? null,
+        };
+        setBuyReport({ scope: "single", total: 1, bought: [success], errors: [] });
+        setBuyMsg(`Bought ${o.orderNumber} (Shopify)`);
+        applyBoughtLocally([success]);
+        try {
+          await printAndMark(success);
+        } catch (printErr) {
+          console.warn("[buy] print after NAN buy failed (non-fatal — label IS bought):", printErr);
+        }
+      } catch (e) {
+        const msg = errMsg(e);
+        setBuyMsg(msg);
+        setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+      } finally {
+        setBuyingRow(null);
+      }
+      return;
+    }
+
     // ── Walmart-direct buy ────────────────────────────────────────────────
     // Buy via Walmart's own API (not Veeqo). Does NOT mark the order Shipped
     // — it stays Acknowledged; the ship-confirm cron (or manual action) marks
@@ -3489,6 +3577,7 @@ export default function ShippingLabelsPage() {
       onManual={() => setManualModal(o)}
       nanMode={nanShopifyMode(o)}
       nanRate={nanShopifyMode(o) ? nanRateFor(o.orderNumber) : null}
+      nanApi={nanShopifyMode(o) && nanApiBuyable(nanRateFor(o.orderNumber))}
       nanSnapshot={rateSnapshots[normOrderNumber(o.orderNumber)] ?? null}
       onPickNanRate={() => setNanPicker(o)}
       onSetTempClass={async (cls: string) => {
@@ -3541,8 +3630,20 @@ export default function ShippingLabelsPage() {
         });
       }}
       onBuy={() => {
-        // NAN in Shopify mode: the label is bought in Shopify admin.
+        // NAN in Shopify mode: bought through Shopify's label API when the
+        // rate allows it (not FedEx, codes present), else in Shopify admin.
         if (nanShopifyMode(o)) {
+          const rate = nanRateFor(o.orderNumber);
+          if (nanApiBuyable(rate)) {
+            if (
+              window.confirm(
+                `Buy ${rate.carrier} ${rate.service} for $${rate.price.toFixed(2)} through Shopify for ${o.orderNumber}?`,
+              )
+            ) {
+              void buyOne(o);
+            }
+            return;
+          }
           window.open(
             nanAdminOrderUrl(
               rateSnapshots[normOrderNumber(o.orderNumber)]?.shopifyOrderId,
@@ -5026,6 +5127,7 @@ function OrderRow({
   onSetTempClass,
   nanMode,
   nanRate,
+  nanApi,
   nanSnapshot,
   onPickNanRate,
   onPacking,
@@ -5083,6 +5185,8 @@ function OrderRow({
   // Carrier opens the Shopify rate picker, Buy label opens Shopify admin.
   nanMode: boolean;
   nanRate: RateSnapshotView["rates"][number] | null;
+  /** This NAN rate can be bought here through Shopify's label API. */
+  nanApi: boolean;
   nanSnapshot: RateSnapshotView | null;
   onPickNanRate: () => void;
   onPacking: () => void;
@@ -6066,7 +6170,13 @@ function OrderRow({
               // Everything the Shopify label page asks for, so nothing has to
               // be looked up or typed there (owner, 2026-10-26).
               <span className="inline-flex flex-wrap items-center gap-1.5 text-[length:var(--ship-badge)] text-ink-2">
-                <span className="text-ink-3">In Shopify pick:</span>
+                <span className="text-ink-3">
+                  {nanApi
+                    ? "Buys here via Shopify:"
+                    : /^fedex/i.test(nanRate?.carrierCode ?? nanRate?.carrier ?? "")
+                      ? "FedEx — buy in Shopify, pick:"
+                      : "In Shopify pick:"}
+                </span>
                 <span className="font-semibold text-ink">{nanHandoff}</span>
                 <button
                   type="button"
@@ -6144,7 +6254,10 @@ function OrderRow({
             }
             title={
               nanMode
-                ? (nanBuyBlock ?? "Opens this order in Shopify admin — buy the label there.")
+                ? (nanBuyBlock ??
+                  (nanApi
+                    ? "Buys this rate through Shopify's label API — tracking and PDF come back here."
+                    : "Opens this order in Shopify admin — buy the label there (Shopify's API can't buy FedEx)."))
                 : walmartStatus?.labelLookupFailed
                 ? `Can't verify if a label was already bought (${walmartStatus.labelLookupError ?? "Walmart lookup failed"}). Re-quote before buying to avoid a double charge.`
                 : planStop && rateOverride
@@ -6162,6 +6275,10 @@ function OrderRow({
               <>
                 <ShoppingCart size={12} className="mr-1" /> Buy (re-quote
                 first)
+              </>
+            ) : nanMode && !nanApi ? (
+              <>
+                <ShoppingCart size={12} className="mr-1" /> Buy in Shopify
               </>
             ) : (
               <>

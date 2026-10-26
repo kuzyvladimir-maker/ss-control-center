@@ -92,3 +92,67 @@ and updating `.secrets/nan_shopify_session.json`.
   plus 0.5 lb.
 - For international orders, the customs HS code and origin come from the
   template, because the app has no `read_products` scope.
+
+## Buying NAN labels from the Command Center (2026-10-26, evening)
+
+Since API 2026-07 Shopify has an official `shippingLabelPurchase` mutation
+([guide](https://shopify.dev/docs/apps/build/orders-fulfillment/order-management-apps/purchase-shipping-labels)).
+It replaces the old "no purchase API" note at the top of this page.
+
+**What it needs.**
+- Inputs: `fulfillmentOrderId`, `shippingDatetime` (must be in the future),
+  `totalWeight`, `packageInfo.customPackage {weight, dimensions, type}`,
+  `preferredRateSelection {carrierCode, serviceCode}` and `notifyCustomer`.
+- Shopify answers asynchronously, `PENDING_PURCHASE` → `PURCHASED` /
+  `PURCHASE_FAILED`. The result's `shippingLabels` carry `trackingInfo` and
+  the `shippingDocuments` LABEL PDF url.
+- **FedEx is not supported** by the mutation. Of the 7 NAN orders
+  #1372–#1378, 3 went FedEx; those stay a Shopify-admin buy.
+
+**Probed without buying.**
+- The NAN app has `write_orders` and `write_merchant_managed_fulfillment_orders`.
+- A call on a CLOSED fulfillment order (#1378) with a past date returned the
+  business error `FULFILLMENT_ORDER_INVALID`, not an access error. So the
+  app-only token may use the mutation.
+- Whether the shop's Shopify Shipping terms and billing let it actually buy
+  is unknown until the first real purchase. That purchase happens only on
+  the owner's word.
+
+**Rate codes.** The admin's internal `FetchShippingRates` returns
+`carrierCode`/`serviceCode` for every rate (e.g. `ups_shipping`/`93` UPS
+Ground Saver, `usps`/`GroundAdvantage`, `fedex`/`fedex_ground_economy`). The
+collector now forwards them as `carrier_code`/`service_code`, and
+`normalizeNanRates` keeps them.
+
+**Code.**
+- `src/lib/shipping/nan-shopify-buy.ts` (+ test): token, find order, purchase
+  once, poll.
+- `src/app/api/shipping/nan-buy/route.ts`: `POST` buys, `GET ?order=` reads
+  the state of the last purchase, `GET ?config=1` reports whether the
+  credentials are set.
+- Card: when the rate can be bought this way, "Buy label" buys here after a
+  confirm, and tracking and PDF come back like any other order (Drive,
+  auto-print, a bought `ShippingPlanItem`). FedEx, or a rate without codes,
+  shows "Buy in Shopify" and opens Shopify admin.
+- The card always shows "In Shopify pick: carrier · price · box · weight"
+  with a Copy button.
+
+**Duplicate guard.**
+1. Shopify first: an OPEN fulfillment order and no tracking number, so a
+   label bought anywhere blocks.
+2. A per-order lock row, `Setting nan_label_buy:<order>`, is written BEFORE
+   the mutation. If that write fails, nothing is bought.
+3. The mutation is sent once. An unknown outcome is recorded as `unknown`
+   and never re-sent. Only a synchronous refusal or `PURCHASE_FAILED`
+   (nothing bought) frees the order.
+
+**Deep link to the Shopify label page.** None exists. The working page is
+`/shipping_labels/purchase/<uuid>`, a session the "Create shipping label"
+button creates. Order-id routes redirect to /orders. Checked in the server
+browser, read-only.
+
+**Not active yet.** Vercel needs `NANHEALTH_SHOP`, `NANHEALTH_CLIENT_ID` and
+`NANHEALTH_CLIENT_SECRET`, the same values as the server's
+`.secrets/shopify_nanhealth_app.env`. The Claude Code guard refused writing
+them, so the owner or Jackie sets them. Until then the page keeps opening
+Shopify admin.
