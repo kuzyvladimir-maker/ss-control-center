@@ -1039,12 +1039,19 @@ export default function ShippingLabelsPage() {
   // NAN Health labels are bought in Shopify unless Settings allows Veeqo
   // (owner, 2026-10-26). null = not loaded yet → treated as "Shopify".
   const [nanViaVeeqo, setNanViaVeeqo] = useState<boolean | null>(null);
-  useEffect(() => {
-    fetch("/api/settings?keys=nan_buy_via_veeqo")
+  // One shared read of the setting: the effect below and load() — which must
+  // know the mode before it asks for the Veeqo plan — both await it.
+  const nanSettingRef = useRef<Promise<boolean> | null>(null);
+  const nanViaVeeqoSetting = useCallback(() => {
+    nanSettingRef.current ??= fetch("/api/settings?keys=nan_buy_via_veeqo")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setNanViaVeeqo(d?.values?.nan_buy_via_veeqo === "true"))
-      .catch(() => setNanViaVeeqo(false));
+      .then((d) => d?.values?.nan_buy_via_veeqo === "true")
+      .catch(() => false);
+    return nanSettingRef.current;
   }, []);
+  useEffect(() => {
+    void nanViaVeeqoSetting().then(setNanViaVeeqo);
+  }, [nanViaVeeqoSetting]);
   // Shopify rate the operator picked per NAN order (index into the snapshot's
   // rates); default = the cheapest one.
   const [nanChoice, setNanChoice] = useState<Record<string, number>>({});
@@ -1522,8 +1529,15 @@ export default function ShippingLabelsPage() {
         ]);
       })();
 
+      // NAN orders in Shopify mode are bought in Shopify admin from the
+      // Shopify rate snapshot, so they don't need Veeqo quotes. Asking for
+      // them anyway made the page's plan 12–15 s (17 orders = 4 waves of 5
+      // concurrent Veeqo quotes; 7 of them NAN) instead of ~6 s.
+      const nanViaVeeqoNow = await nanViaVeeqoSetting();
       const readyOrderIds = dashJson.orders
-        .filter((o) => o.state === "ready_to_buy")
+        .filter(
+          (o) => o.state === "ready_to_buy" && (nanViaVeeqoNow || !isNanOrder(o)),
+        )
         .map((o) => o.orderId);
 
       if (readyOrderIds.length === 0) {
@@ -1548,7 +1562,7 @@ export default function ShippingLabelsPage() {
     } finally {
       setPlanLoading(false);
     }
-  }, [quoteWalmartOrder, probeWalmartLabel]);
+  }, [quoteWalmartOrder, probeWalmartLabel, nanViaVeeqoSetting, isNanOrder]);
 
   useEffect(() => {
     load();
