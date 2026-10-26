@@ -1,4 +1,9 @@
-import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
+import {
+  addBusinessDaysYmd,
+  pickupGapBusinessDays,
+  todayNY,
+  utcToPacificYMD,
+} from "@/lib/shipping/dates";
 import { withoutHiddenOrders } from "./hidden-orders";
 
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
@@ -416,10 +421,11 @@ export async function getRatesForLaterShipDay(
   baseRates?: VeeqoNormalizedRate[],
 ): Promise<{ available: VeeqoNormalizedRate[]; anchorHonored: boolean }> {
   const later = await getRatesForShipDate(order, `${laterYmd}T16:00:00Z`, parcel);
-  const gapDays = Math.round(
-    (Date.parse(`${laterYmd}T00:00:00Z`) - Date.parse(`${baseYmd}T00:00:00Z`)) /
-      86_400_000,
-  );
+  // Measured in carrier PICKUP days, not calendar days: a Sunday/holiday
+  // "today" quote already counts from the next business day, so identical
+  // EDDs for Sun vs Mon are correct, not "ignored" (topic 135, 2026-10-25 —
+  // FedEx 2Day Mon 10/26 showed 10/29 · 3 days instead of 10/28).
+  const gapDays = pickupGapBusinessDays(baseYmd, laterYmd);
   if (gapDays <= 0) return { available: later.available, anchorHonored: true };
 
   const base =
@@ -438,15 +444,19 @@ export async function getRatesForLaterShipDay(
   const anchorHonored = common > 0 && moved > 0;
   if (anchorHonored) return { available: later.available, anchorHonored };
 
-  const shiftMs = gapDays * 86_400_000;
   const projected = later.available.map((r) => {
     const t = Date.parse(r.delivery_promise_date);
-    return Number.isNaN(t)
-      ? r
-      : { ...r, delivery_promise_date: new Date(t + shiftMs).toISOString() };
+    if (Number.isNaN(t)) return r;
+    // Same transit as from today, re-anchored by business days: shift the
+    // EDD's Pacific date and keep Veeqo's time-of-day encoding.
+    const ymd = utcToPacificYMD(r.delivery_promise_date);
+    const shifted = addBusinessDaysYmd(ymd, gapDays);
+    const shiftMs =
+      Date.parse(`${shifted}T00:00:00Z`) - Date.parse(`${ymd}T00:00:00Z`);
+    return { ...r, delivery_promise_date: new Date(t + shiftMs).toISOString() };
   });
   console.warn(
-    `[veeqo] preferred_shipment_date ${laterYmd} IGNORED for order ${order.number} — EDDs projected +${gapDays}d from ${baseYmd}`,
+    `[veeqo] preferred_shipment_date ${laterYmd} IGNORED for order ${order.number} — EDDs projected +${gapDays} business day(s) from ${baseYmd}`,
   );
   return { available: projected, anchorHonored: false };
 }

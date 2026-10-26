@@ -174,3 +174,36 @@ function ymdFromDate(d: Date): string {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+
+// ── Pickup-day gap for projected EDDs (topic 135, 2026-10-25) ──────────────
+// Carriers pick up on business days only. A "ship today" quote made on a
+// Sunday/holiday already counts from the next business day, so it equals the
+// Monday quote. Comparing them by CALENDAR days (Sun→Mon = 1) made us decide
+// Veeqo had ignored the date and push every EDD a day later: FedEx 2Day from
+// Mon 10/26 showed EDD 10/29 · 3 days instead of the carrier's 10/28.
+
+/** Business days a pickup moves when shipping on `laterYmd` instead of
+ *  `baseYmd` (both YYYY-MM-DD). Sun → Mon = 0, Fri → Mon = 1. */
+export function pickupGapBusinessDays(baseYmd: string, laterYmd: string): number {
+  const from = effectiveBusinessDay(baseYmd);
+  const to = effectiveBusinessDay(laterYmd);
+  if (to <= from) return 0;
+  const d = new Date(`${from}T12:00:00`);
+  let n = 0;
+  while (ymdFromDate(d) < to) {
+    d.setDate(d.getDate() + 1);
+    if (isBusinessDay(d)) n++;
+  }
+  return n;
+}
+
+/** Move a YYYY-MM-DD forward by `n` business days (weekends/holidays skipped). */
+export function addBusinessDaysYmd(ymd: string, n: number): string {
+  const d = new Date(`${ymd}T12:00:00`);
+  let left = n;
+  while (left > 0) {
+    d.setDate(d.getDate() + 1);
+    if (isBusinessDay(d)) left--;
+  }
+  return ymdFromDate(d);
+}
