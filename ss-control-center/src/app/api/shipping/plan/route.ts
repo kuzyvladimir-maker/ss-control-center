@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { randomUUID } from "node:crypto";
+import { prisma, prismaBulk } from "@/lib/prisma";
 import {
   fetchAllOrders,
   getProduct,
@@ -1536,47 +1537,81 @@ export async function GET(request: NextRequest) {
     // (2026-10-26) every transaction hung while plain statements went
     // through in ~50 ms — the whole page lost its rates over one INSERT.
     // A draft plan is rebuilt on every refresh, so atomicity buys nothing.
+    //
+    // Later the same day Turso's WRITES stalled instead (one INSERT 11–21 s or
+    // a 502, reads fine) and eleven inserts in a row ran past the deadline:
+    // plan 500, no rates on the page. Now the inserts run in parallel on their
+    // own clients (prismaBulk), each with an id chosen here, so an insert whose
+    // outcome is unknown is looked up by that id and re-sent only if it didn't
+    // land — never a duplicate row.
     const tSave = Date.now();
-    const planRow = await prisma.shippingPlan.create({
-      data: { date: today, status: "draft" },
-    });
-    const planItemRows = await Promise.all(
-      planItems.map((item) =>
-        prisma.shippingPlanItem.create({
-          data: {
-            planId: planRow.id,
-            orderNumber: item.orderNumber,
-            orderId: item.orderId,
-            channel: item.channel,
-            channelKind: item.channelKind,
-            product: item.product,
-            sku: item.sku,
-            qty: item.qty,
-            productType: item.productType,
-            weight: item.weight,
-            boxSize: item.boxSize,
-            budgetMax: item.budgetMax,
-            carrier: item.carrier,
-            service: item.service,
-            price: item.price,
-            edd: item.edd,
-            deliveryBy: item.deliveryBy,
-            labelDate: item.labelDate,
-            physicalShipDate: item.physicalShipDate,
-            actualShipDay: item.actualShipDay,
-            notes: item.notes,
-            status: item.status,
-            allocationId: item.allocationId,
-            carrierId: item.carrierId,
-            remoteShipmentId: item.remoteShipmentId,
-            serviceType: item.serviceType,
-            subCarrierId: item.subCarrierId,
-            serviceCarrier: item.serviceCarrier,
-            totalNetCharge: item.totalNetCharge,
-            baseRate: item.baseRate,
-          },
+    const insertOnce = async <T,>(
+      create: () => Promise<T>,
+      read: () => Promise<T | null>,
+    ): Promise<T> => {
+      try {
+        return await create();
+      } catch (e) {
+        const landed = await read().catch(() => null);
+        if (landed) return landed;
+        console.warn(
+          "[plan] draft insert failed, re-sending once:",
+          e instanceof Error ? e.message.split("\n").pop() : e,
+        );
+        return await create();
+      }
+    };
+    const planId = randomUUID();
+    const planRow = await insertOnce(
+      () =>
+        prismaBulk.shippingPlan.create({
+          data: { id: planId, date: today, status: "draft" },
         }),
-      ),
+      () => prismaBulk.shippingPlan.findUnique({ where: { id: planId } }),
+    );
+    const planItemRows = await Promise.all(
+      planItems.map((item) => {
+        const id = randomUUID();
+        return insertOnce(
+          () =>
+            prismaBulk.shippingPlanItem.create({
+              data: {
+                id,
+                planId: planRow.id,
+                orderNumber: item.orderNumber,
+                orderId: item.orderId,
+                channel: item.channel,
+                channelKind: item.channelKind,
+                product: item.product,
+                sku: item.sku,
+                qty: item.qty,
+                productType: item.productType,
+                weight: item.weight,
+                boxSize: item.boxSize,
+                budgetMax: item.budgetMax,
+                carrier: item.carrier,
+                service: item.service,
+                price: item.price,
+                edd: item.edd,
+                deliveryBy: item.deliveryBy,
+                labelDate: item.labelDate,
+                physicalShipDate: item.physicalShipDate,
+                actualShipDay: item.actualShipDay,
+                notes: item.notes,
+                status: item.status,
+                allocationId: item.allocationId,
+                carrierId: item.carrierId,
+                remoteShipmentId: item.remoteShipmentId,
+                serviceType: item.serviceType,
+                subCarrierId: item.subCarrierId,
+                serviceCarrier: item.serviceCarrier,
+                totalNetCharge: item.totalNetCharge,
+                baseRate: item.baseRate,
+              },
+            }),
+          () => prismaBulk.shippingPlanItem.findUnique({ where: { id } }),
+        );
+      }),
     );
     const plan = { ...planRow, items: planItemRows };
     tStage.db_save = Date.now() - tSave;

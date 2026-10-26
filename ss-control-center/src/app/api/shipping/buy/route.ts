@@ -846,16 +846,47 @@ export async function POST(request: NextRequest) {
         // Update DB. Persist the carrier/service/price ACTUALLY bought (from
         // the fresh rate) so the row keeps showing the purchased service —
         // bought rows that re-quote later must not drift to a different rate.
-        await prisma.shippingPlanItem.update({
-          where: { id: item.id },
-          data: {
-            status: "bought",
-            trackingNumber: tracking,
-            labelPdfUrl: labelPath,
-            service: boughtService,
-            price: boughtPrice,
-          },
-        });
+        //
+        // The label is already BOUGHT at this point, so a DB failure must not
+        // turn it into "Buy failed": during Turso's write timeouts
+        // (2026-10-26, 11–30 s or a 502) that branch showed an error for a
+        // paid label, dropped its tracking number and invited a second buy.
+        // Report the buy, and retry the bookkeeping in the background.
+        const boughtData = {
+          status: "bought",
+          trackingNumber: tracking,
+          labelPdfUrl: labelPath,
+          service: boughtService,
+          price: boughtPrice,
+        };
+        try {
+          await prisma.shippingPlanItem.update({
+            where: { id: item.id },
+            data: boughtData,
+          });
+        } catch (dbErr) {
+          console.error(
+            `[buy] label IS bought for ${item.orderNumber} (${tracking}) but the DB update failed — retrying in background:`,
+            dbErr instanceof Error ? dbErr.message : dbErr,
+          );
+          after(async () => {
+            for (let attempt = 1; attempt <= 3; attempt++) {
+              await new Promise((r) => setTimeout(r, 5_000 * attempt));
+              try {
+                await prisma.shippingPlanItem.update({
+                  where: { id: item.id },
+                  data: boughtData,
+                });
+                return;
+              } catch (e) {
+                console.error(
+                  `[buy] background DB update ${attempt}/3 failed for ${item.orderNumber} (${tracking}):`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
+            }
+          });
+        }
 
         results.bought.push({
           orderNumber: item.orderNumber,

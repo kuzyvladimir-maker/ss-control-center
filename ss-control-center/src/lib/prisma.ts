@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient;
   prismaPool?: PrismaClient[];
   prismaReports?: PrismaClient;
-  prismaReportsPool?: PrismaClient[];
+  prismaBulk?: PrismaClient;
 };
 
 // Some deploy platforms (incl. Vercel) return env values wrapped in literal
@@ -142,23 +142,25 @@ export const prisma = globalForPrisma.prisma;
 // property access (not per slice) so one Promise.all of independent reads is
 // spread over all of them. Not for transactions — array $transaction elements
 // could land on different clients here.
-const REPORTS_POOL_SIZE = 4;
-if (!globalForPrisma.prismaReportsPool) {
-  globalForPrisma.prismaReportsPool = Array.from(
-    { length: REPORTS_POOL_SIZE },
-    () => createPrismaClient(),
-  );
-}
-const reportsPool = globalForPrisma.prismaReportsPool;
-let reportsRr = 0;
-if (!globalForPrisma.prismaReports) {
-  globalForPrisma.prismaReports = new Proxy(reportsPool[0], {
+function rotatingPool(size: number): PrismaClient {
+  const clients = Array.from({ length: size }, () => createPrismaClient());
+  let next = 0;
+  return new Proxy(clients[0], {
     get(_target, prop) {
-      const client = reportsPool[reportsRr++ % reportsPool.length];
+      const client = clients[next++ % clients.length];
       const value = Reflect.get(client, prop, client);
       return typeof value === "function" ? value.bind(client) : value;
     },
   }) as PrismaClient;
 }
 
+globalForPrisma.prismaReports ??= rotatingPool(4);
 export const prismaReports = globalForPrisma.prismaReports;
+
+// Same idea for bursts of independent single-statement WRITES (the plan's
+// draft rows). During Turso's write stalls (2026-10-26: one INSERT 11–21 s or
+// a 502) eleven inserts in a row on one main-pool client blew every deadline
+// and held that client, so /shipping reads queued behind them. Parallel on
+// their own clients, a stall costs one wait, and the main pool stays free.
+globalForPrisma.prismaBulk ??= rotatingPool(8);
+export const prismaBulk = globalForPrisma.prismaBulk;
