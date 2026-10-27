@@ -7,11 +7,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-server";
 import { CREDIT_CARDS_FUND } from "@/lib/finance/personal";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const { id } = await params;
   const card = await prisma.creditCard.findUnique({ where: { id } });
   if (!card) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -20,6 +23,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const { id } = await params;
   const card = await prisma.creditCard.findUnique({ where: { id } });
   if (!card) return NextResponse.json({ error: "not found" }, { status: 404 });

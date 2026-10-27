@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-server";
 import { cardTotals, knownMinPayment, minPayment, utilization, monthlyInterest } from "@/lib/finance/cards";
 
 const num = (v: unknown) => (v != null && v !== "" && Number.isFinite(Number(v)) ? Number(v) : undefined);
@@ -13,6 +14,8 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 const AUTOPAY = new Set(["none", "min", "statement", "full", "fixed"]);
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const owner = req.nextUrl.searchParams.get("owner");
   const cards = await prisma.creditCard.findMany({
     where: { scope: "personal", ...(owner ? { owner } : {}) },
@@ -31,6 +34,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
     if (!b.issuer && !b.name) return NextResponse.json({ error: "issuer or name required" }, { status: 400 });
@@ -69,6 +74,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
     if (!b.id) return NextResponse.json({ error: "id required" }, { status: 400 });
@@ -97,6 +104,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   await prisma.cardEntry.deleteMany({ where: { cardId: id } });

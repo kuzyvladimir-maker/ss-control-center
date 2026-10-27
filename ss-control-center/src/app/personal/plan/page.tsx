@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { Liability } from "@/lib/finance/registry";
 import { simulatePayoff, type PayoffDebt, type Strategy } from "@/lib/finance/payoff";
-import { Kpi, OwnerTag, PersonalNav, StandingBadge, monthLabel, usd, usd2 } from "@/components/personal/registry-ui";
+import { AsOf, Kpi, OwnerTag, PersonalNav, StandingBadge, monthLabel, usd, usd2 } from "@/components/personal/registry-ui";
 
 const EXCLUDE_REASON: Record<string, string> = {
   dispute: "Dispute — amount contested",
@@ -52,7 +52,7 @@ export default function PayoffPlanPage() {
       const inc: Record<string, boolean> = {};
       for (const l of rows) inc[l.id] = l.balance != null && (saved.include?.[l.id] ?? defaultExcluded(l) == null);
       setInclude(inc);
-      if (saved.strategy) setStrategy(saved.strategy);
+      if (saved.strategy === "avalanche" || saved.strategy === "snowball") setStrategy(saved.strategy);
       const mins = rows.filter((l) => inc[l.id]).reduce((s, l) => s + (l.monthlyPayment ?? 0), 0);
       setBudget(saved.budget ?? String(Math.ceil(mins / 50) * 50));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
@@ -70,9 +70,9 @@ export default function PayoffPlanPage() {
   }, [today]);
 
   const debts: PayoffDebt[] = useMemo(() => (ls ?? []).filter((l) => include[l.id] && l.balance != null).map((l) => ({
-    id: l.id, label: l.label, balance: l.balance!, apr: l.apr, minPayment: l.monthlyPayment ?? 0,
+    id: l.id, label: l.label, balance: l.balance!, apr: l.apr, minPayment: l.monthlyPayment,
   })), [ls, include]);
-  const b = Number(budget) || 0;
+  const b = Number.isFinite(Number(budget)) ? Math.max(0, Number(budget)) : 0;
   const plan = useMemo(() => simulatePayoff(debts, b, strategy, startYm), [debts, b, strategy, startYm]);
   const other = useMemo(() => simulatePayoff(debts, b, strategy === "avalanche" ? "snowball" : "avalanche", startYm), [debts, b, strategy, startYm]);
   const byId = new Map((ls ?? []).map((l) => [l.id, l]));
@@ -95,7 +95,7 @@ export default function PayoffPlanPage() {
             <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-end">
               <div>
                 <div className="mb-1 text-[11px] uppercase tracking-wide text-ink-3">Strategy</div>
-                <div className="inline-flex rounded-md border border-rule p-0.5">
+                <div className="inline-flex flex-wrap rounded-md border border-rule p-0.5">
                   {(["avalanche", "snowball"] as Strategy[]).map((s) => (
                     <button key={s} onClick={() => setStrategy(s)} className={cn("rounded px-3 py-1.5 text-[13px]", strategy === s ? "bg-green text-white" : "text-ink-2 hover:bg-bg-elev")}>
                       {s === "avalanche" ? "Avalanche — highest APR first" : "Snowball — smallest balance first"}
@@ -108,7 +108,7 @@ export default function PayoffPlanPage() {
                 <Input value={budget} onChange={(e) => setBudget(e.target.value)} inputMode="decimal" />
               </div>
               <div className="text-[12px] text-ink-3">
-                Minimums of the included debts: <span className="font-medium text-ink">{usd2(plan.minimumsTotal)}</span> / mo · first month {monthLabel(startYm)}
+                Known minimums of the included debts: <span className="font-medium text-ink">{usd2(plan.minimumsTotal)}</span> / mo · first month {monthLabel(startYm)}
               </div>
             </CardContent>
           </Card>
@@ -120,12 +120,17 @@ export default function PayoffPlanPage() {
           )}
           {plan.aprUnknown.length > 0 && (
             <div className="rounded-md border border-warn/40 bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">
-              APR is not set for {plan.aprUnknown.length} of {debts.length} debts — their interest is not modeled (the real cost is higher){strategy === "avalanche" ? ", and avalanche puts them last" : ""}. Add APRs on the Obligations page.
+              APR is not set for {plan.aprUnknown.length} of {debts.length} debts — their interest is not modeled; actual cost and payoff dates may differ{strategy === "avalanche" ? ", and avalanche puts them last" : ""}. Add APRs on the Obligations page.
+            </div>
+          )}
+          {plan.minimumUnknown.length > 0 && (
+            <div className="rounded-md border border-warn/40 bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">
+              Minimum payments are not set for {plan.minimumUnknown.length} included debts. This scenario reserves only known minimums; it cannot confirm that your budget covers every required payment. Add the missing payments on the Obligations page.
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Kpi label="Debt-free" value={plan.feasible ? (plan.debtFreeDate ? monthLabel(plan.debtFreeDate) : "not within 50 years") : "—"} hint={plan.months ? `${plan.months} months` : undefined} tone="green" />
+            <Kpi label="Modeled payoff" value={debts.length === 0 ? "No debts selected" : plan.feasible ? (plan.debtFreeDate ? monthLabel(plan.debtFreeDate) : "not within 50 years") : "—"} hint={plan.months ? `${plan.months} months · selected debts only` : undefined} tone="green" />
             <Kpi label="Interest (modeled)" value={plan.feasible ? usd(plan.totalInterest) : "—"} hint="only debts with an APR" />
             <Kpi label="Total paid" value={plan.feasible ? usd(plan.totalPaid) : "—"} hint={`${debts.length} debts · ${usd(debts.reduce((s, d) => s + d.balance, 0))} now`} />
             <Kpi label={other.strategy === "avalanche" ? "Avalanche instead" : "Snowball instead"}
@@ -144,11 +149,11 @@ export default function PayoffPlanPage() {
                 return (
                   <div key={p.id} className="grid grid-cols-2 items-center gap-2 rounded-md px-2 py-1.5 hover:bg-bg-elev md:grid-cols-[1.5rem_2fr_0.8fr_1fr_0.6fr_0.8fr_0.9fr_0.8fr]">
                     <input type="checkbox" checked onChange={() => setInclude((s) => ({ ...s, [p.id]: false }))} title="Exclude from the plan" />
-                    <div className="flex items-center gap-2 text-[13px] text-ink"><span className="text-ink-4">{i + 1}.</span> {p.label} {l && <StandingBadge standing={l.standing} />}</div>
+                    <div className="min-w-0 text-[13px] text-ink"><div className="flex flex-wrap items-center gap-2"><span className="text-ink-4">{i + 1}.</span> {p.label} {l && <StandingBadge standing={l.standing} />}</div>{l && <AsOf asOf={l.balanceAsOf} source={l.balanceSource} />}</div>
                     <OwnerTag owner={l?.owner} />
                     <span className="text-right text-[13px] tabular text-ink">{usd2(p.startBalance)}</span>
                     <span className={cn("text-right text-[13px] tabular", p.apr == null ? "text-ink-4" : "text-ink-2")}>{p.apr != null ? `${p.apr}%` : "not set"}</span>
-                    <span className={cn("text-right text-[13px] tabular", p.minPayment ? "text-ink-2" : "text-ink-4")}>{p.minPayment ? usd2(p.minPayment) : "none"}</span>
+                    <span className={cn("text-right text-[13px] tabular", p.minPayment != null ? "text-ink-2" : "text-ink-4")}>{p.minPayment != null ? usd2(p.minPayment) : "not set"}</span>
                     <span className="text-right text-[13px] tabular text-ink">{p.payoffDate ? monthLabel(p.payoffDate) : "—"}</span>
                     <span className="text-right text-[13px] tabular text-ink-3">{p.apr != null ? usd2(p.interestPaid) : "—"}</span>
                   </div>

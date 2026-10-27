@@ -172,7 +172,7 @@ export function proxy(request: NextRequest) {
     // finance endpoint via `?scope=personal`. Closes the cross-module leak where
     // a finance-role staffer could read personal funds/bills through /api/finance.
     if (request.nextUrl.searchParams.get("scope") === "personal") {
-      if (access && !canAccessModule(access, "personal")) {
+      if (!access || !canAccessModule(access, "personal")) {
         return NextResponse.json(
           { error: "Module access required" },
           { status: 403 }
@@ -194,7 +194,8 @@ export function proxy(request: NextRequest) {
   // 3b. Page gate — redirect a forbidden module's page to /no-access.
   if (pathname !== "/no-access") {
     const access = parseAccessCookie(request.cookies.get("sscc-access")?.value);
-    if (access && !canAccessPath(access, pathname)) {
+    if ((pathname === "/personal" || pathname.startsWith("/personal/")) && !access
+      || access && !canAccessPath(access, pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/no-access";
       url.search = `from=${encodeURIComponent(pathname)}`;

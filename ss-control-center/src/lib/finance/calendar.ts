@@ -32,6 +32,9 @@ export interface CalItem {
   time?: string | null;
   eventKind?: string | null; // payment | installment | hearing | mediation | window | deadline
   refId?: string;
+  amountAsOf?: string | null;
+  amountSource?: string | null;
+  done?: boolean; // suppress a completed payment and its replaced minimum
 }
 
 export interface CalEntry {
@@ -46,6 +49,8 @@ export interface CalEntry {
   standing?: string | null;
   time?: string | null;
   eventKind?: string | null;
+  amountAsOf?: string | null;
+  amountSource?: string | null;
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -59,6 +64,7 @@ export function buildCalendar(items: CalItem[], todayISO: string, windowDays = 4
   const entry = (it: CalItem, iso: string): CalEntry => ({
     date: iso, day: Number(iso.slice(8, 10)), kind: it.kind, label: it.label,
     owner: it.owner ?? null, amount: it.amount == null ? null : round2(it.amount), refId: it.refId,
+    amountAsOf: it.amountAsOf ?? null, amountSource: it.amountSource ?? null,
     ...(it.endDate ? { endDate: it.endDate } : {}),
     ...(it.standing ? { standing: it.standing } : {}),
     ...(it.time ? { time: it.time } : {}),
@@ -83,11 +89,12 @@ export function buildCalendar(items: CalItem[], todayISO: string, windowDays = 4
   const replaced = new Set<string>();
   for (const it of items) {
     if (!it.date) continue;
+    if (it.supersedes) replaced.add(`${it.supersedes}|${it.date}`);
+    if (it.done) continue;
     const open = it.endDate ? it.date <= endISO && it.endDate >= todayISO : it.date >= todayISO && it.date <= endISO;
     if (!open) continue;
     const iso = it.date < todayISO ? todayISO : it.date; // an open window shows from today
     entries.push(entry(it, iso));
-    if (it.supersedes) replaced.add(`${it.supersedes}|${it.date}`);
   }
 
   const out = entries.filter((e) => !(e.kind !== "event" && e.refId && replaced.has(`${e.refId}|${e.date}`)));

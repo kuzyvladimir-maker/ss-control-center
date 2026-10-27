@@ -5,6 +5,7 @@ import { minPayment, knownMinPayment, utilization, cardTotals } from "../src/lib
 import { buildCalendar, type CalItem } from "../src/lib/finance/calendar";
 import { cardToLiability, debtToLiability, sortLiabilities, registryTotals, netWorth, collectAlerts } from "../src/lib/finance/registry";
 import { orderFor, simulatePayoff, addMonths } from "../src/lib/finance/payoff";
+import { buildPersonalCalendar } from "../src/lib/finance/personal-calendar";
 import type { FundConfig } from "../src/lib/finance/types";
 
 let failures = 0;
@@ -47,6 +48,9 @@ const t = cardTotals([
 eq("totalBalance", t.totalBalance, 13400);
 eq("overallUtilization 0.45", t.overallUtilization, 0.45);
 eq("totalMinPayment (40 + 228)", t.totalMinPayment, 268);
+const partial = cardTotals([{ currentBalance: 100, creditLimit: 200, apr: 0, minPaymentDue: 10 }, { currentBalance: 1000, creditLimit: 0, apr: null }]);
+eq("missing limit does not inflate utilization", partial.overallUtilization, 0.5);
+eq("incomplete card totals report missing fields", [partial.limitsUnknown, partial.aprsUnknown, partial.minimumsUnknown], [1, 1, 1]);
 
 // E. Calendar: month-end clamp + next-occurrence within window.
 const items: CalItem[] = [
@@ -124,6 +128,11 @@ const short = simulatePayoff(pd, 80, "avalanche", "2026-11");
 eq("budget below minimums → infeasible + shortfall", [short.feasible, short.shortfall], [false, 20]);
 eq("same inputs → same plan", JSON.stringify(simulatePayoff(pd, 300, "snowball", "2026-11")), JSON.stringify(sb));
 eq("addMonths wraps the year", addMonths("2026-11", 3), "2027-02");
+const unknownMinimum = simulatePayoff([{ ...pd[0], minPayment: null }], 300, "avalanche", "2026-11");
+eq("unknown minimum is reported, never confirmed zero", unknownMinimum.minimumUnknown, ["big"]);
+eq("unknown minimum stays null in plan lines", unknownMinimum.order[0].minPayment, null);
+eq("explicit zero minimum is known", simulatePayoff([{ ...pd[0], minPayment: 0 }], 300, "avalanche", "2026-11").minimumUnknown, []);
+eq("empty selection is zero months, not 50 years", simulatePayoff([], 0, "snowball", "2026-11").months, 0);
 
 // J. Calendar Phase 2: one-offs, open windows, startFrom, unknown amount, supersedes.
 const cal2 = buildCalendar([
@@ -143,6 +152,23 @@ eq("open window shows from today", at("ev2"), ["2026-10-27"]);
 eq("mediation inside 60 days", at("ev3"), ["2026-12-10"]);
 eq("past one-off not in the forward calendar", at("ev4"), []);
 eq("unknown amount still shown", cal2.filter((e) => e.refId === "moto").map((e) => e.amount), [null, null]);
+
+// K. Actual API read model: source/owner, completion, overdue retention, exact dates.
+const calendarCard = { ...cardRow, id: "bjs", name: "BJ's", dueDay: 19, nextDueDate: "2026-11-19", minPaymentDue: 225, balanceAsOf: "2026-10-27", balanceSource: "Plaid 2026-10-27" };
+const fullPayment = { id: "full", cardId: "bjs", debtId: null, title: "Full statement", date: "2026-11-19", endDate: null, time: null, kind: "payment", amount: 6715.07, status: "planned", source: "Owner decision 2026-10-26" };
+const makeCalendar = (events = [fullPayment], date = "2026-10-27") => buildPersonalCalendar({ cards: [calendarCard], bills: [], loans: [], events }, date, 60);
+const fullCal = makeCalendar();
+eq("full statement and next month's min counted once", fullCal.totalDue, 6940.07);
+eq("event inherits obligation owner", fullCal.entries[0].owner, "Vladimir");
+eq("calendar carries amount source", fullCal.entries[0].amountSource, "Owner decision 2026-10-26");
+eq("done full statement does not resurrect its minimum", makeCalendar([{ ...fullPayment, status: "done" }]).entries.map((e) => [e.date, e.amount]), [["2026-12-19", 225]]);
+eq("cancelled full statement restores regular minimum", makeCalendar([{ ...fullPayment, status: "cancelled" }]).entries.map((e) => e.amount), [225, 225]);
+eq("same overdue payment appears once, not as event and card", makeCalendar([fullPayment], "2026-11-20").overdue.map((e) => e.refId), ["full"]);
+eq("completed payment not flagged overdue by stale card next date", makeCalendar([{ ...fullPayment, status: "done" }], "2026-11-20").overdue.length, 0);
+eq("unresolved event older than 60 days stays visible", makeCalendar([{ ...fullPayment, date: "2026-07-01" }]).overdue.map((e) => e.refId), ["full"]);
+eq("missed event stays visible", makeCalendar([{ ...fullPayment, status: "missed", date: "2026-07-01" }]).overdue.length, 1);
+const exact = buildPersonalCalendar({ cards: [{ ...calendarCard, dueDay: null }], bills: [], loans: [], events: [] }, "2026-10-27");
+eq("exact card date works without a recurring day", exact.entries.map((e) => e.date), ["2026-11-19"]);
 
 console.log(failures === 0 ? "\n✓ ALL PASS" : `\n✗ ${failures} FAIL`);
 process.exit(failures === 0 ? 0 : 1);

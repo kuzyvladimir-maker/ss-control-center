@@ -41,8 +41,11 @@ export default function NetWorthPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this asset?")) return;
-    await fetch(`/api/personal/registry?type=asset&id=${id}`, { method: "DELETE" });
-    load();
+    try {
+      const r = await fetch(`/api/personal/registry?type=asset&id=${id}`, { method: "DELETE" });
+      if (!r.ok) throw new Error("Could not delete the asset");
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }
 
   const nw = data?.netWorth;
@@ -65,7 +68,7 @@ export default function NetWorthPage() {
         <>
           <AlertsPanel alerts={assetAlerts} />
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <Kpi label="Net worth" value={usd(nw.net)} tone={nw.net < 0 ? "danger" : "green"} hint={nw.unknownLiabilities ? `${nw.unknownLiabilities} debts with unknown balance not included` : undefined} />
+            <Kpi label="Net worth (known)" value={usd(nw.net)} tone={nw.net < 0 ? "danger" : "green"} hint={nw.unknownLiabilities ? `${nw.unknownLiabilities} debts with unknown balance not included` : undefined} />
             <Kpi label="Assets" value={usd(nw.assets)} hint={`${data.assets.filter((a) => a.active).length} accounts`} />
             <Kpi label="Liabilities (known)" value={usd(nw.liabilities)} hint={`${data.totals.all.count} obligations · tap for details`} href="/personal/obligations" />
           </div>

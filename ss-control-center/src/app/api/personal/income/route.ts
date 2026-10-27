@@ -6,10 +6,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-server";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const incomes = await prisma.payout.findMany({
     where: { scope: "personal" },
     orderBy: { depositDate: "desc" },
@@ -28,6 +31,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
     const amount = round2(Math.abs(Number(b.amount)));

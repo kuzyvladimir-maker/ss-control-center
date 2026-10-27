@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { AsOf, PersonalNav, StandingBadge, dateShort } from "@/components/personal/registry-ui";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-const usd2 = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 interface CC {
   id: string; owner: string | null; issuer: string; name: string | null; last4: string | null;
@@ -32,7 +31,7 @@ interface CC {
   minPaymentDue: number | null; nextDueDate: string | null; closed: boolean;
   standing: string | null; balanceAsOf: string | null; balanceSource: string | null;
 }
-interface Totals { count: number; totalBalance: number; totalLimit: number; overallUtilization: number; totalMinPayment: number; monthlyInterest: number }
+type Totals = import("@/lib/finance/cards").CardTotals;
 
 const EMPTY = { owner: "Vladimir", issuer: "", name: "", last4: "", creditLimit: "", currentBalance: "", apr: "", minPaymentDue: "", statementDay: "", dueDay: "", balanceSource: "" };
 
@@ -120,11 +119,15 @@ export default function PersonalCardsPage() {
       {/* Totals */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Kpi label="Total balance" value={usd(totals?.totalBalance ?? 0)} />
-        <Kpi label="Total limit" value={totals && totals.totalLimit > 0 ? usd(totals.totalLimit) : "—"} />
-        <Kpi label="Utilization" value={totals && totals.totalLimit > 0 ? `${Math.round(totals.overallUtilization * 100)}%` : "—"} warn={!!totals && totals.totalLimit > 0 && totals.overallUtilization > 0.3} />
-        <Kpi label="Minimums / mo" value={usd(totals?.totalMinPayment ?? 0)} />
-        <Kpi label="Interest / mo" value={usd(totals?.monthlyInterest ?? 0)} />
+        <Kpi label="Known limits" value={totals && totals.totalLimit > 0 ? usd(totals.totalLimit) : "—"} />
+        <Kpi label="Utilization (known limits)" value={totals && totals.totalLimit > 0 ? `${Math.round(totals.overallUtilization * 100)}%` : "—"} warn={!!totals && totals.totalLimit > 0 && totals.overallUtilization > 0.3} />
+        <Kpi label="Known minimums / mo" value={usd(totals?.totalMinPayment ?? 0)} />
+        <Kpi label="Modeled interest / mo" value={usd(totals?.monthlyInterest ?? 0)} />
       </div>
+
+      {totals && (totals.limitsUnknown > 0 || totals.aprsUnknown > 0 || totals.minimumsUnknown > 0) && (
+        <p className="text-[12px] text-ink-3">Not set: {totals.limitsUnknown} limits, {totals.aprsUnknown} APRs on cards with balances, {totals.minimumsUnknown} minimums. Totals above use only known values.</p>
+      )}
 
       {showAdd && (
         <Card>

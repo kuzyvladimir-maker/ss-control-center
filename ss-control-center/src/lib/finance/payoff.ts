@@ -16,7 +16,7 @@ export interface PayoffDebt {
   label: string;
   balance: number;
   apr: number | null; // annual % (28.74); null = unknown
-  minPayment: number; // monthly minimum (0 = none)
+  minPayment: number | null; // null = unknown; 0 = confirmed no minimum
 }
 
 export interface PayoffLine {
@@ -24,7 +24,7 @@ export interface PayoffLine {
   label: string;
   startBalance: number;
   apr: number | null;
-  minPayment: number;
+  minPayment: number | null;
   payoffMonth: number | null; // 1-based month index; null = not paid off within the horizon
   payoffDate: string | null; // "YYYY-MM"
   interestPaid: number;
@@ -42,6 +42,7 @@ export interface PayoffResult {
   totalPaid: number;
   order: PayoffLine[]; // in payoff priority order
   aprUnknown: string[]; // ids whose interest is not modeled
+  minimumUnknown: string[]; // ids whose required payment is not modeled
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -68,12 +69,15 @@ export function addMonths(startYm: string, n: number): string {
 export function simulatePayoff(debts: PayoffDebt[], monthlyBudget: number, strategy: Strategy, startYm: string, maxMonths = 600): PayoffResult {
   const ordered = orderFor(debts.filter((d) => d.balance > 0), strategy);
   const lines: PayoffLine[] = ordered.map((d) => ({
-    id: d.id, label: d.label, startBalance: round2(d.balance), apr: d.apr, minPayment: round2(Math.max(0, d.minPayment)),
+    id: d.id, label: d.label, startBalance: round2(d.balance), apr: d.apr,
+    minPayment: d.minPayment == null ? null : round2(Math.max(0, d.minPayment)),
     payoffMonth: null, payoffDate: null, interestPaid: 0,
   }));
-  const minimumsTotal = round2(lines.reduce((s, l) => s + Math.min(l.minPayment, l.startBalance), 0));
+  const minimumsTotal = round2(lines.reduce((s, l) => s + Math.min(l.minPayment ?? 0, l.startBalance), 0));
   const budget = round2(Math.max(0, monthlyBudget));
-  const base = { strategy, monthlyBudget: budget, minimumsTotal, aprUnknown: lines.filter((l) => l.apr == null).map((l) => l.id) };
+  const base = { strategy, monthlyBudget: budget, minimumsTotal,
+    aprUnknown: lines.filter((l) => l.apr == null).map((l) => l.id),
+    minimumUnknown: lines.filter((l) => l.minPayment == null).map((l) => l.id) };
 
   if (lines.length === 0) {
     return { ...base, feasible: true, shortfall: 0, months: 0, debtFreeDate: null, totalInterest: 0, totalPaid: 0, order: [] };
@@ -98,7 +102,7 @@ export function simulatePayoff(debts: PayoffDebt[], monthlyBudget: number, strat
     let left = budget;
     for (let i = 0; i < lines.length; i++) {
       if (bal[i] <= 0) continue;
-      const pay = round2(Math.min(bal[i], lines[i].minPayment, left));
+      const pay = round2(Math.min(bal[i], lines[i].minPayment ?? 0, left));
       bal[i] = round2(bal[i] - pay); left = round2(left - pay); totalPaid = round2(totalPaid + pay);
     }
     // 3. The rest to the first open debt in strategy order, cascading.

@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-server";
 import {
   STANDINGS, cardToLiability, collectAlerts, debtToLiability, netWorth, registryTotals, sortLiabilities,
 } from "@/lib/finance/registry";
@@ -67,7 +68,35 @@ function stampSource(data: Record<string, unknown>, changed: boolean, asOfKey: s
 
 const bad = (error: string) => NextResponse.json({ ok: false, error }, { status: 400 });
 
-export async function GET() {
+// Invalid numbers must not silently erase a real balance or become a guessed 0.
+function invalidInput(b: Record<string, unknown>): string | null {
+  if (!b || typeof b !== "object" || Array.isArray(b)) return "object required";
+  const fields = b.type === "asset" ? ["value"] : b.type === "event" ? ["amount"]
+    : b.type === "card" ? ["currentBalance", "statementBalance", "creditLimit", "apr", "minPaymentDue", "autopayAmount", "dueDay"]
+    : ["balance", "apr", "monthlyPayment", "dueDay"];
+  for (const k of fields) {
+    if (!(k in b)) continue;
+    const v = b[k], blank = v == null || typeof v === "string" && !v.trim();
+    if (blank) {
+      if (["value", "currentBalance", "statementBalance"].includes(k)) return `${k} must be a number`;
+      continue;
+    }
+    if ((typeof v !== "number" && typeof v !== "string") || !Number.isFinite(Number(v))) return `${k} must be a finite number`;
+    if (k !== "value" && Number(v) < 0) return `${k} must not be negative`;
+    if (k === "dueDay" && (!Number.isInteger(Number(v)) || Number(v) < 1 || Number(v) > 31)) return "dueDay must be 1–31";
+  }
+  for (const k of ["date", "endDate", "balanceAsOf", "valueAsOf", "nextDueDate", "standingSince", "maturityDate"]) {
+    if (!b[k]) continue;
+    const v = iso(b[k]);
+    if (!v || !Number.isFinite(Date.parse(v)) || new Date(v).toISOString().slice(0, 10) !== v) return `${k} must be a valid date`;
+  }
+  if (b.date && b.endDate && String(b.endDate) < String(b.date)) return "endDate must not precede date";
+  return null;
+}
+
+export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const [cards, debts, events, assets] = await Promise.all([
     prisma.creditCard.findMany({ where: { scope: "personal" } }),
     // Both pools: a business-plan debt is still the owner's obligation (shown, not copied).
@@ -89,8 +118,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
+    const invalid = invalidInput(b);
+    if (invalid) return bad(invalid);
     if (b.type === "event") {
       const data = pick(b, EVENT_FIELDS);
       if (!data.date || !data.title) return bad("date (YYYY-MM-DD) and title required");
@@ -131,8 +164,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
+    const invalid = invalidInput(b);
+    if (invalid) return bad(invalid);
     if (!b.id) return bad("id required");
     const id = String(b.id);
 
@@ -176,6 +213,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   const type = req.nextUrl.searchParams.get("type");
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return bad("id required");

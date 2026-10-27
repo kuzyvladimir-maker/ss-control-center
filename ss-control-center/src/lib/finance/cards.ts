@@ -37,7 +37,7 @@ export function knownMinPayment(c: CardLike): number | null {
   return minPayment(c);
 }
 
-/** Utilization ratio (0..1+) = balance ÷ limit. A credit-score driver (<0.30 good). */
+/** Utilization ratio (0..1+) = balance ÷ limit. */
 export function utilization(c: CardLike): number {
   const lim = c.creditLimit || 0;
   if (lim <= 0) return 0;
@@ -58,15 +58,24 @@ export interface CardTotals {
   overallUtilization: number; // ratio 0..1+
   totalMinPayment: number;
   monthlyInterest: number;
+  limitsUnknown: number;
+  aprsUnknown: number;
+  minimumsUnknown: number;
 }
 
-/** Portfolio totals across many cards — overall utilization is the household number
- *  that actually moves a credit score (Σbalance ÷ Σlimit). */
+/** Utilization uses only cards with known limits in BOTH numerator and denominator.
+ * Missing limits, APRs and minimums are reported separately from known totals. */
 export function cardTotals(cards: CardLike[]): CardTotals {
   let totalBalance = 0, totalLimit = 0, totalStatement = 0, totalMin = 0, mInt = 0;
+  let limitedBalance = 0, limitsUnknown = 0, aprsUnknown = 0, minimumsUnknown = 0;
   for (const c of cards) {
     totalBalance += Math.max(0, c.currentBalance || 0);
-    totalLimit += c.creditLimit || 0;
+    if (c.creditLimit != null && c.creditLimit > 0) {
+      totalLimit += c.creditLimit;
+      limitedBalance += Math.max(0, c.currentBalance || 0);
+    } else limitsUnknown++;
+    if (c.currentBalance > 0 && c.apr == null) aprsUnknown++;
+    if (knownMinPayment(c) == null) minimumsUnknown++;
     totalStatement += Math.max(0, c.statementBalance || 0);
     totalMin += minPayment(c);
     mInt += monthlyInterest(c);
@@ -76,8 +85,9 @@ export function cardTotals(cards: CardLike[]): CardTotals {
     totalBalance: round2(totalBalance),
     totalLimit: round2(totalLimit),
     totalStatement: round2(totalStatement),
-    overallUtilization: totalLimit > 0 ? round2(totalBalance / totalLimit) : 0,
+    overallUtilization: totalLimit > 0 ? round2(limitedBalance / totalLimit) : 0,
     totalMinPayment: round2(totalMin),
     monthlyInterest: round2(mInt),
+    limitsUnknown, aprsUnknown, minimumsUnknown,
   };
 }
