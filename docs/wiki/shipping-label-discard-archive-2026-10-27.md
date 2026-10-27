@@ -51,8 +51,15 @@ The archive uses the same route, which was extended:
    A used label isn't refunded, and in Veeqo the cancel would still put a
    shipped order back into the queue. If the lookup fails, the dialog shows a
    warning only.
-2. **Other refusals:** a merged-shipment label (it covers several orders), and
-   a label that is already discarded. A label older than 14 days only gets a
+2. **Other refusals:**
+   - a Veeqo shipment that isn't a label Veeqo sold. A sold label carries
+     `label_url` and `outbound_label_charges`, as seen on Freshpet
+     113-0990536-6033819. NAN #1378 had a synced shipment with no tracking,
+     which the first dry run would have "cancelled";
+   - a shipment without a tracking number;
+   - any NAN order, which always goes through Shopify;
+   - a merged-shipment label, because it covers several orders;
+   - a label that is already discarded. A label older than 14 days only gets a
    warning that the refund may not come. Neither Veeqo nor Walmart documents
    the window, so it is not a hard block.
 3. **One call per label.** A lock row (Setting `label_discard:<TRACKING>`) is

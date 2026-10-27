@@ -225,6 +225,19 @@ async function assess(target: Target): Promise<Assessment> {
   let carrierCheck: CarrierCheck | null = null;
   const t = target.tracking;
 
+  // A label Veeqo sold carries the label itself and its charges (seen on
+  // Freshpet 113-0990536-6033819: label_url, outbound_label_charges). A
+  // shipment without them is a record of a fulfilment done elsewhere.
+  if (
+    target.via === "veeqo" &&
+    target.fields &&
+    !target.fields.includes("label_url") &&
+    !target.fields.includes("outbound_label_charges")
+  ) {
+    reasons.push(
+      "Veeqo has no label on this shipment — it wasn't bought through Veeqo. Cancel it where it was bought.",
+    );
+  }
   if (!t) {
     // A Veeqo shipment without tracking is a fulfilment synced from the
     // channel (NAN #1378: bought in Shopify, shipped in Veeqo with no
