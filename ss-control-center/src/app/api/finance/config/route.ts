@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Use a constant gross margin and a personal share between 0% and 100%. Economics is not connected yet." }, { status: 400 });
   }
   await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`UPDATE "Setting" SET "value" = "value" WHERE "key" = ${TREASURY_KEY}`;
     const current = await getTreasuryConfig(tx);
     const settings: TreasurySettings = {
       updatedAt: new Date().toISOString(),

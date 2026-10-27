@@ -12,7 +12,14 @@ async function main() {
   const dir = await mkdtemp(join(tmpdir(), "sscc-treasury-test-"));
   delete process.env.TURSO_DATABASE_URL; delete process.env.TURSO_AUTH_TOKEN;
   const db = new PrismaClient({ adapter: new PrismaLibSql({ url: `file:${join(dir, "test.db")}` }) });
-  Object.assign(globalThis, { prisma: db, prismaPool: [db], prismaReports: db, prismaBulk: db });
+  const second = new PrismaClient({ adapter: new PrismaLibSql({ url: `file:${join(dir, "test.db")}` }) });
+  let transactionIndex = 0;
+  const pooled = new Proxy(db, { get(target, key) {
+    const client = key === "$transaction" && transactionIndex++ % 2 === 1 ? second : target;
+    const value = Reflect.get(client, key, client);
+    return typeof value === "function" ? value.bind(client) : value;
+  } });
+  Object.assign(globalThis, { prisma: pooled, prismaPool: [db, second], prismaReports: db, prismaBulk: db });
   try {
     for (const sql of [
       `CREATE TABLE Setting (id TEXT PRIMARY KEY, key TEXT NOT NULL UNIQUE, value TEXT NOT NULL)`,
@@ -54,8 +61,11 @@ async function main() {
     assert.equal((await db.fund.findUniqueOrThrow({ where: { id: "free" } })).balance, 0);
     assert.equal((await db.payout.findUniqueOrThrow({ where: { payout_dedup: { marketplace: "amazon", externalId: "fixture-1" } } })).distributed, false);
     await db.$executeRawUnsafe(`DROP TRIGGER fail_personal`);
-    const commits = await Promise.all([runDistribution({ preview: false }), runDistribution({ preview: false })]);
-    assert.equal(commits.filter((r) => r.runId).length, 1);
+    const commits = await Promise.allSettled([runDistribution({ preview: false }), runDistribution({ preview: false })]);
+    assert.equal(commits.filter((r) => r.status === "fulfilled" && r.value.runId).length, 1);
+    // SQLite may serialize the two writers or reject one with BUSY. A retry
+    // after either outcome must see the already-claimed payout.
+    assert.equal((await runDistribution({ preview: false })).runId, undefined);
     assert.equal(await db.financePlanRun.count(), 1);
     const personal = await db.payout.findMany({ where: { scope: "personal" } });
     assert.equal(personal.length, 1); assert.equal(personal[0].netAmount, 140);
@@ -71,7 +81,9 @@ async function main() {
     assert.equal((await db.fund.findUniqueOrThrow({ where: { id: "pfree" } })).balance, 140);
     // Manual draw: sufficient FREE only, retry-safe, no independent ledger undo.
     const input = { action: "draw" as const, amount: 25, fromFundId: "free", note: "fixture", depositDate: "2026-10-27", requestId: "local-fixture-request-1" };
-    await recordPersonalIncome(input); const retry = await recordPersonalIncome(input);
+    const draws = await Promise.allSettled([recordPersonalIncome(input), recordPersonalIncome(input)]);
+    assert.equal(draws.filter((r) => r.status === "fulfilled" && !r.value.replayed).length, 1);
+    const retry = await recordPersonalIncome(input);
     assert.equal(retry.replayed, true);
     assert.equal((await db.fund.findUniqueOrThrow({ where: { id: "free" } })).balance, 185);
     await assert.rejects(recordPersonalIncome({ ...input, amount: 26 }));
@@ -83,7 +95,7 @@ async function main() {
     assert.equal(personalFromFree(preview.distribution, 1, -300).amount, 50);
     assert.equal(personalFromFree(preview.distribution, 1, -400).amount, 0);
     assert.equal(personalFromFree(preview.distribution, 0).amount, 0);
-    console.log("PASS: grossMargin compatibility, unknown/zero rates, waterfall caps, preview no writes, rollback, repeated/concurrent runs, cross-pool conservation, personal reserve=0, retry-safe draws, insufficient funds and rounding");
-  } finally { await db.$disconnect(); await rm(dir, { recursive: true, force: true }); }
+    console.log("PASS: grossMargin compatibility, unknown/zero rates, waterfall caps, preview no writes, rollback, repeated/concurrent runs over independent connections, cross-pool conservation, personal reserve=0, retry-safe draws, insufficient funds and rounding");
+  } finally { await db.$disconnect(); await second.$disconnect(); await rm(dir, { recursive: true, force: true }); }
 }
 main().catch((e) => { console.error(e); process.exitCode = 1; });

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { distributeFunds } from "./distribute";
 import { getTreasuryConfig } from "./treasury-config";
-import { personalFromFree, roundMoney, type TreasuryConfig } from "./treasury";
+import { personalFromFree, roundMoney, TREASURY_KEY, type TreasuryConfig } from "./treasury";
 import type { Scope } from "./scope";
 import type { FundConfig, DistributionResult } from "./types";
 
@@ -27,6 +27,10 @@ export async function runDistribution(opts: {
   const scope = opts.scope ?? "business";
   const runDate = opts.runDate ?? new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
   const execute = async (db: Prisma.TransactionClient): Promise<RunResult> => {
+    // Acquire SQLite's writer reservation before reading the snapshot. Two
+    // deferred read transactions must not deadlock when both upgrade to writes.
+    // No setting value changes, including when the new setting is still absent.
+    if (!preview) await db.$executeRaw`UPDATE "Setting" SET "value" = "value" WHERE "key" = ${TREASURY_KEY}`;
     const funds = await db.fund.findMany({ where: { active: true, scope }, orderBy: [{ priority: "asc" }, { id: "asc" }] });
     const config = scope === "business" ? await getTreasuryConfig(db) : null;
     if (config && config.grossMargin.rate == null) throw new Error("Set the temporary gross margin before distributing; Economics is not connected");

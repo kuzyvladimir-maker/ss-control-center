@@ -22,6 +22,10 @@ export function isRate(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
+export function isFinanceWriteConflict(error: unknown): boolean {
+  return error instanceof Error && /SQLITE_BUSY|database is locked|write conflict/i.test(error.message);
+}
+
 export function resolveTreasury(
   stored: string | null,
   legacyReserve: string | null,

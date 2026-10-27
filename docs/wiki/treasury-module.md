@@ -83,7 +83,10 @@ credits, FREE debit and one `Payout(scope="personal")` in a single transaction.
 The personal payout is deduplicated by `treasury:<runId>`; claimed business
 payouts cannot be allocated again. Run notes snapshot margin provenance, share,
 amounts and input payout IDs. A failed personal write rolls back the business
-side too. The personal waterfall consumes that income with reserve zero.
+side too. Transactions acquire the SQLite writer reservation before reading;
+concurrent writers cannot deadlock while upgrading a read transaction. A busy
+writer returns a conflict; the same request can be checked/retried without double
+allocation. The personal waterfall consumes that income with reserve zero.
 
 Manual draws also debit FREE and create personal income in one transaction.
 Their request ID supports retry without double debit; different payloads cannot

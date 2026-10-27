@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-server";
 import { IncomeError, recordPersonalIncome } from "@/lib/finance/personal-income";
+import { isFinanceWriteConflict } from "@/lib/finance/treasury";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
     const result = await recordPersonalIncome({ action: b.action, amount: b.amount, requestId: b.requestId, depositDate, note: b.note?.trim() ?? "", fromFundId: b.fromFundId });
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
+    if (isFinanceWriteConflict(e)) return NextResponse.json({ ok: false, error: "Another finance update is in progress. Retry this same income request." }, { status: 409 });
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: e instanceof IncomeError || e instanceof SyntaxError ? 400 : 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { roundMoney } from "./treasury";
+import { roundMoney, TREASURY_KEY } from "./treasury";
 
 export class IncomeError extends Error {}
 export interface IncomeInput { action: "manual" | "draw"; amount: number; fromFundId?: string; note: string; depositDate: string; requestId: string }
@@ -14,6 +14,7 @@ export async function recordPersonalIncome(input: IncomeInput) {
   const payload = JSON.stringify({ ...input, amount });
   const requestKey = `finance:income:${input.requestId}`;
   return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`UPDATE "Setting" SET "value" = "value" WHERE "key" = ${TREASURY_KEY}`;
     const previous = await tx.payout.findUnique({ where: { payout_dedup: { marketplace: "personal", externalId } } });
     if (previous) {
       const receipt = await tx.setting.findUnique({ where: { key: requestKey } });
