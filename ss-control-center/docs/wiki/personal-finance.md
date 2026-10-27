@@ -1,5 +1,9 @@
 # Personal Finance (Phase 1)
 
+> Treasury integration (2026-10-27): [Treasury module](../../../docs/wiki/treasury-module.md).
+> The business pool can send a configured share of new FREE as personal income.
+> Automatic and manual FREE draws are atomic; the personal waterfall keeps reserve zero.
+
 Vladimir's **private** money pool, built on the same envelope engine as the business
 [Financial Plan](finance-funds.md) but kept entirely separate. Where the business pool
 is fed by marketplace payouts and reserves COGS for restock, the personal pool is fed

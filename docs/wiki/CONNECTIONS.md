@@ -358,3 +358,11 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 
 ---
 Последнее обновление: 2026-05-23 (+ Call Center AI Agent v1.0 — voice CS extension, 21 раздел, 20 категорий C1-C20, обработка возражений, деэскалация, антифрод, escalation, KPI; integrates с Customer Hub, Decision Engine, Frozen Analytics, Amazon/Walmart/Veeqo API, Telegram)
+
+### [Treasury — financial planning](treasury-module.md)
+← [Economics](economics-profit-engine.md): future cash-basis grossMargin adapter;
+  temporary owner constant in phase 1
+→ [Financial Plan](finance-funds.md): net payouts → direct costs → FP1/FP2 → FREE
+→ [Personal Finance](../../ss-control-center/docs/wiki/personal-finance.md):
+  configured share of new FREE → personal income → envelopes
+⇔ [Sidebar orgboard](sidebar-orgboard.md): division 3, Treasury

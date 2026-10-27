@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       while (i < evs.length && evs[i].day <= day) { cum += evs[i].amount; i++; }
       series.push(round2(cum));
     }
-    return { id: f.id, name: f.name, group: f.group, allocationType: f.allocationType, value: f.value, priority: f.priority, active: f.active, balance: f.balance, series };
+    return { id: f.id, name: f.name, group: f.group, allocationType: f.allocationType, value: f.value, priority: f.priority, active: f.active, cap: f.cap, balance: f.balance, series };
   });
 
   const total = round2(funds.reduce((s, f) => s + f.balance, 0));

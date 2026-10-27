@@ -114,6 +114,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const entry = await prisma.fundEntry.findUnique({ where: { id: b.entryId } });
     if (!entry || entry.fundId !== id) return NextResponse.json({ error: "entry not found" }, { status: 404 });
 
+    if (entry.type === "owner_draw") return NextResponse.json({ error: "This entry is paired with personal income and cannot be changed independently." }, { status: 409 });
+
     if (b.action === "pay") {
       if (entry.status !== "planned") return NextResponse.json({ error: "not a planned entry" }, { status: 400 });
       // Optionally override the amount actually paid (e.g. biweekly salary total).

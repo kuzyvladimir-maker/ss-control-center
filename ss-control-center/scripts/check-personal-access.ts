@@ -15,6 +15,8 @@ async function main() {
   const fake = new Proxy({ user: { findUnique: async () => user } }, {
     get(target, key) {
       if (key === "user") return target.user;
+      if (key === "role") return { findUnique: async () => ({ modules: "[]" }) };
+      if (key === "fundEntry") return { findUnique: async () => ({ id: "paired", fundId: "free", type: "owner_draw" }) };
       if (["creditCard", "debt", "obligationEvent", "personalAsset", "recurringExpense", "payout"].includes(String(key))) return model;
       throw new Error(`Unexpected database access: ${String(key)}`);
     },
@@ -26,6 +28,8 @@ async function main() {
     await import("../src/app/api/personal/cards/route"),
     await import("../src/app/api/personal/cards/[id]/route"),
     await import("../src/app/api/personal/income/route"),
+    await import("../src/app/api/finance/config/route"),
+    await import("../src/app/api/finance/run/route"),
   ];
   const methods = ["GET", "POST", "PATCH", "DELETE"] as const;
   const session = createSessionToken("test");
@@ -61,6 +65,22 @@ async function main() {
     checks++;
   }
   assert.equal(reads, before, "invalid inputs must not read/write financial data");
+  const configRoute = await import("../src/app/api/finance/config/route");
+  for (const body of [{ grossMargin: { source: "economics", rate: 0.5 } }, { grossMargin: { source: "constant", rate: "" } }, { personalShare: 1.01 }, { personalShare: "0.5" }, { taxRatePct: -1 }, { manualPct: -0.1 }]) {
+    const response = await configRoute.POST(new NextRequest("http://localhost/api/finance/config", { method: "POST", headers: { authorization: `Bearer ${process.env.SSCC_API_TOKEN}`, "content-type": "application/json" }, body: JSON.stringify(body) }));
+    assert.equal(response.status, 400); checks++;
+  }
+  const incomeRoute = await import("../src/app/api/personal/income/route");
+  for (const body of [{ action: "draw", amount: -1 }, { action: "draw", amount: 1 }, { action: "manual", amount: 1, requestId: "local-test-request-1", depositDate: "2026-02-30" }]) {
+    const response = await incomeRoute.POST(new NextRequest("http://localhost/api/personal/income", { method: "POST", headers: { authorization: `Bearer ${process.env.SSCC_API_TOKEN}`, "content-type": "application/json" }, body: JSON.stringify(body) }));
+    assert.equal(response.status, 400); checks++;
+  }
+  const ledger = await import("../src/app/api/finance/funds/[id]/route");
+  for (const action of ["edit", "delete", "unpay", "move", "pay"]) {
+    const response = await ledger.PATCH(new NextRequest("http://localhost/api/finance/funds/free", { method: "PATCH", body: JSON.stringify({ entryId: "paired", action }) }), { params: Promise.resolve({ id: "free" }) });
+    assert.equal(response.status, 409, "paired Treasury entry cannot be mutated independently"); checks++;
+  }
+  assert.equal(reads, before);
   const { proxy } = await import("../src/proxy");
   const noAccess = new NextRequest("http://localhost/api/finance/funds?scope=personal", { headers: { cookie: `sscc-session=${session}` } });
   assert.equal(proxy(noAccess).status, 403, "shared personal-scope endpoints fail closed without access cookie");

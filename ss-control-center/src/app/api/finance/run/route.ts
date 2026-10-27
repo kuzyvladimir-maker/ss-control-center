@@ -4,10 +4,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runDistribution } from "@/lib/finance/run";
 import { scopeOf } from "@/lib/finance/scope";
+import { requireAdmin } from "@/lib/auth-server";
 
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (auth instanceof NextResponse) return auth;
   let preview = true;
   try {
     const b = await req.json().catch(() => ({}));

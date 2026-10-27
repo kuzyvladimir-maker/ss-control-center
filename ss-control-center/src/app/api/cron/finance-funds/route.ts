@@ -9,7 +9,7 @@ export const maxDuration = 300;
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return null; // dev: no gate
+  if (!secret) return NextResponse.json({ error: "Cron authorization is not configured" }, { status: 401 });
   if (request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

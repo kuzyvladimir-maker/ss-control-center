@@ -1,5 +1,10 @@
 # Finance Core — Funds (Phase 1)
 
+> Current Treasury contract (2026-10-27): [Treasury module](treasury-module.md).
+> One temporary grossMargin input now drives the reserve; the configured share
+> of new FREE becomes personal income in the same distribution transaction.
+> Earlier reserve/auto-mode descriptions below are historical.
+
 **Status:** shipped 2026-06-20. First phase of the **Finance Core super-module**
 (the full financial brain: per-SKU economics → entity P&L → tax/payroll → funds →
 forecast → QuickBooks). Plan: `~/.claude/plans/goofy-crafting-flamingo.md`. Business

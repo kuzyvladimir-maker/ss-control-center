@@ -171,4 +171,17 @@ const exact = buildPersonalCalendar({ cards: [{ ...calendarCard, dueDay: null }]
 eq("exact card date works without a recurring day", exact.entries.map((e) => e.date), ["2026-11-19"]);
 
 console.log(failures === 0 ? "\n✓ ALL PASS" : `\n✗ ${failures} FAIL`);
+
+// Owner's dated full-statement decision overrides the first-month minimum.
+{
+  const debts = [{ id: "statement", label: "Full statement", balance: 6490.07, apr: null, minPayment: 225, firstPayment: 6715.07 }, { id: "other", label: "Other", balance: 1000, apr: null, minPayment: 66 }];
+  for (const strategy of ["avalanche", "snowball"] as const) {
+    const low = simulatePayoff(debts, 2750, strategy, "2026-11");
+    if (low.feasible || low.firstMonthRequired !== 6781.07 || low.shortfall !== 4031.07 || low.commitmentAboveBalance !== 225) throw new Error("Dated full statement must reserve the full cash commitment");
+    const covered = simulatePayoff(debts, 6781.07, strategy, "2026-11", 1);
+    if (covered.order.find((l) => l.id === "statement")?.payoffMonth !== 1 || covered.order.find((l) => l.id === "other")?.payoffMonth !== null || covered.totalPaid !== 6781.07) throw new Error("Commitment must be funded before extra strategy payments");
+  }
+  console.log("PASS: full statement is funded once before either payoff strategy; recorded balance is not inflated");
+}
+
 process.exit(failures === 0 ? 0 : 1);

@@ -1,12 +1,13 @@
 // Personal income = the personal pool's "money in" (Payout, scope=personal).
 //   GET                                   → recent income + totals
-//   POST { action:"manual", amount, note? }            → record income
-//   POST { action:"draw", fromFundId, amount, note? }  → OWNER DRAW bridge:
-//        debit a business fund AND record the same amount as personal income, in one go.
+//   POST { action:"manual", amount, requestId, note? } → record income
+//   POST { action:"draw", fromFundId, amount, requestId, note? } → FREE bridge:
+//        debit business FREE AND record the same personal income atomically.
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-server";
+import { IncomeError, recordPersonalIncome } from "@/lib/finance/personal-income";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -35,31 +36,17 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   try {
     const b = await req.json();
-    const amount = round2(Math.abs(Number(b.amount)));
-    if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: "amount required" }, { status: 400 });
-    const depositDate = b.depositDate || new Date().toISOString().slice(0, 10);
-    const note: string = b.note ?? "";
-
-    // Owner-draw bridge: take money out of a BUSINESS fund and book it as personal income.
-    let drawEntry = null;
-    let source = "manual";
-    if (b.action === "draw") {
-      if (!b.fromFundId) return NextResponse.json({ error: "fromFundId required for a draw" }, { status: 400 });
-      const fund = await prisma.fund.findUnique({ where: { id: b.fromFundId } });
-      if (!fund || fund.scope !== "business") return NextResponse.json({ error: "not a business fund" }, { status: 400 });
-      drawEntry = await prisma.fundEntry.create({
-        data: { fundId: fund.id, type: "spend", amount: -amount, description: `Owner draw → personal${note ? `: ${note}` : ""}`, status: "applied" },
-      });
-      await prisma.fund.update({ where: { id: fund.id }, data: { balance: { decrement: amount } } });
-      source = "owner_draw";
+    const depositDate = b.depositDate ?? new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+    if (!["manual", "draw"].includes(b.action) || typeof b.amount !== "number" || !Number.isFinite(b.amount) || b.amount <= 0
+      || typeof b.requestId !== "string" || !/^[a-zA-Z0-9-]{16,80}$/.test(b.requestId)
+      || typeof depositDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(depositDate)
+      || !Number.isFinite(Date.parse(depositDate)) || new Date(depositDate).toISOString().slice(0, 10) !== depositDate
+      || (b.note != null && (typeof b.note !== "string" || b.note.length > 500))) {
+      return NextResponse.json({ error: "Valid action, positive amount, request ID and date required" }, { status: 400 });
     }
-
-    const externalId = `${source}:${Date.now()}:${Math.round(amount * 100)}`.slice(0, 120);
-    const payout = await prisma.payout.create({
-      data: { scope: "personal", marketplace: "personal", externalId, netAmount: amount, depositDate, source, entity: b.entity ?? null },
-    });
-    return NextResponse.json({ ok: true, payout, drawEntry });
+    const result = await recordPersonalIncome({ action: b.action, amount: b.amount, requestId: b.requestId, depositDate, note: b.note?.trim() ?? "", fromFundId: b.fromFundId });
+    return NextResponse.json({ ok: true, ...result });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: e instanceof IncomeError || e instanceof SyntaxError ? 400 : 500 });
   }
 }

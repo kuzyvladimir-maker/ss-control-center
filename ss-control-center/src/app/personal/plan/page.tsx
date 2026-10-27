@@ -26,6 +26,7 @@ const EXCLUDE_REASON: Record<string, string> = {
   court: "Court — the court sets the schedule",
   check: "Balance not confirmed",
 };
+interface PlanEvent { id: string; title: string; date: string; endDate: string | null; time: string | null; kind: string; amount: number | null; status: string; source: string | null; cardId: string | null; debtId: string | null }
 const STORE = "personal:plan:v1";
 
 function defaultExcluded(l: Liability): string | null {
@@ -34,6 +35,7 @@ function defaultExcluded(l: Liability): string | null {
 }
 
 export default function PayoffPlanPage() {
+  const [events, setEvents] = useState<PlanEvent[]>([]);
   const [ls, setLs] = useState<Liability[] | null>(null);
   const [today, setToday] = useState<string>(new Date().toISOString().slice(0, 10));
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function PayoffPlanPage() {
       const r = await fetch("/api/personal/registry").then((x) => x.json());
       if (!r.liabilities) throw new Error(r.error ?? "failed to load");
       const rows: Liability[] = r.liabilities.filter((l: Liability) => l.counted && (l.balance == null || l.balance > 0));
-      setLs(rows); setToday(r.today);
+      setLs(rows); setToday(r.today); setEvents((r.events ?? []).filter((e: PlanEvent) => !["done", "cancelled"].includes(e.status)));
       let saved: { strategy?: Strategy; budget?: string; include?: Record<string, boolean> } = {};
       try { saved = JSON.parse(localStorage.getItem(STORE) ?? "{}"); } catch { /* storage unavailable */ }
       const inc: Record<string, boolean> = {};
@@ -71,11 +73,14 @@ export default function PayoffPlanPage() {
 
   const debts: PayoffDebt[] = useMemo(() => (ls ?? []).filter((l) => include[l.id] && l.balance != null).map((l) => ({
     id: l.id, label: l.label, balance: l.balance!, apr: l.apr, minPayment: l.monthlyPayment,
-  })), [ls, include]);
+    firstPayment: events.filter((e) => e.kind === "payment" && (e.cardId ?? e.debtId) === l.id && e.date.startsWith(startYm)).reduce((sum, e) => sum + (e.amount ?? 0), 0),
+  })), [ls, include, events, startYm]);
   const b = Number.isFinite(Number(budget)) ? Math.max(0, Number(budget)) : 0;
   const plan = useMemo(() => simulatePayoff(debts, b, strategy, startYm), [debts, b, strategy, startYm]);
   const other = useMemo(() => simulatePayoff(debts, b, strategy === "avalanche" ? "snowball" : "avalanche", startYm), [debts, b, strategy, startYm]);
   const byId = new Map((ls ?? []).map((l) => [l.id, l]));
+  const urgent = (ls ?? []).filter((l) => ["court", "past_due", "collections", "window"].includes(l.standing) || l.kind === "tax" && !!l.nextDueDate);
+  const datedPriorities = events.filter((e) => e.date <= `${startYm}-31` || ["window", "mediation", "hearing"].includes(e.kind));
   const excluded = (ls ?? []).filter((l) => !include[l.id]);
 
   return (
@@ -90,6 +95,23 @@ export default function PayoffPlanPage() {
 
       {ls && (
         <>
+          <Card className="border-warn/40">
+            <CardHeader className="pb-2"><CardTitle className="text-[14px]">Address first — legal dates, arrears, collections and tax windows</CardTitle></CardHeader>
+            <CardContent className="space-y-3 text-[13px]">
+              <p className="text-ink-3">These obligations take priority over either payoff strategy. The model below does not replace court schedules or decisions on disputed claims.</p>
+              <div className="grid gap-2 sm:grid-cols-2">{urgent.map((l) => <div key={l.id} className="rounded border border-rule p-2">
+                <div className="flex flex-wrap items-center gap-2"><StandingBadge standing={l.standing} /><span>{l.label}</span><OwnerTag owner={l.owner} /></div>
+                <div className="mt-1 text-ink-3">Balance {l.balance == null ? "unknown" : usd2(l.balance)} · {l.nextDueDate ?? "Next date not set"}</div>
+                {l.standingNote && <p className="text-[12px] text-ink-3">{l.standingNote}</p>}
+                <AsOf asOf={l.balanceAsOf} source={l.balanceSource} />
+              </div>)}</div>
+              {datedPriorities.map((e) => <div key={e.id} className="border-t border-rule pt-2">
+                <div className="flex flex-wrap gap-2"><b>{e.date}{e.endDate ? ` – ${e.endDate}` : ""} {e.time ?? ""}</b><span>{e.title}</span><b>{e.amount != null ? usd2(e.amount) : ["window", "mediation", "hearing", "deadline"].includes(e.kind) ? "Action / deadline" : "Amount not set"}</b><OwnerTag owner={byId.get(e.cardId ?? e.debtId ?? "")?.owner} /></div>
+                <AsOf asOf={e.source?.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0]} source={e.source} />
+              </div>)}
+              <p className="text-[12px] text-ink-3">Dated full-payment commitments for included debts replace their minimum in the first model month. Other dates and unknown amounts still require separate funding in the 60-day calendar.</p>
+            </CardContent>
+          </Card>
           {/* Inputs — the two choices that drive the plan. */}
           <Card>
             <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-end">
@@ -108,16 +130,17 @@ export default function PayoffPlanPage() {
                 <Input value={budget} onChange={(e) => setBudget(e.target.value)} inputMode="decimal" />
               </div>
               <div className="text-[12px] text-ink-3">
-                Known minimums of the included debts: <span className="font-medium text-ink">{usd2(plan.minimumsTotal)}</span> / mo · first month {monthLabel(startYm)}
+                Known recurring minimums of the included debts: <span className="font-medium text-ink">{usd2(plan.minimumsTotal)}</span> / mo · first month {monthLabel(startYm)} requires {usd2(plan.firstMonthRequired)} including dated commitments
               </div>
             </CardContent>
           </Card>
 
           {!plan.feasible && (
             <div className="rounded-md border border-danger/30 bg-danger-tint px-3 py-2 text-[13px] text-danger">
-              The budget does not cover the minimums — add {usd2(plan.shortfall)} / month or exclude a debt.
+              The budget does not cover the first month’s known minimums and dated commitments — shortfall {usd2(plan.shortfall)}.
             </div>
           )}
+          {plan.commitmentAboveBalance > 0 && <div className="rounded-md border border-warn/40 bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">Dated commitments exceed recorded balances by {usd2(plan.commitmentAboveBalance)}. The model reserves the full cash commitment without increasing the recorded debt. Reconcile the statement and balance sources.</div>}
           {plan.aprUnknown.length > 0 && (
             <div className="rounded-md border border-warn/40 bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">
               APR is not set for {plan.aprUnknown.length} of {debts.length} debts — their interest is not modeled; actual cost and payoff dates may differ{strategy === "avalanche" ? ", and avalanche puts them last" : ""}. Add APRs on the Obligations page.

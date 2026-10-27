@@ -13,7 +13,7 @@
  * date, tax window and minimum (see /personal/obligations, /plan, /net-worth).
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, Play, CheckCircle2, Wand2, PlusCircle, CalendarClock, CreditCard, ArrowRightLeft, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +63,7 @@ export default function PersonalFinancePage() {
   const [amt, setAmt] = useState("");
   const [label, setLabel] = useState("");
   const [drawFund, setDrawFund] = useState("");
+  const incomeRequest = useRef<{ payload: string; id: string } | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -78,7 +79,7 @@ export default function PersonalFinancePage() {
       ]);
       setFunds(h.funds ?? []); setNeeds(n.needs ?? {});
       setIncome(inc); setCardT(c.totals ?? null); setCal(cl); setReg(rg.netWorth ? rg : null);
-      setBizFunds((bf.funds ?? []).filter((f: Fund) => f.group !== "FREE" && f.group !== "RESERVE"));
+      setBizFunds((bf.funds ?? []).filter((f: Fund) => f.group === "FREE" && f.active));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -93,8 +94,13 @@ export default function PersonalFinancePage() {
     setBusy(action); setError(null); setNote(null);
     try {
       const body = action === "draw" ? { action, amount: a, fromFundId: drawFund, note: label } : { action, amount: a, note: label };
-      const r = await fetch("/api/personal/income", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then((x) => x.json());
+      const r = await fetch("/api/personal/income", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...body, requestId: (() => {
+        const payload = JSON.stringify(body);
+        if (incomeRequest.current?.payload !== payload) incomeRequest.current = { payload, id: crypto.randomUUID() };
+        return incomeRequest.current.id;
+      })() }) }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error ?? "failed");
+      incomeRequest.current = null;
       setAmt(""); setLabel(""); setDrawFund("");
       setNote(action === "draw" ? `Drew ${usd2(a)} from the business → personal income.` : `Added ${usd2(a)} personal income.`);
       await load();
@@ -126,7 +132,7 @@ export default function PersonalFinancePage() {
     <div className="mx-auto max-w-6xl space-y-5 p-5">
       <div>
         <h1 className="text-xl font-semibold text-ink">Personal Finance</h1>
-        <p className="text-[13px] text-ink-3">Your private pool — what you own, what you owe, and what is due next. Separate from the business Financial Plan.</p>
+        <p className="text-[13px] text-ink-3">Your private pool — what you own, what you owe, and what is due next. Funded by personal income and the business FREE share.</p>
       </div>
       <PersonalNav active="/personal" />
 
@@ -278,6 +284,8 @@ export default function PersonalFinancePage() {
         </div>
       </div>
 
+      <p className="text-[12px] text-ink-3">Business payouts → direct costs → business funds → FREE share → personal income → envelopes. <Link href="/finance" className="underline">Configure the FREE share in Financial Plan</Link>.</p>
+
       {/* Income entry — manual + owner draw bridge. */}
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-[14px]">Add income</CardTitle></CardHeader>
@@ -291,9 +299,9 @@ export default function PersonalFinancePage() {
           </div>
           <div className="flex flex-wrap items-end gap-2 border-t border-rule pt-3">
             <div className="min-w-[200px] flex-1">
-              <label className="mb-1 block text-[11px] text-ink-3">Owner draw — take from a business fund</label>
+              <label className="mb-1 block text-[11px] text-ink-3">Owner draw — take from business FREE</label>
               <select value={drawFund} onChange={(e) => setDrawFund(e.target.value)} className="h-9 w-full rounded-md border border-rule bg-bg px-2 text-[13px] text-ink">
-                <option value="">Select business fund…</option>
+                <option value="">Select FREE fund…</option>
                 {bizFunds.map((f) => <option key={f.id} value={f.id}>{f.name} — {usd(f.balance)}</option>)}
               </select>
             </div>
@@ -301,7 +309,7 @@ export default function PersonalFinancePage() {
               {busy === "draw" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />} Draw to personal
             </Button>
           </div>
-          <p className="text-[11px] text-ink-4">A draw debits the chosen business fund and records the same amount as personal income, in one step.</p>
+          <p className="text-[11px] text-ink-4">A draw debits available business FREE and records the same personal income atomically. The automatic share of new FREE is configured in Financial Plan.</p>
         </CardContent>
       </Card>
     </div>

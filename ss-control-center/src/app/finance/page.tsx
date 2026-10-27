@@ -18,23 +18,27 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { BUCKET_META, BUCKET_ORDER, type Bucket } from "@/lib/finance/settlement";
 import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
+import { distributeFunds } from "@/lib/finance/distribute";
+import { personalFromFree, type TreasuryConfig } from "@/lib/finance/treasury";
+import type { FundConfig } from "@/lib/finance/types";
+import type { RunResult } from "@/lib/finance/run";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 // Round UP to the nearest whole $5 (clean 5/10/15… amounts).
 const up5 = (n: number) => Math.ceil((n - 1e-9) / 5) * 5;
 
-interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; balance: number; active: boolean; series: number[] }
+interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; balance: number; active: boolean; cap: number | null; series: number[] }
 interface PayoutLine { bucket: string; amount: number; count: number }
 interface Payout { id: string; marketplace: string; entity: string | null; periodStart: string | null; periodEnd: string | null; depositDate: string | null; netAmount: number; distributed: boolean; lines: PayoutLine[] }
-interface AllocationLine { fundId: string; name: string; group: string; amount: number }
-interface RunResult { preview: boolean; distribution: { totalIn: number; reserve: number; reserveRate: number; distributable: number; allocations: AllocationLine[]; free: number }; reserveFellBack: boolean; payoutCount: number }
+
 
 export default function FinancialPlanPage() {
   const [tab, setTab] = useState<"income" | "funds">("income");
   const [funds, setFunds] = useState<Fund[]>([]);
   const [fundsTotal, setFundsTotal] = useState(0);
   const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [config, setConfig] = useState<{ method: string; manualPct: number; windowWeeks: number; taxRatePct?: number } | null>(null);
+  const [config, setConfig] = useState<(TreasuryConfig & { taxRatePct: number }) | null>(null);
+  const [settingsDraft, setSettingsDraft] = useState({ margin: "", personal: "", tax: "" });
   const [run, setRun] = useState<RunResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +61,9 @@ export default function FinancialPlanPage() {
         fetch("/api/finance/funds/needs").then((r) => r.json()),
       ]);
       setFunds(h.funds ?? []); setFundsTotal(h.total ?? 0);
+      if (!c.grossMargin) throw new Error(c.error ?? "Could not load Treasury settings");
       setPayouts(p.payouts ?? []); setConfig(c); setNeeds(n.needs ?? {});
+      setSettingsDraft({ margin: c.grossMargin.rate == null ? "" : String(c.grossMargin.rate * 100), personal: c.personalShare == null ? "" : String(c.personalShare * 100), tax: String(c.taxRatePct) });
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -148,10 +154,19 @@ export default function FinancialPlanPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
-  async function saveConfig(next: Partial<{ manualPct: number; taxRatePct: number }>) {
+  async function saveConfig() {
     if (!config) return;
-    setConfig({ ...config, ...next });
-    await fetch("/api/finance/config", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(next) });
+    const margin = Number(settingsDraft.margin), personal = settingsDraft.personal === "" ? null : Number(settingsDraft.personal), tax = Number(settingsDraft.tax);
+    if (settingsDraft.margin === "" || !Number.isFinite(margin) || margin < 0 || margin > 100 || (personal !== null && (!Number.isFinite(personal) || personal < 0 || personal > 100)) || settingsDraft.tax === "" || !Number.isFinite(tax) || tax < 0 || tax > 100) {
+      setError("Enter percentages between 0 and 100. Leave the personal share blank if not set."); return;
+    }
+    setBusy("config"); setError(null);
+    try {
+      const response = await fetch("/api/finance/config", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ grossMargin: { source: "constant", rate: margin / 100 }, personalShare: personal === null ? null : personal / 100, taxRatePct: tax }) });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error ?? "Settings were not saved");
+      setRun(null); await load(); setNote("Treasury settings saved. Preview the next distribution before committing.");
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
   const scoped = scope === "pending" ? payouts.filter((p) => !p.distributed) : payouts;
@@ -167,17 +182,14 @@ export default function FinancialPlanPage() {
   // Tax need = tax rate × the pending PAYOUT (net) being distributed.
   const taxNeed = Math.round(((config?.taxRatePct ?? 1.5) / 100) * pendingNet * 100) / 100;
 
-  // Live distribution math (recomputes as you type the Reserve % or a fund's %):
-  // reserve = In × reserve%; distributable = In − reserve; each percent fund's
-  // amount = its current % × distributable; the total fund % must not exceed 100.
   const totalIn = run?.distribution.totalIn ?? 0;
-  const liveReservePct = config ? Math.max(0, Math.min(1, config.manualPct)) : 0.58;
-  const liveReserve = Math.round(totalIn * liveReservePct * 100) / 100;
-  const distPool = Math.round((totalIn - liveReserve) * 100) / 100;
   const curPct = (fundId: string) => { const f = funds.find((x) => x.id === fundId); return Number(pctEdit[fundId] ?? (f?.value ?? 0)) || 0; };
-  const allocPctFunds = (run?.distribution.allocations ?? []).filter((a) => { const f = funds.find((x) => x.id === a.fundId); return !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent"; });
-  const totalAllocPct = Math.round(allocPctFunds.reduce((s, a) => s + curPct(a.fundId), 0) * 10) / 10;
+  const live = run?.preview === false ? run.distribution : distributeFunds(totalIn, 1 - (config?.grossMargin.rate ?? 0), funds.map((f) => ({ ...f, value: curPct(f.id) })) as FundConfig[]);
+  const liveReservePct = live.reserveRate, liveReserve = live.reserve, distPool = live.distributable;
+  const transferPreview = run?.preview === false ? run.treasury?.transfer : personalFromFree(live, config?.personalShare ?? null, funds.find((f) => f.group === "FREE")?.balance ?? 0);
+  const totalAllocPct = Math.round(funds.filter((f) => f.active && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent").reduce((sum, f) => sum + curPct(f.id), 0) * 10) / 10;
   const overAllocated = totalAllocPct > 100.05;
+  const settingsDirty = !!config && (settingsDraft.margin !== (config.grossMargin.rate == null ? "" : String(config.grossMargin.rate * 100)) || settingsDraft.personal !== (config.personalShare == null ? "" : String(config.personalShare * 100)) || settingsDraft.tax !== String(config.taxRatePct));
 
   const latestByAccount = new Map<string, Payout>();
   for (const p of [...payouts].sort((a, b) => (a.periodEnd ?? "").localeCompare(b.periodEnd ?? ""))) latestByAccount.set(`${p.marketplace}:${p.entity ?? ""}`, p);
@@ -187,7 +199,7 @@ export default function FinancialPlanPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Financial Plan</h1>
-          <p className="text-sm text-muted-foreground">Cash basis, one global pool. Money in → distribute into funds → pay bills from funds.</p>
+          <p className="text-sm text-muted-foreground">Treasury: business payouts → direct costs → business funds → FREE share → personal income.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={getReport} disabled={busy != null}>{busy === "report" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}Get Report</Button>
@@ -218,7 +230,7 @@ export default function FinancialPlanPage() {
             <Kpi label="To distribute" value={usd(pendingNet)} accent={pendingNet >= 0 ? "pos" : "neg"} />
             <Kpi label="Payouts waiting" value={String(payouts.filter((p) => !p.distributed).length)} />
             <Kpi label="Periods pulled" value={String(payouts.length)} />
-            <Kpi label="Reserve %" value={config ? `${Math.round(config.manualPct * 100)}%` : "—"} />
+            <Kpi label="Reserve %" value={config?.grossMargin.rate != null ? `${Math.round((1 - config.grossMargin.rate) * 100)}%` : "not set"} />
           </div>
 
           <Card>
@@ -308,17 +320,25 @@ export default function FinancialPlanPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground">Reserve % — working capital (restock: COGS+packaging; shipping already netted from payout)</label>
-                  <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
+                  <label htmlFor="gross-margin" className="block text-xs text-muted-foreground">Gross margin % of net payout — temporary, until Economics</label>
+                  <Input id="gross-margin" type="number" min={0} max={100} step={0.1} className="w-24" placeholder="Not set" value={settingsDraft.margin} disabled={!!busy} onChange={(e) => setSettingsDraft({ ...settingsDraft, margin: e.target.value })} />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground">Tax rate % (of payout)</label>
-                  <div className="flex items-center gap-1"><Input type="number" min={0} step={0.1} className="w-20" value={config?.taxRatePct ?? 1.5} onChange={(e) => saveConfig({ taxRatePct: Number(e.target.value) || 0 })} /><span className="text-sm text-muted-foreground">%</span></div>
+                  <label htmlFor="personal-share" className="block text-xs text-muted-foreground">Personal share % of new FREE</label>
+                  <Input id="personal-share" type="number" min={0} max={100} step={0.1} className="w-24" placeholder="Not set" value={settingsDraft.personal} disabled={!!busy} onChange={(e) => setSettingsDraft({ ...settingsDraft, personal: e.target.value })} />
                 </div>
-                <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
-                <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
-                <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false || overAllocated} title={overAllocated ? "Funds exceed 100% — reduce a % first" : undefined}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
+                <div>
+                  <label htmlFor="tax-rate" className="block text-xs text-muted-foreground">Tax rate % (of payout)</label>
+                  <Input id="tax-rate" type="number" min={0} max={100} step={0.1} className="w-20" value={settingsDraft.tax} disabled={!!busy} onChange={(e) => setSettingsDraft({ ...settingsDraft, tax: e.target.value })} />
+                </div>
+                <Button onClick={saveConfig} disabled={!!busy || !settingsDirty} variant="outline">Save settings</Button>
+                <Button onClick={autoAllocate} disabled={busy != null || settingsDirty || !run} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
+                <Button onClick={() => doRun(true)} disabled={busy != null || settingsDirty || config?.grossMargin.rate == null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
+                <Button onClick={() => doRun(false)} disabled={busy != null || settingsDirty || !run || run.preview === false || !run.payoutCount || overAllocated} title={overAllocated ? "Funds exceed 100% — reduce a % first" : undefined}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
               </div>
+              <p className="text-xs text-muted-foreground">{config?.grossMargin.provenance} {config?.grossMargin.asOf ? `· ${config.grossMargin.asOf.slice(0, 10)}` : ""}. Reserve = 100% − gross margin, for COGS + packaging. Marketplace fees and labels already deducted from the payout are not deducted again.</p>
+              <p className="text-xs text-muted-foreground">{config?.personalShare == null ? "Personal share is not set — no automatic transfer." : `On each committed distribution, ${config.personalShare * 100}% of new FREE becomes personal income (including scheduled distributions).`} Existing FREE stays in the business. Personal income is then distributed into envelopes without a second cost reserve. <Link href="/personal" className="underline">Open Personal Finance</Link>.</p>
+              {settingsDirty && <p className="text-xs text-amber-700">Unsaved settings — save before previewing or committing.</p>}
               {run && (
                 <div className="rounded-md border p-3 text-sm">
                   <div className="mb-2 flex flex-wrap gap-4 text-muted-foreground">
@@ -326,14 +346,17 @@ export default function FinancialPlanPage() {
                     <span>Reserve ({Math.round(liveReservePct * 100)}%): <b className="text-foreground">{usd(liveReserve)}</b></span>
                     <span>Distributable: <b className="text-foreground">{usd(distPool)}</b></span>
                     <span>Allocated: <b className={cn(overAllocated ? "text-destructive" : "text-foreground")}>{totalAllocPct}%</b></span>
-                    <span>Free: <b className={cn((distPool * (1 - totalAllocPct / 100)) < -0.005 ? "text-destructive" : "text-foreground")}>{usd(distPool * (1 - totalAllocPct / 100))}</b></span>
+                    <span>New FREE: <b className="text-foreground">{usd(live.free)}</b></span>
+                    <span>To personal: <b className="text-foreground">{config?.personalShare == null ? "not set" : usd(transferPreview?.amount ?? 0)}</b></span>
+                    <span>Retained in business FREE: <b className="text-foreground">{usd(transferPreview?.freeRetained ?? live.free)}</b></span>
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
+                  {transferPreview?.limitedByBalance && <p className="mb-2 text-xs text-amber-700">The personal share is limited by a negative FREE balance; business funds are covered first.</p>}
                   {overAllocated && <p className="mb-1 rounded bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">Funds add up to {totalAllocPct}% — over 100% of the distributable. Reduce a fund&apos;s % before committing.</p>}
                   <p className="mb-1 text-xs text-muted-foreground">Needed = this period&apos;s owed debt <b>plus topping up any negative fund balance</b> (e.g. Warehouse owes $2,005 and is −$1,100 → Needed $3,105). Rounded up to $5. Taxes = {config?.taxRatePct ?? 1.5}% of this payout; the Expansion fund has no period target.</p>
                   <table className="w-full">
                     <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">Balance</th><th className="text-right" title="Suggested: what this fund needs to cover its costs for the period since the last plan">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
-                    <tbody>{run.distribution.allocations.map((a) => {
+                    <tbody>{live.allocations.map((a) => {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
                       // Needed = this period's owed + topping up any NEGATIVE balance (овердрафт).
@@ -341,11 +364,7 @@ export default function FinancialPlanPage() {
                       const negBal = Math.max(0, -(f?.balance ?? 0));
                       const need = up5(rawNeed + negBal); // rounded up to $5
                       const needPct = distPool > 0 && need > 0 ? (need / distPool) * 100 : 0;
-                      // Amount recomputes live from the entered % (no need to re-Preview).
-                      const liveAmount = a.group === "RESERVE" ? liveReserve
-                        : a.group === "FREE" ? distPool * (1 - totalAllocPct / 100)
-                        : editable ? distPool * (curPct(a.fundId) / 100)
-                        : a.amount;
+                      const liveAmount = a.amount;
                       return (
                         <tr key={a.fundId} className="border-t">
                           <td className="py-1 text-muted-foreground">{a.group}</td>
@@ -357,7 +376,7 @@ export default function FinancialPlanPage() {
                             {a.group === "RESERVE"
                               ? `${Math.round(liveReservePct * 100)}%`
                               : a.group === "FREE"
-                                ? `${(100 - totalAllocPct).toFixed(1)}%`
+                                ? `${distPool > 0 ? (live.free / distPool * 100).toFixed(1) : "0"}%`
                                 : editable
                                   ? (<span className="inline-flex items-center justify-end gap-0.5"><input type="number" value={pctEdit[a.fundId] ?? String(f!.value)} disabled={busy != null} onChange={(e) => setPctEdit({ ...pctEdit, [a.fundId]: e.target.value })} onBlur={(e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v !== f!.value) setFundPct(a.fundId, v); }} className="w-14 rounded border bg-background px-1 py-0.5 text-right" />%</span>)
                                   : distPool > 0 ? `${((a.amount / distPool) * 100).toFixed(1)}%` : "—"}
