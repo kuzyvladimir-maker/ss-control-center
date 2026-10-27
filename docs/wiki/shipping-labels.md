@@ -45,6 +45,10 @@
 - **См. также:** [Walmart ограничения](walmart-restrictions.md), [Формат имени PDF](label-filename-format.md), [Производительность модуля](shipping-labels-performance-2026-07-30.md)
 
 ## История
+- 2026-10-27: «Discard label» на карточках из поиска / Archive — отмена
+  конкретной этикетки с проверкой у перевозчика, сухим режимом и одним вызовом
+  на трек-номер; NAN — ссылка «Void label in Shopify»:
+  [shipping-label-discard-archive-2026-10-27](shipping-label-discard-archive-2026-10-27.md)
 - 2026-08-04: «Жму Save в Package — ничего не меняется»: пересчёт карточки не
   обновлял ячейку PACKAGE, снимок SKU-таблицы кэшировался на инстанс, а
   упавшая котировка Walmart молчала —

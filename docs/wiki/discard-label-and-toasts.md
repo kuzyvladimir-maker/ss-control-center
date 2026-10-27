@@ -53,3 +53,4 @@ carrier refund + заказ остаётся в Shipping Labels для re-quote)
 ## Связано с
 - [Shipping Labels — Модуль](shipping-labels.md) — где живёт кнопка Discard Label
 - [Dashboard — Модуль](dashboard.md) — потребитель той же toast-системы
+- [Discard label from search / Archive — guarded cancel (2026-10-27)](shipping-label-discard-archive-2026-10-27.md) — the same route, extended: exact tracking, dry run, carrier pre-check, one call per label

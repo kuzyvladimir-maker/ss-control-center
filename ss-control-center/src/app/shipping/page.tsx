@@ -474,10 +474,22 @@ interface ArchiveHit {
     quantity: number;
     imageUrl: string | null;
   }[];
-  tracking: { number: string; carrier: string | null; service: string | null }[];
+  tracking: ArchiveTracking[];
   labelPdfUrl: string | null;
   walmartPurchaseOrderId: string | null;
   storeName: string | null;
+}
+
+interface ArchiveTracking {
+  number: string;
+  carrier: string | null;
+  service: string | null;
+  /** Discard record of this label, when one was ever attempted. */
+  discard?: {
+    state: "sending" | "done" | "failed" | "unknown";
+    at: string;
+    message: string | null;
+  };
 }
 
 /** From this many characters the archive (all-status) search kicks in. */
@@ -865,6 +877,8 @@ export default function ShippingLabelsPage() {
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) setSearchQuery(q);
   }, []);
+  // Bumped after a discard so the archive re-reads the card's state.
+  const [archiveNonce, setArchiveNonce] = useState(0);
   const [archive, setArchive] = useState<{
     query: string;
     loading: boolean;
@@ -933,7 +947,7 @@ export default function ShippingLabelsPage() {
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [searchQuery]);
+  }, [searchQuery, archiveNonce]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [buying, setBuying] = useState(false);
@@ -1028,6 +1042,11 @@ export default function ShippingLabelsPage() {
   // (carrier refund, irreversible), so we gate it behind an explicit
   // confirm dialog instead of firing on the first click. Holds the order
   // awaiting confirmation; null when the dialog is closed.
+  // Archive row → Discard label dialog (one label of one found order).
+  const [archiveDiscard, setArchiveDiscard] = useState<{
+    hit: ArchiveHit;
+    tracking: ArchiveTracking;
+  } | null>(null);
   const [discardConfirm, setDiscardConfirm] = useState<DashboardOrder | null>(
     null,
   );
@@ -4453,7 +4472,16 @@ export default function ShippingLabelsPage() {
               Searching Veeqo and our own database…
             </div>
           ) : (
-            archiveOnlyHits.map((h) => <ArchiveRow key={h.key} hit={h} />)
+            archiveOnlyHits.map((h) => (
+              <ArchiveRow
+                key={h.key}
+                hit={h}
+                onDiscard={(t) => setArchiveDiscard({ hit: h, tracking: t })}
+                nanUrl={
+                  isNanOrder(h) ? nanAdminOrderUrl(null, h.orderNumber) : null
+                }
+              />
+            ))
           )}
           {archive.truncated && (
             <div className="px-1 text-[11.5px] text-ink-3">
@@ -4654,6 +4682,19 @@ export default function ShippingLabelsPage() {
         />
       )}
 
+      {archiveDiscard && (
+        <ArchiveDiscardDialog
+          key={archiveDiscard.tracking.number}
+          hit={archiveDiscard.hit}
+          tracking={archiveDiscard.tracking}
+          onClose={() => setArchiveDiscard(null)}
+          onSettled={() => {
+            setArchiveNonce((n) => n + 1);
+            void load();
+          }}
+        />
+      )}
+
       {/* Discard-label confirmation. Discarding voids an already-bought
           label (carrier refund, ~24-72h, irreversible), so we require an
           explicit confirm before firing. */}
@@ -4849,7 +4890,16 @@ function Seg({
  * not to act, so every field that answers such a question is on screen at
  * once and nothing is behind an expander.
  */
-function ArchiveRow({ hit }: { hit: ArchiveHit }) {
+function ArchiveRow({
+  hit,
+  onDiscard,
+  nanUrl,
+}: {
+  hit: ArchiveHit;
+  onDiscard: (t: ArchiveTracking) => void;
+  /** Shopify admin page of a NAN order — its labels are voided there. */
+  nanUrl: string | null;
+}) {
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
 
   // The one word the operator needs before anything else. A search by
@@ -5074,30 +5124,411 @@ function ArchiveRow({ hit }: { hit: ArchiveHit }) {
             )}
           </div>
 
-          {hit.tracking.length > 0 && (
+          {/* Tracking + Discard label. The operator searches a shipped order
+              precisely to cancel its label (owner, 2026-10-27), so the button
+              sits on each label. NAN labels are bought in Shopify, whose API
+              can't void them → a link to the order in Shopify admin. */}
+          {(hit.tracking.length > 0 || (nanUrl && hit.statusTone === "ok")) && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
                 Tracking
               </span>
-              {hit.tracking.map((t) => (
-                <span
-                  key={t.number}
-                  className="inline-flex items-center gap-1.5 rounded border border-rule bg-surface px-2 py-1 font-mono text-[length:var(--ship-cell-value)] text-ink"
-                  title={[t.carrier, t.service].filter(Boolean).join(" · ")}
-                >
-                  {t.carrier && (
-                    <span className="font-sans text-[length:var(--ship-sub)] text-ink-3">
-                      {t.carrier}
+              {hit.tracking.map((t) => {
+                const discarded =
+                  t.discard?.state === "done" || t.service === "label discarded";
+                const unclear =
+                  t.discard?.state === "unknown" || t.discard?.state === "sending";
+                return (
+                  <Fragment key={t.number}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded border border-rule bg-surface px-2 py-1 font-mono text-[length:var(--ship-cell-value)] text-ink",
+                        discarded && "text-ink-3 line-through",
+                      )}
+                      title={[t.carrier, t.service].filter(Boolean).join(" · ")}
+                    >
+                      {t.carrier && (
+                        <span className="font-sans text-[length:var(--ship-sub)] text-ink-3">
+                          {t.carrier}
+                        </span>
+                      )}
+                      {t.number}
                     </span>
-                  )}
-                  {t.number}
-                </span>
-              ))}
+                    {nanUrl ? null : discarded ? (
+                      <span
+                        className="rounded bg-bg-elev px-1.5 py-0.5 text-[length:var(--ship-sub)] text-ink-2"
+                        title={t.discard?.message ?? undefined}
+                      >
+                        Discarded
+                        {t.discard?.state === "done" && " · refund requested"}
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onDiscard(t)}
+                        title={
+                          unclear
+                            ? "An earlier discard of this label got no clear answer — re-check it"
+                            : "Cancel this label with the carrier and request the postage refund"
+                        }
+                        className={cn(
+                          "h-7 text-[length:var(--ship-button)]",
+                          unclear
+                            ? "border-warn-strong text-warn-strong"
+                            : "border-danger/50 text-danger hover:bg-danger-tint",
+                        )}
+                      >
+                        {unclear ? "Discard: re-check" : "Discard label"}
+                      </Button>
+                    )}
+                  </Fragment>
+                );
+              })}
+              {nanUrl && hit.statusTone === "ok" && (
+                <a
+                  href={nanUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Shopify's API can't void labels — open the order in Shopify admin and use Void label there"
+                  className="inline-flex h-7 items-center rounded-md border border-danger/50 px-2.5 text-[length:var(--ship-button)] text-danger hover:bg-danger-tint"
+                >
+                  Void label in Shopify ↗
+                </a>
+              )}
             </div>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+/** One label as the server's dry run sees it (POST discard-label, dryRun). */
+interface DiscardCheck {
+  via: "veeqo" | "walmart";
+  tracking: string | null;
+  carrier: string | null;
+  createdAt: string | null;
+  eligible: boolean;
+  reasons: string[];
+  warnings: string[];
+  carrierCheck: {
+    checked: boolean;
+    carrier: string | null;
+    status: string | null;
+    lastEvent: string | null;
+    delivered: boolean;
+    scanned: boolean;
+    cancelled: boolean;
+  } | null;
+}
+
+/**
+ * Discard one label of an order found through search (owner, 2026-10-27).
+ * Opening runs the server's dry run — every check, nothing cancelled — and
+ * shows the order, tracking, carrier and what the carrier reports. The red
+ * button sends the one real cancel; it can't be sent twice from here (ref
+ * guard), and the server holds its own per-label lock. An unclear answer is
+ * never re-sent: reopening the dialog re-checks the order instead.
+ */
+function ArchiveDiscardDialog({
+  hit,
+  tracking,
+  onClose,
+  onSettled,
+}: {
+  hit: ArchiveHit;
+  tracking: ArchiveTracking;
+  onClose: () => void;
+  /** Refresh the archive + queue so the card shows the new state. */
+  onSettled: () => void;
+}) {
+  type Phase =
+    | "checking"
+    | "ready"
+    | "blocked"
+    | "sending"
+    | "done"
+    | "failed"
+    | "unknown";
+  const [phase, setPhase] = useState<Phase>("checking");
+  const [check, setCheck] = useState<DiscardCheck | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [shopifyUrl, setShopifyUrl] = useState<string | null>(null);
+  const sentRef = useRef(false);
+  const onSettledRef = useRef(onSettled);
+  useEffect(() => {
+    onSettledRef.current = onSettled;
+  });
+
+  const request = useMemo(
+    () => ({
+      orderId: hit.veeqoOrderId ?? undefined,
+      orderNumber: hit.orderNumber,
+      trackingNumber: tracking.number,
+      source: "archive" as const,
+    }),
+    [hit.veeqoOrderId, hit.orderNumber, tracking.number],
+  );
+  const priorState = tracking.discard?.state ?? null;
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        // An earlier attempt without a clear answer: settle it first by
+        // reading (the server re-reads the order), never by sending again.
+        if (priorState && priorState !== "failed" && priorState !== "done") {
+          const r = await fetch(
+            `/api/shipping/discard-label?tracking=${encodeURIComponent(request.trackingNumber)}`,
+          );
+          const j = await r.json().catch(() => ({}));
+          if (!alive) return;
+          const rec = j?.record;
+          if (rec?.state === "done") {
+            setPhase("done");
+            setMessage(rec.message ?? "Label discarded.");
+            onSettledRef.current();
+            return;
+          }
+          if (rec && rec.state !== "failed") {
+            setPhase("unknown");
+            setMessage(
+              rec.message ??
+                "The earlier discard has no clear answer yet — check again in a minute.",
+            );
+            return;
+          }
+        }
+        const r = await fetch("/api/shipping/discard-label", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...request, dryRun: true }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!alive) return;
+        if (j?.action === "shopify") {
+          setShopifyUrl(j.adminUrl ?? null);
+          setPhase("blocked");
+          setMessage(j.error ?? "This label is voided in Shopify admin.");
+          return;
+        }
+        if (!r.ok || !j?.ok) {
+          setPhase("blocked");
+          setMessage(j?.error ?? `The check failed (HTTP ${r.status}).`);
+          return;
+        }
+        const label: DiscardCheck | null = Array.isArray(j.labels)
+          ? (j.labels[0] ?? null)
+          : null;
+        setCheck(label);
+        setPhase(label?.eligible ? "ready" : "blocked");
+      } catch (e) {
+        if (!alive) return;
+        setPhase("blocked");
+        setMessage(`The check failed: ${errMsg(e)}`);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [request, priorState]);
+
+  async function send() {
+    if (sentRef.current) return; // one cancel per dialog, whatever the clicks
+    sentRef.current = true;
+    setPhase("sending");
+    const toastId = toast.loading(
+      `Discarding label ${tracking.number} for ${hit.orderNumber}…`,
+    );
+    try {
+      const r = await fetch("/api/shipping/discard-label", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j?.ok) {
+        setPhase("done");
+        setMessage(j.message ?? "Label cancelled — the carrier refund is requested.");
+        toast.success(
+          `${hit.orderNumber}: label ${tracking.number} discarded — refund requested.`,
+          { id: toastId },
+        );
+      } else if (j?.state === "unknown") {
+        setPhase("unknown");
+        setMessage(j.error ?? "No clear answer — the cancel was not repeated.");
+        toast.error(`${hit.orderNumber}: no clear answer — check before retrying.`, {
+          id: toastId,
+        });
+      } else {
+        setPhase(j?.state === "refused" ? "blocked" : "failed");
+        setMessage(j?.error ?? `HTTP ${r.status}`);
+        toast.error(`${hit.orderNumber}: ${j?.error ?? `HTTP ${r.status}`}`, {
+          id: toastId,
+        });
+      }
+    } catch (e) {
+      // The request may or may not have reached the server. Never re-send:
+      // the label's record says what happened, and reopening re-checks it.
+      setPhase("unknown");
+      setMessage(
+        `No answer from the server (${errMsg(e)}). Nothing will be re-sent — reopen this dialog in a minute to re-check.`,
+      );
+      toast.error(`${hit.orderNumber}: no answer from the server`, { id: toastId });
+    }
+    onSettledRef.current();
+  }
+
+  const cc = check?.carrierCheck ?? null;
+  const carrierLine =
+    phase === "checking"
+      ? "checking…"
+      : !check
+        ? "—"
+        : !cc
+          ? "not checked (no tracking number on the label)"
+          : !cc.checked
+            ? "couldn't read the carrier's tracking"
+            : cc.delivered
+              ? "Delivered"
+              : cc.cancelled
+                ? `Cancelled — ${cc.lastEvent ?? cc.status ?? ""}`
+                : cc.scanned
+                  ? `In the carrier's hands — ${cc.lastEvent ?? cc.status ?? ""}`
+                  : `Not scanned yet — ${cc.lastEvent ?? cc.status ?? "label created"}`;
+  const finished = phase === "done" || phase === "failed" || phase === "unknown";
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && phase !== "sending") onClose();
+      }}
+    >
+      <DialogContent showCloseButton={false} className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Discard shipping label?</DialogTitle>
+          <DialogDescription>
+            Cancels this label with the carrier and requests the postage
+            refund. This can&apos;t be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2.5 text-[13px]">
+          <dl className="grid grid-cols-[112px_1fr] gap-x-3 gap-y-1">
+            <dt className="text-ink-3">Order</dt>
+            <dd className="font-mono text-ink">
+              {hit.orderNumber}
+              {hit.channel && (
+                <span className="font-sans text-ink-3"> · {hit.channel}</span>
+              )}
+            </dd>
+            <dt className="text-ink-3">Tracking</dt>
+            <dd className="font-mono text-ink">{tracking.number}</dd>
+            <dt className="text-ink-3">Carrier</dt>
+            <dd className="text-ink">
+              {cc?.carrier ?? check?.carrier ?? tracking.carrier ?? "—"}
+              {tracking.service && (
+                <span className="text-ink-3"> · {tracking.service}</span>
+              )}
+            </dd>
+            {check?.createdAt && (
+              <>
+                <dt className="text-ink-3">Label bought</dt>
+                <dd className="text-ink">
+                  {new Date(check.createdAt).toLocaleString()}
+                </dd>
+              </>
+            )}
+            <dt className="text-ink-3">Carrier status</dt>
+            <dd className="text-ink">{carrierLine}</dd>
+          </dl>
+
+          {phase === "checking" && (
+            <div className="flex items-center gap-2 text-ink-3">
+              <Loader2 size={13} className="animate-spin" />
+              Checking the label with Veeqo / Walmart and the carrier — nothing
+              is cancelled yet…
+            </div>
+          )}
+          {check?.reasons.map((r) => (
+            <div
+              key={r}
+              className="rounded border border-danger/40 bg-danger-tint px-2.5 py-1.5 text-danger"
+            >
+              Can&apos;t discard: {r}
+            </div>
+          ))}
+          {phase !== "done" &&
+            check?.warnings.map((w) => (
+              <div
+                key={w}
+                className="rounded border border-warn-strong/40 bg-warn-tint px-2.5 py-1.5 text-warn-strong"
+              >
+                {w}
+              </div>
+            ))}
+          {message && (
+            <div
+              className={cn(
+                "rounded border px-2.5 py-1.5",
+                phase === "done"
+                  ? "border-green/40 bg-green-soft text-green-ink"
+                  : phase === "unknown"
+                    ? "border-warn-strong/40 bg-warn-tint text-warn-strong"
+                    : "border-danger/40 bg-danger-tint text-danger",
+              )}
+            >
+              {phase === "done" && <CheckCircle size={13} className="mr-1 inline" />}
+              {message}
+            </div>
+          )}
+          {phase === "ready" && (
+            <p className="text-ink-3">
+              {check?.via === "walmart"
+                ? "Walmart discards the label (Ship with Walmart); the order can get a new label."
+                : "Veeqo cancels the label and asks the carrier for the refund (usually 24-72 h, unused labels only). The order goes back to “awaiting fulfillment” and reappears in Shipping Labels."}
+            </p>
+          )}
+        </div>
+        <DialogFooter>
+          {shopifyUrl && (
+            <a
+              href={shopifyUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 items-center rounded-md border border-danger/50 px-3 text-[13px] text-danger hover:bg-danger-tint"
+            >
+              Void label in Shopify ↗
+            </a>
+          )}
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={phase === "sending"}
+          >
+            {finished ? "Close" : "Cancel"}
+          </Button>
+          {(phase === "ready" || phase === "sending") && (
+            <Button
+              variant="destructive"
+              onClick={() => void send()}
+              disabled={phase !== "ready"}
+            >
+              {phase === "sending" ? (
+                <>
+                  <Loader2 size={13} className="mr-1 animate-spin" />
+                  Discarding…
+                </>
+              ) : (
+                "Discard label"
+              )}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
