@@ -3,12 +3,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { ingestAllPayouts } from "@/lib/finance/payouts";
 import { scopeOf } from "@/lib/finance/scope";
 
 export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const scope = scopeOf(req);
   const onlyUndistributed = req.nextUrl.searchParams.get("undistributed") === "1";
   const payouts = await prisma.payout.findMany({
@@ -48,6 +51,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   // Auto-ingest (Walmart recon + Amazon settlement).
   if (req.nextUrl.searchParams.get("ingest") === "1") {
     const daysBack = Number(req.nextUrl.searchParams.get("daysBack") ?? "35") || 35;

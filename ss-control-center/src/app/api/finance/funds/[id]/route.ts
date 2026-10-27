@@ -6,10 +6,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const { id } = await params;
   const fund = await prisma.fund.findUnique({ where: { id } });
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -29,6 +32,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const { id } = await params;
   const fund = await prisma.fund.findUnique({ where: { id } });
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -108,6 +113,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const { id } = await params;
   try {
     const b = await req.json();
@@ -164,6 +171,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (b.action === "move") {
       const target = await prisma.fund.findUnique({ where: { id: b.targetFundId } });
       if (!target) return NextResponse.json({ error: "target fund not found" }, { status: 404 });
+      if (target.scope !== (await prisma.fund.findUnique({ where: { id }, select: { scope: true } }))?.scope) return NextResponse.json({ error: "Ledger entries cannot move between business and personal pools" }, { status: 400 });
       if (target.id === id) return NextResponse.json({ ok: true }); // no-op
       if (entry.status === "applied") {
         await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // remove here

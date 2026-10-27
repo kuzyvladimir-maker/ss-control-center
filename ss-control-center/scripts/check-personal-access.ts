@@ -11,13 +11,14 @@ async function main() {
   delete process.env.JACKIE_API_TOKEN;
   let user: { id: string; role: string; username: string; displayName: null } | null = { id: "test", role: "staff", username: "test", displayName: null };
   let reads = 0;
-  const model = { findMany: async () => { reads++; return []; } };
+  let roleModules = "[]";
+  const model = { findMany: async () => { reads++; return []; }, findUnique: async ({ where }: { where: { id: string } }) => ({ scope: where.id === "business" ? "business" : "personal" }) };
   const fake = new Proxy({ user: { findUnique: async () => user } }, {
     get(target, key) {
       if (key === "user") return target.user;
-      if (key === "role") return { findUnique: async () => ({ modules: "[]" }) };
+      if (key === "role") return { findUnique: async () => ({ modules: roleModules }) };
       if (key === "fundEntry") return { findUnique: async () => ({ id: "paired", fundId: "free", type: "owner_draw" }) };
-      if (["creditCard", "debt", "obligationEvent", "personalAsset", "recurringExpense", "payout"].includes(String(key))) return model;
+      if (["creditCard", "debt", "obligationEvent", "personalAsset", "recurringExpense", "payout", "fund", "receipt"].includes(String(key))) return model;
       throw new Error(`Unexpected database access: ${String(key)}`);
     },
   });
@@ -77,8 +78,35 @@ async function main() {
   }
   const ledger = await import("../src/app/api/finance/funds/[id]/route");
   for (const action of ["edit", "delete", "unpay", "move", "pay"]) {
-    const response = await ledger.PATCH(new NextRequest("http://localhost/api/finance/funds/free", { method: "PATCH", body: JSON.stringify({ entryId: "paired", action }) }), { params: Promise.resolve({ id: "free" }) });
+    const response = await ledger.PATCH(new NextRequest("http://localhost/api/finance/funds/free", { method: "PATCH", headers: { authorization: `Bearer ${process.env.SSCC_API_TOKEN}` }, body: JSON.stringify({ entryId: "paired", action }) }), { params: Promise.resolve({ id: "free" }) });
     assert.equal(response.status, 409, "paired Treasury entry cannot be mutated independently"); checks++;
+  }
+  assert.equal(reads, before);
+  const { requireFinanceAccess } = await import("../src/lib/finance/access");
+  user = { id: "test", role: "staff", username: "test", displayName: null }; roleModules = '["finance"]';
+  const staffHeaders = { cookie: `sscc-session=${session}; sscc-access=${stale}`, "content-type": "application/json" };
+  for (const [path, method, body] of [
+    ["funds?scope=personal", "GET", undefined], ["funds/private", "GET", undefined],
+    ["funds", "PATCH", { id: "private" }], ["funds?id=private", "DELETE", undefined],
+    ["expenses", "PATCH", { id: "private" }], ["expenses?id=private", "DELETE", undefined],
+    ["debts", "PATCH", { id: "private" }], ["debts", "POST", { action: "pay", debtId: "private" }],
+    ["debts", "POST", { action: "add", fundId: "private" }],
+    ["receipts", "POST", { receiptId: "private" }], ["receipts", "POST", { fundId: "private" }],
+    ["timesheet", "POST", { expenseId: "private" }],
+    ["funds/transfer", "POST", { fromFundId: "business", toFundId: "private" }],
+    ["funds/business", "PATCH", { targetFundId: "private" }],
+  ] as const) {
+    const response = await requireFinanceAccess(new NextRequest(`http://localhost/api/finance/${path}`, { method, headers: staffHeaders, ...(body ? { body: JSON.stringify(body) } : {}) }));
+    assert.equal(response?.status, 403, `business Finance grant cannot access personal IDs: ${path}`); checks++;
+  }
+  assert.equal(await requireFinanceAccess(new NextRequest("http://localhost/api/finance/funds/business", { headers: staffHeaders })), null, "business Finance access remains available");
+  for (const path of ["funds", "funds/[id]", "funds/history", "funds/needs", "funds/auto-allocate", "funds/transfer", "debts", "expenses", "payouts", "receipts", "timesheet"]) {
+    const route = await import(`../src/app/api/finance/${path}/route`);
+    for (const method of methods) {
+      if (!route[method]) continue;
+      const response = await route[method](new NextRequest(`http://localhost/api/finance/${path}?scope=personal`, { method, headers: staffHeaders }), { params: Promise.resolve({ id: "private" }) });
+      assert.equal(response.status, 403, `${path} ${method} guards personal scope before data access`); checks++;
+    }
   }
   assert.equal(reads, before);
   const { proxy } = await import("../src/proxy");

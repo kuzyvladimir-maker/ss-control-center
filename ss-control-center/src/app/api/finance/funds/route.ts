@@ -3,17 +3,22 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { scopeOf } from "@/lib/finance/scope";
 
 const GROUPS = new Set(["RESERVE", "FP1", "FP2", "FREE"]);
 const TYPES = new Set(["percent", "absolute"]);
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const funds = await prisma.fund.findMany({ where: { scope: scopeOf(req) }, orderBy: { priority: "asc" } });
   return NextResponse.json({ funds });
 }
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const b = await req.json();
     if (!b.name || !GROUPS.has(b.group)) {
@@ -39,6 +44,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const b = await req.json();
     if (!b.id) return NextResponse.json({ error: "id required" }, { status: 400 });
@@ -60,6 +67,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const fund = await prisma.fund.findUnique({ where: { id } });

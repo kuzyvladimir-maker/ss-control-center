@@ -4,10 +4,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const b = await req.json();
     const amount = round2(Math.abs(Number(b.amount)));
@@ -21,6 +24,7 @@ export async function POST(req: NextRequest) {
     ]);
     if (!from || !to) return NextResponse.json({ error: "fund not found" }, { status: 404 });
 
+    if (from.scope !== to.scope) return NextResponse.json({ error: "Cross-pool transfers must use the personal income bridge" }, { status: 400 });
     const note = b.note ? ` — ${String(b.note)}` : "";
     await prisma.$transaction([
       prisma.fundEntry.create({ data: { fundId: from.id, type: "transfer", amount: -amount, description: `Transfer to ${to.name}${note}`, status: "applied" } }),

@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { scopeOf } from "@/lib/finance/scope";
 import { minPayment } from "@/lib/finance/cards";
 import { CREDIT_CARDS_FUND } from "@/lib/finance/personal";
@@ -14,6 +15,8 @@ import { CREDIT_CARDS_FUND } from "@/lib/finance/personal";
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const scope = scopeOf(req);
   const today = new Date().toISOString().slice(0, 10);
   // Read-only: the meters are advanced once a day by /api/cron/finance-accrual.

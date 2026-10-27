@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { uploadToR2 } from "@/lib/walmart/multipack/r2";
 import { parseReceipt } from "@/lib/finance/receipt-ocr";
 import { ingestReceipt } from "@/lib/finance/ingest-receipt";
@@ -14,6 +15,8 @@ export const maxDuration = 60;
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const fundId = req.nextUrl.searchParams.get("fundId");
   const receipts = await prisma.receipt.findMany({
     where: { scope: scopeOf(req), ...(fundId ? { fundId } : {}) },
@@ -24,6 +27,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const scope = scopeOf(req);
     const b = await req.json();

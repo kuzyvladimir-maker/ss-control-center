@@ -94,7 +94,11 @@ reuse the ID. A paired owner-draw ledger entry cannot be edited, deleted, moved
 or unpaid independently. A future reversal must undo both sides together.
 
 Owner-only checks protect settings changes, distribution requests and personal
-income handlers. Configuration reads require Finance access. The existing cron
+income handlers. Shared Finance handlers also verify the current database role:
+`scope=personal` and personal IDs in fund paths, edits, payments, receipts and
+transfers require the owner. Finance staff retain business access. Generic fund
+transfers and ledger moves cannot cross pools; they must use the income bridge.
+Configuration reads require Finance access. The existing cron
 requires its secret and remains unchanged in schedule. No personal percentage
 is silently enabled by deployment.
 

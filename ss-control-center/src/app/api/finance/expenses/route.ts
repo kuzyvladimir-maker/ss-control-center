@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { monthlyAmount, parseSellerboardExpensesCsv, EXPENSE_CATEGORIES } from "@/lib/finance/expenses";
 import { scopeOf, type Scope } from "@/lib/finance/scope";
 import { personalFundPriority } from "@/lib/finance/personal";
@@ -39,10 +40,14 @@ async function summary(scope: Scope) {
 }
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   return NextResponse.json(await summary(scopeOf(req)));
 }
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const scope = scopeOf(req);
     const b = await req.json();
@@ -83,6 +88,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const b = await req.json();
     if (!b.id) return NextResponse.json({ error: "id required" }, { status: 400 });
@@ -105,6 +112,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   await prisma.recurringExpense.delete({ where: { id } });

@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireFinanceAccess } from "@/lib/finance/access";
 import { perDayRate } from "@/lib/finance/expenses";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -19,6 +20,8 @@ async function employees() {
 }
 
 export async function GET(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   const month = req.nextUrl.searchParams.get("month") || new Date().toISOString().slice(0, 7); // YYYY-MM
   const emps = await employees();
   const logs = await prisma.timeLog.findMany({ where: { expenseId: { in: emps.map((e) => e.id) }, date: { startsWith: month } } });
@@ -40,6 +43,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const access = await requireFinanceAccess(req);
+  if (access) return access;
   try {
     const b = await req.json();
 
