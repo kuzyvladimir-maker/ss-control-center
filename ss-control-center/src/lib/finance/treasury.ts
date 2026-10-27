@@ -1,5 +1,6 @@
-// One cash-basis input for the business waterfall. Economics will supply the
-// same NET-PAYOUT basis; its revenue-based SKU margin must be converted first.
+// Deployed temporary percentage-reserve contract, not the approved final scheme.
+// Owner decision 2026-10-27: payouts minus actual spending; period still open.
+// Economics is deferred. See docs/wiki/treasury-module.md at repository root.
 import type { DistributionResult } from "./types";
 
 export const TREASURY_KEY = "finance:treasury";
@@ -40,8 +41,8 @@ export function resolveTreasury(
       personalShare: value.personalShare,
       grossMargin: {
         ...value.grossMargin,
-        // Economics is deliberately not connected in phase 1. Never use a stale
-        // constant as though it came from Economics.
+        // Retain the deployed enum for compatibility; Economics is not an
+        // approved input. Never use a stale constant as though it came from it.
         rate: value.grossMargin.source === "economics" ? null : value.grossMargin.rate,
         basis: "net_payout", temporary: value.grossMargin.source === "constant",
         provenance: value.grossMargin.source === "constant" ? "Owner setting" : "Economics is not connected",

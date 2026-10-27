@@ -1,9 +1,12 @@
 # Finance Core — Funds (Phase 1)
 
-> Current Treasury contract (2026-10-27): [Treasury module](treasury-module.md).
-> One temporary grossMargin input now drives the reserve; the configured share
-> of new FREE becomes personal income in the same distribution transaction.
-> Earlier reserve/auto-mode descriptions below are historical.
+> Owner decision, 2026-10-27 11:23 ET: [Treasury module](treasury-module.md).
+> Intended calculation: marketplace payouts minus actual spending for a period,
+> then allocation to funds. The period is not decided; Economics is deferred.
+> The deployed percentage-reserve / grossMargin calculation is temporary and
+> **not approved as the final scheme**. The personal FREE share is deliberately
+> not set, so automatic transfers are off. Descriptions below record the older
+> implementation, not approval of its reserve assumption.
 
 **Status:** shipped 2026-06-20. First phase of the **Finance Core super-module**
 (the full financial brain: per-SKU economics → entity P&L → tax/payroll → funds →

@@ -199,7 +199,7 @@ export default function FinancialPlanPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Financial Plan</h1>
-          <p className="text-sm text-muted-foreground">Treasury: business payouts → direct costs → business funds → FREE share → personal income.</p>
+          <p className="text-sm text-muted-foreground">Treasury: business cash flow and funds.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={getReport} disabled={busy != null}>{busy === "report" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}Get Report</Button>
@@ -208,6 +208,14 @@ export default function FinancialPlanPage() {
           <Button onClick={load} variant="outline" size="sm"><RefreshCw className="h-4 w-4" /></Button>
         </div>
       </div>
+
+      <Card className="border-amber-500/50 bg-amber-500/5">
+        <CardContent className="space-y-1 py-4 text-sm">
+          <p className="font-semibold">Temporary calculation — scheme not approved</p>
+          <p>The current calculation still uses a percentage reserve. The owner&apos;s direction is marketplace payouts minus actual spending for a selected period, then allocation to funds. That calculation is not implemented yet.</p>
+          <p className="text-muted-foreground">Calculation period: not set. Economics is deferred and is not an input to Financial Plan.</p>
+        </CardContent>
+      </Card>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b">
@@ -230,7 +238,7 @@ export default function FinancialPlanPage() {
             <Kpi label="To distribute" value={usd(pendingNet)} accent={pendingNet >= 0 ? "pos" : "neg"} />
             <Kpi label="Payouts waiting" value={String(payouts.filter((p) => !p.distributed).length)} />
             <Kpi label="Periods pulled" value={String(payouts.length)} />
-            <Kpi label="Reserve %" value={config?.grossMargin.rate != null ? `${Math.round((1 - config.grossMargin.rate) * 100)}%` : "not set"} />
+            <Kpi label="Temporary reserve %" value={config?.grossMargin.rate != null ? `${Math.round((1 - config.grossMargin.rate) * 100)}%` : "not set"} />
           </div>
 
           <Card>
@@ -320,7 +328,7 @@ export default function FinancialPlanPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div>
-                  <label htmlFor="gross-margin" className="block text-xs text-muted-foreground">Gross margin % of net payout — temporary, until Economics</label>
+                  <label htmlFor="gross-margin" className="block text-xs text-muted-foreground">Gross margin % of net payout — temporary, scheme not approved</label>
                   <Input id="gross-margin" type="number" min={0} max={100} step={0.1} className="w-24" placeholder="Not set" value={settingsDraft.margin} disabled={!!busy} onChange={(e) => setSettingsDraft({ ...settingsDraft, margin: e.target.value })} />
                 </div>
                 <div>
@@ -336,7 +344,7 @@ export default function FinancialPlanPage() {
                 <Button onClick={() => doRun(true)} disabled={busy != null || settingsDirty || config?.grossMargin.rate == null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
                 <Button onClick={() => doRun(false)} disabled={busy != null || settingsDirty || !run || run.preview === false || !run.payoutCount || overAllocated} title={overAllocated ? "Funds exceed 100% — reduce a % first" : undefined}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
               </div>
-              <p className="text-xs text-muted-foreground">{config?.grossMargin.provenance} {config?.grossMargin.asOf ? `· ${config.grossMargin.asOf.slice(0, 10)}` : ""}. Reserve = 100% − gross margin, for COGS + packaging. Marketplace fees and labels already deducted from the payout are not deducted again.</p>
+              <p className="text-xs text-muted-foreground">{config?.grossMargin.provenance} {config?.grossMargin.asOf ? `· ${config.grossMargin.asOf.slice(0, 10)}` : ""}. Temporary formula: reserve = 100% − gross margin. This percentage is not measured actual spending or an approved planning assumption.</p>
               <p className="text-xs text-muted-foreground">{config?.personalShare == null ? "Personal share is not set — no automatic transfer." : `On each committed distribution, ${config.personalShare * 100}% of new FREE becomes personal income (including scheduled distributions).`} Existing FREE stays in the business. Personal income is then distributed into envelopes without a second cost reserve. <Link href="/personal" className="underline">Open Personal Finance</Link>.</p>
               {settingsDirty && <p className="text-xs text-amber-700">Unsaved settings — save before previewing or committing.</p>}
               {run && (

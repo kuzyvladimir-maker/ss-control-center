@@ -1,157 +1,137 @@
 # Treasury — Financial Plan and Personal Finance
 
-Owner scope: Vladimir, Telegram topic 728, 2026-10-27. Treasury is division 3:
-Financial Plan, Personal Finance, Economics and Sales overview. The current work
-completes financial planning; connecting unit economics is a separate phase.
+## Current owner decision — 2026-10-27, 11:23 ET
 
-## Money flow
+Vladimir's decision in Telegram topic 728 supersedes the earlier proposal to
+feed Financial Plan with a temporary gross margin and later an Economics
+adapter. Treasury is division 3: Financial Plan, Personal Finance, Economics
+and Sales overview.
+
+The intended Financial Plan calculation is:
+
+`money to distribute = marketplace payouts − actual spending for the period`
+
+The remainder goes through the business fund waterfall. The currently approved
+income source is Amazon; website, TikTok and eBay are later income sources.
+These sources represent receipts, analogous to income sources in a tax return.
+Unit economics does **not** enter this calculation.
+
+The calculation period is **open**: the owner has not chosen the previous or
+following week. Do not choose the period or implement a replacement expense
+calculation until a new owner instruction. Economics is deferred as separate
+work; its SKU profitability, COGS and Product Truth integration are untouched.
+
+The share of FREE sent to Personal Finance is deliberately **not set**. This is
+an owner decision to defer the percentage, not a missing answer to chase.
+Automatic personal transfers remain off. Do not assign zero or another default.
 
 ```mermaid
 flowchart LR
-  E[Economics: SKU gross profit] --> M[grossMargin adapter]
-  C[Temporary owner constant] --> M
-  P[Net marketplace payouts] --> B[Financial Plan]
-  M --> B
-  B --> R[Direct-cost reserve]
-  B --> F[FP1 then FP2 business funds]
+  P[Marketplace payouts: Amazon now] --> D[Subtract actual spending]
+  A[Actual spending for the period] --> D
+  T[Period: owner decision pending] -.-> D
+  D --> F[Business fund waterfall]
   F --> U[FREE remainder]
-  U --> S[Configured personal share]
-  U --> K[Retained business FREE]
-  S --> I[Personal income]
-  I --> N[Personal envelopes: no second reserve]
+  U -. Share not set: automatic transfer off .-> I[Personal income]
+  I --> N[Personal envelopes]
 ```
 
-Economics calculates `grossProfit = price + shipping charged − COGS − packaging
-− referral − own shipping`. Its native margin is `grossProfit / revenue`.
-Financial Plan receives **net cash payouts**, already reduced by marketplace
-fees and marketplace-paid labels. These are different denominators: a future
-Economics adapter must reconcile the period, cash basis and costs already
-withheld before supplying the Treasury rate. Do not apply a revenue-based SKU
-margin directly to net payouts or deduct shipping/referral twice.
+This diagram records the owner's direction, **not a claim that the new
+period-based spending calculation is deployed**. Do not expand Treasury further
+until the owner gives a new instruction.
 
-For phase 1, `grossMargin.rate` is explicitly the temporary distributable share
-of **net payout**, after the restock reserve for COGS + packaging:
+## What is already deployed
 
-- `reserve = round(payout × (1 − grossMargin.rate), 2)`.
-- `distributable = payout − reserve`.
-- Existing priority waterfall funds FP1, then FP2, respecting absolute amounts,
-  percentage allocations, caps and available cash.
-- `newFREE` is what remains **after** business funds.
-- `personalIncome = round(newFREE × personalShare, 2)`, capped by positive FREE
-  balance after this allocation. A pre-existing negative FREE is covered first.
-- `retainedNewFREE = newFREE − personalIncome`.
+The previous implementation reached production before this correction. It is
+retained with an explicit UI notice: **“Temporary calculation — scheme not
+approved.”** Its existing calculations and ledger behavior are described here
+so they cannot be mistaken for the newly approved direction.
 
-The share is taken from **new FREE**, not the entire distributable pool and not
-from the old FREE balance. That preserves business obligations and prevents
-repeatedly transferring the same accumulated balance. Historical FREE can be
-drawn manually by the owner with an explicit amount and sufficient balance.
+- `/finance` currently uses a percentage reserve. With the existing setting
+  `finance:reserve:manualPct = 0.5`, the compatibility resolver returns
+  `grossMargin = 1 − reserve = 0.5`. This 50% is a legacy configuration value,
+  **not an approved margin assumption**, measured profit or actual spending.
+- The current formula is `reserve = round(payout × (1 − grossMargin.rate), 2)`;
+  `distributable = payout − reserve`. The existing waterfall allocates FP1,
+  then FP2, then FREE. The actual-spending replacement has not been implemented.
+- The gross-margin editor and API contract are already published. The notice
+  replaces the earlier misleading “until Economics” label; Economics is not
+  the planned source for this Financial Plan calculation.
+- The personal income bridge is deployed, but `personalShare = null`, so it
+  makes no automatic FREE draw. If explicitly configured by the owner later,
+  the existing code applies the share to **new FREE after business funds**;
+  old FREE is only available through an explicit manual draw.
+- Personal Finance includes the obligations registry, status badges, net worth,
+  avalanche/snowball payoff plan and 60-day calendar. Court cases, arrears,
+  collections and tax windows appear above both payoff strategies. BJ's full
+  $6,715.07 commitment replaces its $225 minimum for the first model month;
+  missing minimums, rates and court amounts remain explicit.
+- Personal routes and records in shared Finance APIs require the current owner
+  role. Business Finance access remains available to authorized staff.
 
-These are planning ledger entries; the application does not send bank payments.
+These are planning ledger entries. The application does not send bank payments.
+This correction changes documentation and UI wording only: it does not set a
+personal percentage, change stored reserve settings, distribute income or
+replace the business calculation.
 
-## Phase 1 — implemented
+## Deployed contract and safeguards (temporary)
 
-One setting, `Setting["finance:treasury"]`, stores:
+`Setting["finance:treasury"]`, when saved, stores `grossMargin`, `personalShare`
+and `updatedAt`. Rates use 0–1; `null` means not set, distinct from zero.
+When this setting is absent, the resolver reads the older reserve percentage.
+The October 27 production read found no new Treasury setting and a 50% legacy
+reserve. The legacy value has no date; the UI does not invent one.
 
-```json
-{
-  "grossMargin": { "source": "constant", "rate": null },
-  "personalShare": null,
-  "updatedAt": "server timestamp on save"
-}
-```
+The existing type accepts `grossMargin.source = constant | economics` for
+compatibility with the published code. This enum is **not approval to build an
+Economics adapter**. The unconnected `economics` source resolves to an unavailable
+rate and blocks distribution rather than using a constant under a false source.
 
-Rates use 0–1; the UI displays 0–100%. `null` means **not set**, while zero is a
-valid explicit setting. The `/finance` editor labels the margin “temporary,
-until Economics” and states that a configured personal share applies to manual
-and scheduled distributions. Save settings, Preview, then Commit.
+A committed distribution atomically claims its payouts, records the plan,
+credits business funds and, only when configured, debits FREE and creates one
+personal income entry. The income is deduplicated by the run ID. A failure rolls
+back both pools. Manual FREE draws also use a request ID, check the available
+balance and cannot debit twice on replay. Paired ledger entries cannot be
+edited independently. Personal income is distributed with reserve zero.
 
-Compatibility: when the new setting is absent, the resolver reads the existing
-`finance:reserve:manualPct` and returns `grossMargin.rate = 1 − reserve`. The
-read-only production check on October 27 found reserve **50%**, therefore the
-compatible temporary margin is **50%**. This is the existing owner planning
-assumption, not a measured Economics result. No fabricated 58% default is used.
-The legacy setting has no timestamp; the UI does not invent one. Once saved,
-all callers use the single new setting; legacy API `manualPct` writes are
-translated into that same setting rather than creating a competing value.
+SQLite writers acquire a reservation before reading balances. Concurrent
+writers cannot both claim the same income; conflicts stop safely. Owner-only
+checks cover settings writes, distribution and personal income. Shared Finance
+handlers also check personal scopes and record IDs against the current database
+role. Generic transfers cannot cross pools. The cron schedule is unchanged;
+automatic personal draws remain off while the share is not set.
 
-The personal share was absent at acceptance and remains “not set” until the
-owner supplies it. No automatic draw is made while it is absent. No schema
-migration or reseeding is necessary.
+Relevant implementation:
 
-`runDistribution` commits the payout claim, `FinancePlanRun`, business fund
-credits, FREE debit and one `Payout(scope="personal")` in a single transaction.
-The personal payout is deduplicated by `treasury:<runId>`; claimed business
-payouts cannot be allocated again. Run notes snapshot margin provenance, share,
-amounts and input payout IDs. A failed personal write rolls back the business
-side too. Transactions acquire the SQLite writer reservation before reading;
-concurrent writers cannot deadlock while upgrading a read transaction. A busy
-writer returns a conflict; the same request can be checked/retried without double
-allocation. The personal waterfall consumes that income with reserve zero.
-
-Manual draws also debit FREE and create personal income in one transaction.
-Their request ID supports retry without double debit; different payloads cannot
-reuse the ID. A paired owner-draw ledger entry cannot be edited, deleted, moved
-or unpaid independently. A future reversal must undo both sides together.
-
-Owner-only checks protect settings changes, distribution requests and personal
-income handlers. Shared Finance handlers also verify the current database role:
-`scope=personal` and personal IDs in fund paths, edits, payments, receipts and
-transfers require the owner. Finance staff retain business access. Generic fund
-transfers and ledger moves cannot cross pools; they must use the income bridge.
-Configuration reads require Finance access. The existing cron
-requires its secret and remains unchanged in schedule. No personal percentage
-is silently enabled by deployment.
-
-## Phase 2 — separate work
-
-`grossMargin.source` accepts the contract `constant | economics`.
-`economics` currently resolves to an unavailable rate and blocks distribution;
-it never silently reuses the constant as though Economics supplied it. The UI
-cannot enable an unconnected source.
-
-The later adapter must produce a dated, sourced, cash-basis `GrossMargin`
-(`rate`, `source`, `basis="net_payout"`, `temporary`, `provenance`, `asOf`) from
-adequately covered Economics evidence. The waterfall, FREE bridge and personal
-income model do not change. Coverage, period weighting and settlement
-reconciliation belong to that later adapter. `/economics`, Product Truth,
-SKU costs and Sales overview are not modified in phase 1.
-
-## Personal planning continuation
-
-[Personal Finance](../../ss-control-center/docs/wiki/personal-finance.md) retains
-the registry, net worth and 60-day calendar already deployed. The payoff screen
-shows court cases, arrears, collections and tax windows **above** both strategies.
-Dated full-payment commitments replace the regular minimum for the first model
-month. BJ's November commitment is $6,715.07, compared with its recorded
-$6,490.07 balance; the model reserves the full commitment without inventing
-$225 of extra debt. Unknown minimums, rates and court amounts stay explicit.
-
-## Implementation and checks
-
-- `ss-control-center/src/lib/finance/treasury.ts`: pure contract, compatibility
-  resolver and FREE-share calculation.
-- `treasury-config.ts`: central settings reader; `reserve-rate.ts`: compatibility
-  adapter; `run.ts`: shared atomic business/personal distribution.
-- `personal-income.ts`: manual income and retry-safe FREE draws.
+- `ss-control-center/src/lib/finance/treasury.ts`, `treasury-config.ts`,
+  `reserve-rate.ts`: deployed temporary settings and compatibility resolver.
+- `run.ts`, `personal-income.ts`: distribution, manual draws and atomic ledger.
 - `/api/finance/config`, `/api/finance/run`, `/api/personal/income`; UI `/finance`
-  and `/personal`. No new money pool or duplicated business debts.
-- `scripts/check-treasury.ts`: disposable SQLite; preview writes nothing,
-  late-failure rollback, repeated/concurrent runs, cash conservation, caps,
-  rounding, missing/zero settings, insufficient FREE and manual-draw retry.
-- `scripts/check-personal-access.ts`: current-role checks and invalid settings,
-  income and ledger edits; `check-personal-finance.ts`: full-statement priority
-  under both strategies, unknown values and calendar regression cases.
+  and `/personal`. No additional pool or duplicated business debt was created.
+- `scripts/check-treasury.ts`, `check-personal-access.ts` and
+  `check-personal-finance.ts`: transaction, access and calculation checks.
+
+## Work boundaries
+
+1. Completed: Personal Finance screens, access checks and the published
+   temporary Treasury implementation described above.
+2. This correction: mark the percentage formula unapproved, retain the
+   intentionally unset personal share, and record the actual-spending direction.
+3. On hold: period selection, implementing payouts minus actual spending,
+   assigning a personal share, and any further Treasury development.
+4. Deferred separately: Economics. It is not a Financial Plan input.
 
 ## Connected modules
 
-- [Economics / Profit engine](economics-profit-engine.md)
-- [Finance Core — Funds](finance-funds.md)
-- [Personal Finance](../../ss-control-center/docs/wiki/personal-finance.md)
-- [Sidebar orgboard](sidebar-orgboard.md)
-- [Personal Finance production acceptance](personal-finance-codex-acceptance-2026-10-27.md)
+- [Economics / Profit engine](economics-profit-engine.md) — separate, deferred.
+- [Finance Core — Funds](finance-funds.md) — existing implementation and history.
+- [Personal Finance](../../ss-control-center/docs/wiki/personal-finance.md).
+- [Sidebar orgboard](sidebar-orgboard.md) — division 3, Treasury.
+- [Personal Finance production acceptance](personal-finance-codex-acceptance-2026-10-27.md).
 
 Jackie's reference copy is `wiki/finance/treasury-module-architecture.md` on the
-server. This repository document records the implemented contract.
+server. This repository document distinguishes the current owner decision from
+the temporary code already deployed.
 
 ## Production acceptance — 2026-10-27
 
@@ -185,6 +165,6 @@ The production build completed on October 27 at 15:32 UTC.
   issues. Agent doctor reports the existing four worktrees; its prune dry-run
   retains all auxiliary checkouts. This task created no worktree.
 
-The owner was asked through topic 728 for the personal share percentage; no
-percentage has been supplied. Leaving it unset is explicit configuration state,
-not a zero-income assumption. Economics remains a separate future phase.
+The checks above verify the deployed implementation, not approval of its 50%
+assumption. The later owner decision deliberately leaves the personal share
+unset and defers Economics; no percentage is being requested.
