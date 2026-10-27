@@ -82,7 +82,8 @@ export async function accrueInstallments(today: string): Promise<number> {
     const from = d.lastAccruedDate ?? daysBefore(today, BOOTSTRAP_DAYS);
     if (from >= today) continue;
     const monthly = installmentMonthly(d.monthlyPayment, d.paymentFrequency);
-    const remaining = Math.max(0, d.amount - d.paid);
+    // Balance unknown (BMW loans): the installment is still owed every month — no cap.
+    const remaining = d.amountKnown === false ? Number.POSITIVE_INFINITY : Math.max(0, d.amount - d.paid);
     const owed = Math.min(round2((d.accrued ?? 0) + accrualAmount(monthly, from, today)), remaining);
     await prisma.debt.update({ where: { id: d.id }, data: { accrued: owed, lastAccruedDate: today } });
     added += Math.max(0, owed - (d.accrued ?? 0));

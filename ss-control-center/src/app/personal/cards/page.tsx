@@ -5,6 +5,10 @@
  * balance, limit (→ utilization), APR (→ monthly interest), minimum-payment rule,
  * and due day (→ the dashboard calendar). Pay a card to debit its fund and lower the
  * balance. Grouped by owner (Vladimir / Anna).
+ *
+ * Phase 2: the minimum is the real statement minimum (or "not set" — never an
+ * invented rule); every balance shows its date + source; cards no current source
+ * confirms are listed separately and not counted.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -14,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AsOf, PersonalNav, StandingBadge, dateShort } from "@/components/personal/registry-ui";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const usd2 = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -23,11 +28,13 @@ interface CC {
   creditLimit: number; currentBalance: number; statementBalance: number; apr: number | null;
   minPaymentFixed: number; minPaymentPct: number; statementDay: number | null; dueDay: number | null;
   autopay: string; fundId: string | null; active: boolean;
-  minPayment: number; utilization: number; monthlyInterest: number;
+  minPayment: number; minKnown: boolean; utilization: number; monthlyInterest: number;
+  minPaymentDue: number | null; nextDueDate: string | null; closed: boolean;
+  standing: string | null; balanceAsOf: string | null; balanceSource: string | null;
 }
 interface Totals { count: number; totalBalance: number; totalLimit: number; overallUtilization: number; totalMinPayment: number; monthlyInterest: number }
 
-const EMPTY = { owner: "Vladimir", issuer: "", name: "", creditLimit: "", currentBalance: "", apr: "", minPaymentPct: "2", minPaymentFixed: "35", statementDay: "", dueDay: "" };
+const EMPTY = { owner: "Vladimir", issuer: "", name: "", last4: "", creditLimit: "", currentBalance: "", apr: "", minPaymentDue: "", statementDay: "", dueDay: "", balanceSource: "" };
 
 export default function PersonalCardsPage() {
   const [cards, setCards] = useState<CC[]>([]);
@@ -62,12 +69,16 @@ export default function PersonalCardsPage() {
 
   function startEdit(c: CC) {
     setEditId(c.id); setPayId(null);
-    setEdit({ owner: c.owner ?? "", issuer: c.issuer, name: c.name ?? "", creditLimit: String(c.creditLimit || ""), currentBalance: String(c.currentBalance || ""), statementBalance: String(c.statementBalance || ""), apr: c.apr != null ? String(c.apr) : "", minPaymentPct: String(c.minPaymentPct || ""), minPaymentFixed: String(c.minPaymentFixed || ""), statementDay: c.statementDay != null ? String(c.statementDay) : "", dueDay: c.dueDay != null ? String(c.dueDay) : "" });
+    setEdit({ owner: c.owner ?? "", issuer: c.issuer, name: c.name ?? "", creditLimit: String(c.creditLimit || ""), currentBalance: String(c.currentBalance || ""), statementBalance: String(c.statementBalance || ""), apr: c.apr != null ? String(c.apr) : "", minPaymentDue: c.minPaymentDue != null ? String(c.minPaymentDue) : "", statementDay: c.statementDay != null ? String(c.statementDay) : "", dueDay: c.dueDay != null ? String(c.dueDay) : "", nextDueDate: c.nextDueDate ?? "" });
   }
   async function saveEdit(id: string) {
     setBusy("edit"); setError(null);
     try {
-      const r = await fetch("/api/personal/cards", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, ...edit }) }).then((x) => x.json());
+      const cur = cards.find((c) => c.id === id);
+      const { currentBalance, ...rest } = edit;
+      // Only a CHANGED balance is sent — the server re-dates it "today · Manual entry".
+      const body = { id, ...rest, ...(cur && currentBalance !== String(cur.currentBalance || "") ? { currentBalance } : {}) };
+      const r = await fetch("/api/personal/cards", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error ?? "failed");
       setEditId(null); await load();
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
@@ -89,7 +100,9 @@ export default function PersonalCardsPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
-  const owners = [...new Set(cards.map((c) => c.owner ?? "—"))];
+  const counted = cards.filter((c) => c.active);
+  const notCounted = cards.filter((c) => !c.active);
+  const owners = [...new Set(counted.map((c) => c.owner ?? "—"))];
 
   return (
     <div className="mx-auto max-w-5xl space-y-5 p-5">
@@ -100,6 +113,7 @@ export default function PersonalCardsPage() {
         </div>
         <Button size="sm" onClick={() => setShowAdd((s) => !s)}><PlusCircle className="h-4 w-4" /> Add card</Button>
       </div>
+      <PersonalNav active="/personal/cards" />
 
       {error && <div className="rounded-md border border-warn-line bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">{error}</div>}
 
@@ -120,13 +134,14 @@ export default function PersonalCardsPage() {
               <Field label="Owner"><select value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="h-9 w-full rounded-md border border-rule bg-bg px-2 text-[13px]"><option>Vladimir</option><option>Anna</option></select></Field>
               <Field label="Issuer"><Input value={form.issuer} onChange={(e) => setForm({ ...form, issuer: e.target.value })} placeholder="Chase" /></Field>
               <Field label="Card name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Freedom" /></Field>
+              <Field label="Last 4"><Input value={form.last4} onChange={(e) => setForm({ ...form, last4: e.target.value })} placeholder="1234" inputMode="numeric" /></Field>
               <Field label="Balance"><Input value={form.currentBalance} onChange={(e) => setForm({ ...form, currentBalance: e.target.value })} placeholder="0" inputMode="decimal" /></Field>
               <Field label="Credit limit"><Input value={form.creditLimit} onChange={(e) => setForm({ ...form, creditLimit: e.target.value })} placeholder="0" inputMode="decimal" /></Field>
               <Field label="APR %"><Input value={form.apr} onChange={(e) => setForm({ ...form, apr: e.target.value })} placeholder="24.99" inputMode="decimal" /></Field>
-              <Field label="Min %"><Input value={form.minPaymentPct} onChange={(e) => setForm({ ...form, minPaymentPct: e.target.value })} inputMode="decimal" /></Field>
-              <Field label="Min floor $"><Input value={form.minPaymentFixed} onChange={(e) => setForm({ ...form, minPaymentFixed: e.target.value })} inputMode="decimal" /></Field>
+              <Field label="Statement min $"><Input value={form.minPaymentDue} onChange={(e) => setForm({ ...form, minPaymentDue: e.target.value })} placeholder="not set" inputMode="decimal" /></Field>
               <Field label="Statement day"><Input value={form.statementDay} onChange={(e) => setForm({ ...form, statementDay: e.target.value })} placeholder="1-31" inputMode="numeric" /></Field>
               <Field label="Due day"><Input value={form.dueDay} onChange={(e) => setForm({ ...form, dueDay: e.target.value })} placeholder="1-31" inputMode="numeric" /></Field>
+              <Field label="Source of the balance"><Input value={form.balanceSource} onChange={(e) => setForm({ ...form, balanceSource: e.target.value })} placeholder="e.g. Statement 2026-11-05" /></Field>
             </div>
             <Button size="sm" className="mt-3" onClick={addCard} disabled={!!busy}>{busy === "add" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />} Save card</Button>
           </CardContent>
@@ -144,14 +159,19 @@ export default function PersonalCardsPage() {
               <div key={c.id} className="rounded-md border border-rule/60 px-2 py-2 sm:border-0 sm:py-0">
                 <div className="grid grid-cols-2 items-center gap-2 sm:grid-cols-[1.6fr_1fr_1fr_0.8fr_0.8fr_0.7fr_auto] sm:py-1.5">
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="text-[13px] font-medium text-ink">{c.name || c.issuer}</div>
-                    <div className="text-[11px] text-ink-4">{c.issuer}{c.apr ? ` · ${c.apr}% APR` : ""}</div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium text-ink">
+                      {c.name || c.issuer}{c.last4 ? ` ${c.last4}` : ""}
+                      {c.closed && <span className="rounded bg-bg-elev px-1.5 text-[10px] uppercase text-ink-4">closed</span>}
+                      {c.standing && c.standing !== "current" && <StandingBadge standing={c.standing} />}
+                    </div>
+                    <div className="text-[11px] text-ink-4">{c.issuer}{c.apr ? ` · ${c.apr}% APR` : " · APR not set"}</div>
+                    <AsOf asOf={c.balanceAsOf} source={c.balanceSource} />
                   </div>
                   <span className="text-right text-[13px] tabular text-ink">{usd(c.currentBalance)}</span>
                   <span className="text-right text-[13px] tabular text-ink-3">{c.creditLimit > 0 ? usd(c.creditLimit) : "—"}</span>
                   <span className={cn("text-right text-[13px] tabular", c.creditLimit > 0 && c.utilization > 0.3 ? "text-warn-strong" : "text-ink-3")}>{c.creditLimit > 0 ? `${Math.round(c.utilization * 100)}%` : "—"}</span>
-                  <span className="text-right text-[13px] tabular text-ink-3">{usd(c.minPayment)}</span>
-                  <span className="text-right text-[13px] tabular text-ink-3">{c.dueDay ?? "—"}</span>
+                  <span className={cn("text-right text-[13px] tabular", c.minKnown ? "text-ink-3" : "text-ink-4")}>{c.minKnown ? usd(c.minPayment) : "not set"}</span>
+                  <span className="text-right text-[13px] tabular text-ink-3">{c.nextDueDate ? dateShort(c.nextDueDate) : c.dueDay ?? "—"}</span>
                   <div className="col-span-2 flex justify-end gap-1 sm:col-span-1">
                     <button onClick={() => { setPayId(payId === c.id ? null : c.id); setPayAmt(String(c.minPayment || "")); setEditId(null); }} className="rounded p-1 text-ink-3 hover:bg-bg-elev hover:text-green-ink" title="Pay"><DollarSign className="h-4 w-4" /></button>
                     <button onClick={() => startEdit(c)} className="rounded p-1 text-ink-3 hover:bg-bg-elev hover:text-ink" title="Edit"><Pencil className="h-4 w-4" /></button>
@@ -180,9 +200,10 @@ export default function PersonalCardsPage() {
                       <Field label="Statement"><Input value={edit.statementBalance} onChange={(e) => setEdit({ ...edit, statementBalance: e.target.value })} inputMode="decimal" /></Field>
                       <Field label="Limit"><Input value={edit.creditLimit} onChange={(e) => setEdit({ ...edit, creditLimit: e.target.value })} inputMode="decimal" /></Field>
                       <Field label="APR %"><Input value={edit.apr} onChange={(e) => setEdit({ ...edit, apr: e.target.value })} inputMode="decimal" /></Field>
-                      <Field label="Min %"><Input value={edit.minPaymentPct} onChange={(e) => setEdit({ ...edit, minPaymentPct: e.target.value })} inputMode="decimal" /></Field>
+                      <Field label="Statement min $"><Input value={edit.minPaymentDue} onChange={(e) => setEdit({ ...edit, minPaymentDue: e.target.value })} placeholder="not set" inputMode="decimal" /></Field>
                       <Field label="Statement day"><Input value={edit.statementDay} onChange={(e) => setEdit({ ...edit, statementDay: e.target.value })} inputMode="numeric" /></Field>
                       <Field label="Due day"><Input value={edit.dueDay} onChange={(e) => setEdit({ ...edit, dueDay: e.target.value })} inputMode="numeric" /></Field>
+                      <Field label="Next due date"><Input type="date" value={edit.nextDueDate} onChange={(e) => setEdit({ ...edit, nextDueDate: e.target.value })} /></Field>
                     </div>
                     <div className="mt-2 flex gap-2">
                       <Button size="sm" onClick={() => saveEdit(c.id)} disabled={!!busy}>{busy === "edit" ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save</Button>
@@ -195,6 +216,23 @@ export default function PersonalCardsPage() {
           </CardContent>
         </Card>
       ))}
+
+      {notCounted.length > 0 && (
+        <Card className="border-dashed">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-[14px] text-ink-2">Not counted — needs check · {notCounted.length}</CardTitle>
+            <p className="text-[12px] text-ink-4">Cards from older data that no current source confirms. Excluded from the totals above; confirm or delete them on the Obligations page.</p>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {notCounted.map((c) => (
+              <Link key={c.id} href={`/personal/obligations#${c.id}`} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] opacity-75 hover:bg-bg-elev hover:opacity-100">
+                <span className="flex-1 text-ink-2">{c.name || c.issuer}{c.last4 ? ` ${c.last4}` : ""} <span className="text-ink-4">· {c.owner ?? "owner not set"}</span></span>
+                <span className="tabular text-ink-3">{usd(c.currentBalance)}</span>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

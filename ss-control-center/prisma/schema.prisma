@@ -4908,7 +4908,25 @@ model Debt {
   dueDay           Int?
   apr              Float?
   termMonths       Int?
-  kind             String? // mortgage | auto | personal | student | sba | other
+  kind             String? // mortgage | auto | personal | student | sba | tax | court | vendor | collections | card | advance | other
+  // Obligations registry (Personal Finance Phase 2, 2026-10-27): every position
+  // carries WHO owes it, the legal debtor, the balance date + source, and a status
+  // badge — so the owner sees exactly how fresh each number is. `amount` is the
+  // balance as of `balanceAsOf` when the row comes from the registry.
+  creditor         String?
+  entity           String? // legal debtor: Personal | Salutem Solutions | AMZ Commerce | …
+  accountRef       String? // last digits / case number, e.g. "91009", "26-010022-CO"
+  balanceAsOf      String? // ISO date the balance was true
+  balanceSource    String? // where the number came from ("Plaid 2026-10-27", "IRS online account")
+  balanceNote      String? // e.g. "June balance — being reconciled"
+  amountKnown      Boolean  @default(true) // false = balance unknown (amount is a placeholder 0)
+  standing         String? // court | past_due | collections | dispute | window | paying | current | check
+  standingSince    String? // ISO date the standing began (past due since …)
+  standingNote     String?
+  alert            String? // red warning shown on the dashboard (data conflict, risk)
+  nextDueDate      String? // ISO date of the next payment (skips earlier dueDay occurrences)
+  maturityDate     String? // ISO date the debt must be paid off
+  registryKey      String? // stable key for the idempotent registry seed
   // For installment/scheduled debts (рассрочка): the per-period installment amount
   // + its frequency. null = a lump/overdue debt with no schedule. The averaged
   // monthly equivalent drives the fund's monthly "need".
@@ -4927,6 +4945,7 @@ model Debt {
 
   @@index([fundId])
   @@index([scope])
+  @@index([registryKey])
 }
 
 // FinancePlanRun — one weekly (or manual) distribution pass.
@@ -4973,14 +4992,29 @@ model CreditCard {
   autopay          String   @default("none") // none | min | statement | full | fixed
   autopayAmount    Float? // for autopay = fixed
   fundId           String? // which fund pays this card
+  // active=false = not counted: a row no current source confirms (e.g. a June-sheet
+  // card missing from the owner's 27.10 registry) — kept for review, never deleted.
   active           Boolean  @default(true)
   notes            String?
+  // Obligations registry (Phase 2) — same meaning as on Debt.
+  minPaymentDue    Float? // the statement minimum when known; overrides the min rule
+  balanceAsOf      String?
+  balanceSource    String?
+  balanceNote      String?
+  standing         String? // court | past_due | collections | dispute | window | paying | current | check
+  standingSince    String?
+  standingNote     String?
+  alert            String?
+  nextDueDate      String?
+  closed           Boolean  @default(false) // account closed to new charges, balance still owed
+  registryKey      String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@index([scope])
   @@index([owner])
   @@index([active])
+  @@index([registryKey])
 }
 
 // CardEntry — the ledger of one credit card: charges (+balance), payments
@@ -4997,6 +5031,60 @@ model CardEntry {
   createdAt   DateTime @default(now())
 
   @@index([cardId])
+}
+
+// ObligationEvent — a dated point on the personal payment calendar that a
+// day-of-month rule can't express: court installments and hearings, a tax
+// installment-agreement window (date → endDate), a one-off planned payment that
+// replaces a card's minimum on that date. Linked to a Debt or a CreditCard.
+model ObligationEvent {
+  id          String   @id @default(cuid())
+  scope       String   @default("personal")
+  debtId      String?
+  cardId      String?
+  date        String // ISO date
+  endDate     String? // ISO date — for windows (date..endDate)
+  time        String? // "13:00" local, for hearings / mediation
+  kind        String // payment | installment | hearing | mediation | window | deadline
+  title       String
+  amount      Float? // null = amount not set
+  status      String   @default("planned") // planned | done | missed | cancelled
+  source      String?
+  note        String?
+  registryKey String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([scope])
+  @@index([date])
+  @@index([debtId])
+  @@index([cardId])
+  @@index([registryKey])
+}
+
+// PersonalAsset — the asset side of net worth (bank accounts, vehicles, …), each
+// value with its date and source. Fund balances are envelopes, not assets.
+model PersonalAsset {
+  id          String   @id @default(cuid())
+  scope       String   @default("personal")
+  owner       String? // Vladimir | Anna
+  entity      String? // Personal | Salutem Solutions | …
+  name        String
+  kind        String   @default("cash") // cash | savings | checking | vehicle | property | business | other
+  institution String?
+  last4       String?
+  value       Float // may be negative (an overdrawn account)
+  valueAsOf   String?
+  valueSource String?
+  alert       String?
+  active      Boolean  @default(true)
+  notes       String?
+  registryKey String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([scope])
+  @@index([registryKey])
 }
 
 // ===================== Uncrustables Studio (Bundle Factory, Phase A) =====================

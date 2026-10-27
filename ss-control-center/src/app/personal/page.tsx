@@ -7,15 +7,21 @@
  *
  * Waterfall: income → FP1 obligatory envelopes (bills + card minimums) → FP2 goals
  * → Free. NO reserve (taxes are reserved in the business pool — one owner, one tax).
+ *
+ * Phase 2 (2026-10-27): the headline is the obligations registry — net worth, what
+ * is owed, what is already late, and a 60-day payment calendar with every court
+ * date, tax window and minimum (see /personal/obligations, /plan, /net-worth).
  */
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Play, CheckCircle2, Wand2, PlusCircle, CalendarClock, CreditCard, ArrowRightLeft } from "lucide-react";
+import { Loader2, Play, CheckCircle2, Wand2, PlusCircle, CalendarClock, CreditCard, ArrowRightLeft, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import type { NetWorth, RegistryAlert, RegistryTotals } from "@/lib/finance/registry";
+import { AlertsPanel, Kpi as RegKpi, PersonalNav, StandingBadge } from "@/components/personal/registry-ui";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const usd2 = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -23,20 +29,26 @@ const pct = (r: number) => `${Math.round(r * 100)}%`;
 const dateLabel = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 
 interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; balance: number; active: boolean }
-interface CalEntry { date: string; day: number; kind: "card" | "bill" | "loan"; label: string; owner: string | null; amount: number }
+interface CalEntry { date: string; day: number; kind: "card" | "bill" | "loan" | "event"; label: string; owner: string | null; amount: number | null; refId?: string; endDate?: string | null; standing?: string | null; time?: string | null; eventKind?: string | null }
+interface Overdue { refId: string; kind: string; label: string; owner: string | null; amount: number | null; since: string | null; reason: string }
+interface Undated { refId: string; label: string; owner: string | null; amount: number; frequency: string; note: string | null }
+interface Cal { entries: CalEntry[]; overdue: Overdue[]; undated: Undated[]; totalDue: number; unknownCount: number; windowDays: number }
+interface Reg { netWorth: NetWorth; totals: RegistryTotals; alerts: RegistryAlert[] }
 interface Income { id: string; depositDate: string | null; netAmount: number; distributed: boolean; source: string }
 interface CardTotals { count: number; totalBalance: number; totalLimit: number; overallUtilization: number; totalMinPayment: number; monthlyInterest: number }
 interface AllocationLine { fundId: string; name: string; group: string; amount: number }
 interface RunResult { preview: boolean; distribution: { totalIn: number; distributable: number; allocations: AllocationLine[]; free: number }; payoutCount: number }
 
-const KIND_DOT: Record<string, string> = { card: "bg-[#6B5A8C]", bill: "bg-[#3F6FA0]", loan: "bg-[#B8901F]" };
+const KIND_DOT: Record<string, string> = { card: "bg-[#6B5A8C]", bill: "bg-[#3F6FA0]", loan: "bg-[#B8901F]", event: "bg-danger" };
+const FREQ: Record<string, string> = { biweekly: "every 2 weeks", weekly: "every week", daily: "every day" };
 
 export default function PersonalFinancePage() {
   const [funds, setFunds] = useState<Fund[]>([]);
   const [needs, setNeeds] = useState<Record<string, number>>({});
   const [income, setIncome] = useState<{ incomes: Income[]; totals: { undistributedNet: number; totalNet: number } } | null>(null);
   const [cardT, setCardT] = useState<CardTotals | null>(null);
-  const [cal, setCal] = useState<{ entries: CalEntry[]; totalDue: number; windowDays: number } | null>(null);
+  const [cal, setCal] = useState<Cal | null>(null);
+  const [reg, setReg] = useState<Reg | null>(null);
   const [bizFunds, setBizFunds] = useState<Fund[]>([]);
   const [run, setRun] = useState<RunResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -50,16 +62,17 @@ export default function PersonalFinancePage() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [h, n, inc, c, cl, bf] = await Promise.all([
+      const [h, n, inc, c, cl, bf, rg] = await Promise.all([
         fetch("/api/finance/funds/history?days=30&scope=personal").then((r) => r.json()),
         fetch("/api/finance/funds/needs?scope=personal").then((r) => r.json()),
         fetch("/api/personal/income").then((r) => r.json()),
         fetch("/api/personal/cards").then((r) => r.json()),
-        fetch("/api/personal/calendar?window=45").then((r) => r.json()),
+        fetch("/api/personal/calendar?window=60").then((r) => r.json()),
         fetch("/api/finance/funds").then((r) => r.json()),
+        fetch("/api/personal/registry").then((r) => r.json()),
       ]);
       setFunds(h.funds ?? []); setNeeds(n.needs ?? {});
-      setIncome(inc); setCardT(c.totals ?? null); setCal(cl);
+      setIncome(inc); setCardT(c.totals ?? null); setCal(cl); setReg(rg.netWorth ? rg : null);
       setBizFunds((bf.funds ?? []).filter((f: Fund) => f.group !== "FREE" && f.group !== "RESERVE"));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
@@ -108,11 +121,24 @@ export default function PersonalFinancePage() {
     <div className="mx-auto max-w-6xl space-y-5 p-5">
       <div>
         <h1 className="text-xl font-semibold text-ink">Personal Finance</h1>
-        <p className="text-[13px] text-ink-3">Your private pool — income, bills, and credit cards. Separate from the business Financial Plan.</p>
+        <p className="text-[13px] text-ink-3">Your private pool — what you own, what you owe, and what is due next. Separate from the business Financial Plan.</p>
       </div>
+      <PersonalNav active="/personal" />
 
       {error && <div className="rounded-md border border-warn-line bg-warn-tint px-3 py-2 text-[13px] text-warn-strong">{error}</div>}
       {note && <div className="rounded-md border border-rule bg-green-soft px-3 py-2 text-[13px] text-green-ink">{note}</div>}
+
+      {reg && <AlertsPanel alerts={reg.alerts} />}
+
+      {/* Registry headline — every number links to its detail. */}
+      {reg && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <RegKpi label="Net worth" value={usd(reg.netWorth.net)} tone={reg.netWorth.net < 0 ? "danger" : "green"} hint={`assets ${usd(reg.netWorth.assets)} − owed ${usd(reg.netWorth.liabilities)}`} href="/personal/net-worth" />
+          <RegKpi label="Total owed (known)" value={usd(reg.totals.all.total)} hint={`${reg.totals.all.count} obligations · ${reg.totals.all.unknown} balance unknown`} href="/personal/obligations" />
+          <RegKpi label="Late now" value={String(cal?.overdue?.length ?? 0)} tone={(cal?.overdue?.length ?? 0) > 0 ? "danger" : undefined} hint={`court ${reg.totals.byStanding.court?.count ?? 0} · collections ${reg.totals.byStanding.collections?.count ?? 0} · dispute ${reg.totals.byStanding.dispute?.count ?? 0}`} href="/personal/obligations?status=past_due" />
+          <RegKpi label={`Due next ${cal?.windowDays ?? 60} days`} value={usd(cal?.totalDue ?? 0)} hint={cal?.unknownCount ? `+ ${cal.unknownCount} payments with amount not set` : "all amounts known"} href="/personal/plan" />
+        </div>
+      )}
 
       {/* Primary action band — lead with one clear next step. */}
       <Card className="border-green-line/40 bg-green-soft/40">
@@ -158,28 +184,61 @@ export default function PersonalFinancePage() {
       {/* KPI row — every number links to its detail. */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Income to distribute" value={usd2(undistributed)} hint={`${usd(income?.totals.totalNet ?? 0)} total recorded`} />
-        <Kpi label="Monthly obligations" value={usd(monthlyObligations)} hint="bills + card minimums owed" />
+        <Kpi label="Envelopes need" value={usd(monthlyObligations)} hint="bills + installments + card minimums owed" />
         <Link href="/personal/cards"><Kpi label="Card debt" value={usd(cardT?.totalBalance ?? 0)} hint={`${cardT?.count ?? 0} cards · tap to manage`} accent /></Link>
         <Link href="/personal/cards"><Kpi label="Card utilization" value={cardT && cardT.totalLimit > 0 ? pct(cardT.overallUtilization) : "—"} hint={cardT && cardT.totalLimit > 0 ? "of total limit" : "add limits to compute"} accent /></Link>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Payment calendar — the headline. */}
+        {/* Payment calendar — late items first, then the next 60 days. */}
         <Card>
           <CardHeader className="flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-2 text-[14px]"><CalendarClock className="h-4 w-4 text-ink-3" /> Payment calendar</CardTitle>
-            <span className="text-[12px] text-ink-3">next {cal?.windowDays ?? 45} days · {usd(cal?.totalDue ?? 0)}</span>
+            <span className="text-[12px] text-ink-3">next {cal?.windowDays ?? 60} days · {usd(cal?.totalDue ?? 0)}{cal?.unknownCount ? ` + ${cal.unknownCount} not set` : ""}</span>
           </CardHeader>
-          <CardContent className="max-h-[420px] space-y-1 overflow-y-auto">
+          <CardContent className="max-h-[560px] space-y-1 overflow-y-auto">
+            {(cal?.overdue?.length ?? 0) > 0 && (
+              <div className="mb-2 rounded-md border border-danger/30 bg-danger-tint/60 p-1.5">
+                <div className="flex items-center gap-1.5 px-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-danger"><AlertTriangle className="h-3.5 w-3.5" /> Late now · {cal!.overdue.length}</div>
+                {cal!.overdue.map((o) => (
+                  <Link key={o.refId} href={o.kind === "event" ? "/personal/obligations" : `/personal/obligations#${o.refId}`} className="block rounded px-1.5 py-1 hover:bg-danger-tint">
+                    <div className="flex items-center gap-2">
+                      <span className="w-14 shrink-0 font-mono text-[11px] text-danger">{o.since ? `since ${dateLabel(o.since)}` : ""}</span>
+                      <span className="flex-1 truncate text-[13px] font-medium text-ink">{o.label}{o.owner ? <span className="ml-1 font-normal text-ink-4">· {o.owner}</span> : null}</span>
+                      <span className="tabular text-[13px] text-ink">{o.amount != null ? usd2(o.amount) : "amount not set"}</span>
+                    </div>
+                    <div className="pl-16 text-[11px] text-ink-3">{o.reason}</div>
+                  </Link>
+                ))}
+              </div>
+            )}
             {(cal?.entries ?? []).length === 0 && <p className="py-6 text-center text-[13px] text-ink-3">No due dates set. Add a due day to bills and cards.</p>}
             {(cal?.entries ?? []).map((e, i) => (
-              <div key={i} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-bg-elev">
-                <span className="w-12 shrink-0 text-[11px] font-mono text-ink-3">{dateLabel(e.date)}</span>
+              <div key={i} className={cn("flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-bg-elev",
+                e.standing === "past_due" && "bg-danger-tint/50", e.eventKind === "window" && "bg-info-tint/60")}>
+                <span className="w-12 shrink-0 font-mono text-[11px] text-ink-3">{dateLabel(e.date)}</span>
                 <span className={cn("h-2 w-2 shrink-0 rounded-full", KIND_DOT[e.kind])} />
-                <span className="flex-1 truncate text-[13px] text-ink-2">{e.label}{e.owner ? <span className="ml-1 text-ink-4">· {e.owner}</span> : null}</span>
-                <span className="tabular text-[13px] font-medium text-ink">{usd2(e.amount)}</span>
+                <span className="flex-1 truncate text-[13px] text-ink-2">
+                  {e.label}
+                  {e.time ? <span className="ml-1 text-ink-4">{e.time}</span> : null}
+                  {e.endDate ? <span className="ml-1 text-info">open until {dateLabel(e.endDate)}</span> : null}
+                  {e.owner ? <span className="ml-1 text-ink-4">· {e.owner}</span> : null}
+                </span>
+                {e.standing && e.standing !== "current" && e.standing !== "paying" ? <StandingBadge standing={e.standing} /> : null}
+                <span className={cn("tabular text-[13px] font-medium", e.amount == null ? "text-ink-4" : "text-ink")}>{e.amount != null ? usd2(e.amount) : "not set"}</span>
               </div>
             ))}
+            {(cal?.undated?.length ?? 0) > 0 && (
+              <div className="mt-2 border-t border-rule pt-2">
+                <div className="px-2 pb-1 text-[11px] uppercase tracking-wide text-ink-4">Recurring, date not fixed</div>
+                {cal!.undated.map((u) => (
+                  <div key={u.refId} className="flex items-center gap-2.5 px-2 py-1 text-[13px]">
+                    <span className="flex-1 truncate text-ink-2">{u.label}{u.owner ? <span className="ml-1 text-ink-4">· {u.owner}</span> : null}</span>
+                    <span className="tabular text-ink">{usd2(u.amount)} <span className="text-ink-4">{FREQ[u.frequency] ?? u.frequency}</span></span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

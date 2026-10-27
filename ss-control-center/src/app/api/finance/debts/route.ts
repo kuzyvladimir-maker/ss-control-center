@@ -22,8 +22,9 @@ export async function GET(req: NextRequest) {
   const totalOriginal = round2(debts.reduce((s, d) => s + d.amount, 0));
   const totalRemaining = round2(debts.reduce((s, d) => s + Math.max(0, d.amount - d.paid), 0));
   // Sum of monthly installments still owed (capped at remaining) — the monthly need.
+  // A debt whose balance is unknown (amountKnown=false) is never capped.
   const monthlyDue = round2(debts.reduce((s, d) => {
-    const rem = Math.max(0, d.amount - d.paid);
+    const rem = d.amountKnown === false ? Number.POSITIVE_INFINITY : Math.max(0, d.amount - d.paid);
     if (!d.monthlyPayment) return s;
     return s + Math.min(installmentMonthly(d.monthlyPayment, d.paymentFrequency), rem);
   }, 0));
@@ -57,9 +58,10 @@ export async function POST(req: NextRequest) {
     if (b.action === "pay") {
       const debt = await prisma.debt.findUnique({ where: { id: b.debtId } });
       if (!debt) return NextResponse.json({ error: "debt not found" }, { status: 404 });
+      const unknown = debt.amountKnown === false; // balance unknown: pay what is given, never settle
       const remaining = round2(debt.amount - debt.paid);
-      const amount = Math.min(Math.abs(Number(b.amount)) || remaining, remaining);
-      if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: "nothing to pay" }, { status: 400 });
+      const amount = unknown ? Math.abs(Number(b.amount)) : Math.min(Math.abs(Number(b.amount)) || remaining, remaining);
+      if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: unknown ? "amount required" : "nothing to pay" }, { status: 400 });
       const paid = round2(debt.paid + amount);
       // Paying an installment also draws down its owed counter (the Needed meter).
       const accrued = Math.max(0, round2((debt.accrued ?? 0) - amount));
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
       const [entry] = await prisma.$transaction([
         prisma.fundEntry.create({ data: { fundId: debt.fundId, type: "spend", amount: -round2(amount), description: `Debt payment: ${debt.description ?? "debt"}`, status: "applied" } }),
         prisma.fund.update({ where: { id: debt.fundId }, data: { balance: { decrement: round2(amount) } } }),
-        prisma.debt.update({ where: { id: debt.id }, data: { paid, accrued, status: paid >= debt.amount - 0.005 ? "settled" : "open" } }),
+        prisma.debt.update({ where: { id: debt.id }, data: { paid, accrued, status: !unknown && paid >= debt.amount - 0.005 ? "settled" : "open" } }),
       ]);
       return NextResponse.json({ ok: true, entry });
     }

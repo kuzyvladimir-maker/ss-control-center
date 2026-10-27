@@ -4,6 +4,7 @@
 //
 // minPaymentPct is in PERCENT POINTS (2 = 2%). The minimum due is the greater of
 // the fixed floor and the percent-of-balance, but never more than the balance.
+// minPaymentDue — the real statement minimum — wins over the rule when known.
 
 export interface CardLike {
   currentBalance: number;
@@ -12,17 +13,28 @@ export interface CardLike {
   apr?: number | null;
   minPaymentFixed?: number;
   minPaymentPct?: number; // percent points (2 = 2%)
+  minPaymentDue?: number | null; // statement minimum, when known
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Minimum payment due = max(fixed floor, balance×pct), capped at the balance. */
+/** Minimum payment due = the statement minimum if known, else max(fixed floor,
+ *  balance×pct); always capped at the balance. 0 when nothing is known. */
 export function minPayment(c: CardLike): number {
   const bal = Math.max(0, c.currentBalance || 0);
   if (bal <= 0) return 0;
+  if (c.minPaymentDue != null) return round2(Math.min(bal, Math.max(0, c.minPaymentDue)));
   const pct = bal * ((c.minPaymentPct || 0) / 100);
   const due = Math.max(c.minPaymentFixed || 0, pct);
   return round2(Math.min(bal, due));
+}
+
+/** Like minPayment, but null when the minimum is simply not known (no statement
+ *  minimum and no rule) — so the UI can say "not set" instead of $0. */
+export function knownMinPayment(c: CardLike): number | null {
+  if (Math.max(0, c.currentBalance || 0) <= 0) return 0;
+  if (c.minPaymentDue == null && !(c.minPaymentFixed || 0) && !(c.minPaymentPct || 0)) return null;
+  return minPayment(c);
 }
 
 /** Utilization ratio (0..1+) = balance ÷ limit. A credit-score driver (<0.30 good). */
