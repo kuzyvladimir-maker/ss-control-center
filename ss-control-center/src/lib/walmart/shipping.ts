@@ -174,6 +174,9 @@ export async function buyShippingLabel(
  * is NOT yet marked Shipped. Keyed by carrier short name + tracking number
  * (Walmart's discard endpoint takes those, not a labelId).
  * DELETE /v3/shipping/labels/carriers/{carrierShortName}/trackings/{trackingNo}
+ *
+ * Sent once (noRetry): an unclear answer is settled by reading, never by
+ * sending the cancel again (owner, 2026-10-27).
  */
 export async function discardShippingLabel(
   client: WalmartClient,
@@ -183,6 +186,7 @@ export async function discardShippingLabel(
   return client.request<unknown>(
     "DELETE",
     `/shipping/labels/carriers/${encodeURIComponent(carrierShortName)}/trackings/${encodeURIComponent(trackingNumber)}`,
+    { noRetry: true },
   );
 }
 

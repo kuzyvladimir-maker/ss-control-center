@@ -52,7 +52,16 @@ export async function refundShipmentForOrder(
   // the discard-label route reads it to detect the channel — pass it here to
   // avoid a second identical GET /orders/{id} against the rate-limited API.
   preloadedOrder?: VeeqoOrderForRefund,
+  // Cancel exactly this shipment (the archive picks a label by its tracking
+  // number) instead of the most recent one.
+  shipmentId?: string,
 ): Promise<RefundResult> {
+  if (shipmentId) {
+    const veeqoResponse = await veeqoFetch(`/shipments/${shipmentId}`, {
+      method: "DELETE",
+    });
+    return { orderId, shipmentId, veeqoResponse };
+  }
   const order =
     preloadedOrder ??
     ((await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrderForRefund);

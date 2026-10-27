@@ -40,6 +40,8 @@ import { searchOrders } from "@/lib/veeqo/client";
 import { isHiddenVeeqoOrder } from "@/lib/veeqo/hidden-orders";
 import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { utcToPacificYMD } from "@/lib/shipping/dates";
+import { trackingString } from "@/lib/veeqo/tracking";
+import { normTracking, readDiscards } from "@/lib/shipping/label-discard";
 
 // Below 3 characters the result set is meaningless (every order matches
 // "1") and the DB does a full-table LIKE scan for nothing.
@@ -54,6 +56,12 @@ type Tracking = {
   number: string;
   carrier: string | null;
   service: string | null;
+  /** Our discard record for this label (Discard label on the archive row). */
+  discard?: {
+    state: "sending" | "done" | "failed" | "unknown";
+    at: string;
+    message: string | null;
+  };
 };
 
 type HitItem = {
@@ -149,46 +157,6 @@ function pickImage(li: any): string | null {
 
 const textOrNull = (v: unknown): string | null =>
   typeof v === "string" && v.trim() ? v.trim() : null;
-
-/**
- * Coerce whatever Veeqo put in a tracking field into a tracking number.
- *
- * `tracking_number` is NOT always a string: for Amazon "Buy Shipping"
- * shipments it comes back as an object (and sometimes an array of them),
- * which a naive String() turned into the literal "[object Object]" —
- * rendered as a tracking chip on the archive row, seen in production
- * 2026-08-04. Walk the plausible shapes and accept only something that
- * actually looks like a tracking number: no spaces, no punctuation beyond
- * dot/dash/underscore, at least 6 characters. That last rule is what makes
- * "[object Object]" unrepresentable here rather than merely unlikely.
- */
-function trackingString(v: unknown): string | null {
-  if (Array.isArray(v)) {
-    for (const item of v) {
-      const found = trackingString(item);
-      if (found) return found;
-    }
-    return null;
-  }
-  if (typeof v === "number" && Number.isFinite(v)) return String(v);
-  if (typeof v === "string") {
-    const s = v.trim();
-    return /^[A-Za-z0-9._-]{6,}$/.test(s) ? s : null;
-  }
-  if (v && typeof v === "object") {
-    for (const key of [
-      "tracking_number",
-      "number",
-      "tracking_no",
-      "code",
-      "value",
-    ]) {
-      const found = trackingString((v as Record<string, unknown>)[key]);
-      if (found) return found;
-    }
-  }
-  return null;
-}
 
 /** Tracking lives on the allocation's shipment; shape varies by carrier. */
 function veeqoTracking(o: any): Tracking[] {
@@ -827,7 +795,12 @@ export async function GET(request: NextRequest) {
         channel: p.channel,
         channelKind: p.channelKind?.toLowerCase() ?? null,
         status: p.status === "bought" ? "shipped" : p.status,
-        statusLabel: p.status === "bought" ? "Label bought" : p.status,
+        statusLabel:
+          p.status === "bought"
+            ? "Label bought"
+            : p.status === "discarded"
+              ? "Label discarded"
+              : p.status,
         statusTone: p.status === "bought" ? "ok" : "neutral",
         orderDate: isoOrNull(p.createdAt),
         shipBy: p.physicalShipDate ?? p.actualShipDay ?? p.labelDate ?? null,
@@ -876,6 +849,32 @@ export async function GET(request: NextRequest) {
       return bt - at;
     })
     .slice(0, MAX_HITS);
+
+  // Discard state per label — one indexed lookup for every tracking shown,
+  // so a label cancelled from this page says so instead of offering the
+  // button again. Never fails the search.
+  const allTracking = hits.flatMap((h) => h.tracking.map((t) => t.number));
+  if (allTracking.length > 0) {
+    const discards = await readDiscards(allTracking).catch((e) => {
+      console.warn(
+        "[api/shipping/search] discard lookup failed:",
+        e instanceof Error ? e.message : e,
+      );
+      return new Map();
+    });
+    for (const h of hits) {
+      for (const t of h.tracking) {
+        const d = discards.get(normTracking(t.number));
+        if (d) {
+          t.discard = {
+            state: d.state,
+            at: d.finishedAt ?? d.startedAt,
+            message: d.message ?? null,
+          };
+        }
+      }
+    }
+  }
 
   timings.total = Date.now() - t0;
   if (timings.total > 1500) {
