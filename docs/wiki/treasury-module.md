@@ -152,3 +152,39 @@ $225 of extra debt. Unknown minimums, rates and court amounts stay explicit.
 
 Jackie's reference copy is `wiki/finance/treasury-module-architecture.md` on the
 server. This repository document records the implemented contract.
+
+## Production acceptance — 2026-10-27
+
+Vercel deployment `dpl_AHyjYiq6iARFpWNyumgar67z3y9W` is **Ready** and serves
+[salutemsolutions.info/finance](https://salutemsolutions.info/finance).
+The production build completed on October 27 at 15:32 UTC.
+
+- TypeScript and ESLint passed. Finance core/accrual, personal calculations,
+  disposable SQLite Treasury transactions and 109 access/invalid-input checks
+  passed. Concurrency checks use two independent database connections; one
+  writer completes, a conflicting request stops safely, and replay does not
+  create another distribution or income entry.
+- 37 production checks passed: protected APIs reject anonymous callers, owner
+  reads succeed (including shared personal-scope endpoints and fund details),
+  pages redirect anonymous callers to login, and business/personal previews
+  write nothing. Temporary margin is 50%; personal share is not set.
+- Authenticated Chrome: the margin/share editor loads, unsaved changes disable
+  Preview, empty-pool Commit is disabled, and the FREE bridge appears in Personal
+  Finance. Temporary test input was discarded without saving settings. Both
+  screens and navigation were checked again after the access fix was deployed.
+- The payoff screen displays urgent cases before strategy controls. With the
+  existing 28-debt selection, November requires $9,237.73 in known minimums and
+  dated commitments; $2,750 yields a $6,487.73 shortfall. A $10,000 Snowball
+  scenario funds BJ's full statement in November. The original $2,750/Avalanche
+  scenario was restored. Thirteen missing minimums remain explicitly unknown.
+- Complete `Fund`, `FundEntry`, `Payout`, `FinancePlanRun` and relevant settings
+  snapshots match before/after verification. No production distribution,
+  personal income, bank payment, migration or reseeding was performed.
+- Evidence is outside git in `~/.cache/sscc/audits/treasury-20261027/` with private
+  file permissions. Wiki-Brain reports pre-existing unrelated link/memory
+  issues. Agent doctor reports the existing four worktrees; its prune dry-run
+  retains all auxiliary checkouts. This task created no worktree.
+
+The owner was asked through topic 728 for the personal share percentage; no
+percentage has been supplied. Leaving it unset is explicit configuration state,
+not a zero-income assumption. Economics remains a separate future phase.
