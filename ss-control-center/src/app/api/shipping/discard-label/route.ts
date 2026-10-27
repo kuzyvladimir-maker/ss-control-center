@@ -63,6 +63,8 @@ interface Body {
   trackingNumber?: string;
   dryRun?: boolean;
   source?: "queue" | "archive";
+  /** Dry run only: include the raw shipment's populated keys. */
+  debug?: boolean;
   // Optional fallback hints from the client's local walmartStatus when
   // Walmart's getLabelsByPurchaseOrder lookup returns empty. The UI
   // displays a tracking the moment a Walmart label is bought (populated
@@ -82,6 +84,7 @@ interface Target {
   carrier: string | null;
   shipmentId: string | null;
   createdAt: string | null;
+  fields?: string[];
 }
 
 interface Assessment {
@@ -152,6 +155,7 @@ async function resolveTargets(
     carrier: s.carrier,
     shipmentId: s.shipmentId,
     createdAt: s.createdAt,
+    fields: s.fields,
   });
   const want = body.trackingNumber ? normTracking(body.trackingNumber) : null;
 
@@ -222,7 +226,12 @@ async function assess(target: Target): Promise<Assessment> {
   const t = target.tracking;
 
   if (!t) {
-    warnings.push("The label has no readable tracking number, so the carrier status wasn't checked.");
+    // A Veeqo shipment without tracking is a fulfilment synced from the
+    // channel (NAN #1378: bought in Shopify, shipped in Veeqo with no
+    // tracking), not a label Veeqo sold — deleting it would void nothing.
+    reasons.push(
+      "This shipment has no tracking number — it isn't a label bought through Veeqo or Walmart. Cancel it where it was bought.",
+    );
   } else {
     const [prev, local, group, cc] = await Promise.all([
       readDiscard(t).catch(() => null),
@@ -415,9 +424,11 @@ export async function POST(req: NextRequest) {
     const orderNumber = String(order?.number ?? orderNumberIn ?? orderId);
     const channel = channelType || "amazon";
 
-    const targets = await resolveTargets(order, orderNumber, body);
+    // NAN labels are bought in Shopify (owner: NAN buys only there), and a
+    // Shopify fulfilment shows up in Veeqo as a shipment Veeqo never sold —
+    // deleting it would void nothing. Shopify's API can't void labels.
+    const targets = isNan(order) ? [] : await resolveTargets(order, orderNumber, body);
     if (targets.length === 0) {
-      // NAN labels bought in Shopify never show up as Veeqo shipments.
       if (isNan(order)) {
         return NextResponse.json(
           {
@@ -459,6 +470,7 @@ export async function POST(req: NextRequest) {
           tracking: a.target.tracking,
           carrier: a.target.carrier,
           createdAt: a.target.createdAt,
+          ...(body.debug ? { shipmentFields: a.target.fields ?? null } : {}),
           eligible: a.reasons.length === 0,
           reasons: a.reasons,
           warnings: a.warnings,

@@ -46,6 +46,9 @@ export interface VeeqoShipmentRef {
   carrier: string | null;
   service: string | null;
   createdAt: string | null;
+  /** Populated top-level keys of the raw shipment (dry-run diagnostics:
+   *  tells a label bought in Veeqo from a fulfilment synced from a channel). */
+  fields: string[];
 }
 
 /** Every shipment on a Veeqo order (label bought through Veeqo), with the
@@ -71,6 +74,12 @@ export function veeqoShipments(order: any): VeeqoShipmentRef[] {
         carrier: text(sh?.carrier?.name ?? sh?.carrier_name),
         service: text(sh?.service_carrier ?? sh?.shipping_method),
         createdAt: text(sh?.created_at),
+        fields: Object.keys(sh ?? {})
+          .filter((k) => {
+            const v = sh[k];
+            return v != null && v !== "" && !(Array.isArray(v) && v.length === 0);
+          })
+          .sort(),
       });
     }
   }
