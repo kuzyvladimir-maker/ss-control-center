@@ -49,7 +49,37 @@ migrations or financial writes were performed during acceptance.
   deleted-user cases covered. Fake DB only, no live financial writes.
 - Existing finance core and accrual checks; TypeScript; ESLint over personal UI,
   API, changed libraries and tests.
-- Production deployment and browser acceptance are recorded below after completion.
+- All four checks above passed; TypeScript and ESLint completed without errors
+  or warnings.
+
+## Production acceptance completed
+
+Vercel deployment `dpl_CFpmTBTqoUirq7vTruTWMvbrCp5E` is **Ready** and serves
+[salutemsolutions.info/personal](https://salutemsolutions.info/personal).
+The production build succeeded. At 15:02 UTC on October 27:
+
+- Five personal pages redirect anonymous requests to login (307); registry,
+  calendar, cards and income APIs reject anonymous requests (401) and return 200
+  for the authorized owner API token (114–182 ms in this sample).
+- Registry totals and all warning/event counts match the read-only Turso snapshot.
+  Calendar: 58 entries, $30,521.73 in recorded scheduled amounts, 2 payment amounts
+  unknown, 2 past-due obligations and 1 undated recurring payment. BJ's full
+  statement occurs once, with no duplicate minimum on November 19. IRS window
+  and December 10 mediation at 13:00 are present.
+- Authenticated Chrome: all five screens opened. Registry badges and grouped
+  invoices, asset values, unknown BMW balances, card limit coverage and warnings
+  render. Avalanche places WF first; Snowball places Visa 1337 first. Budget $1
+  shows a $2,746.66 shortfall. Original $2,750/Avalanche scenario restored.
+- The complete card/debt/asset/event/bill records were compared before/after
+  acceptance and were unchanged. No payments, distributions or record edits were
+  made while testing the production UI.
+- QA snapshots/logs are retained outside git under
+  `~/.cache/sscc/audits/personal-finance-20261027T150238Z/`.
+
+Repository hygiene: no worktrees were created. `agent-sync doctor` reports the
+pre-existing four registered worktrees; the prescribed prune dry-run retains all
+three auxiliary checkouts. Wiki-Brain ran and reports pre-existing broken links
+and a missing memory index target; these are outside this financial task.
 
 ## Data still requiring reconciliation
 
