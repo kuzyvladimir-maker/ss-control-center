@@ -5,15 +5,17 @@
  *        → { classes: { sku: "FROZEN"|"CHILLED"|"DRY" } } for rows that exist.
  *
  *   POST /api/shipping/temperature-class
- *        body: { sku, class, setBy?, note? }
+ *        body: { sku, class, setBy?, note?, channel? }
  *        Upserts the MANUAL class (source "manual") and appends an audit row.
+ *        channel "walmart" → only DRY (frozen & chilled are forbidden there).
  *        Does NOT write a Veeqo tag — mirroring the tag is a separate, later
  *        step the owner runs after reviewing (topic 135, point 3).
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isTempClass } from "@/lib/shipping/temp-class";
+import { isWalmartChannel, parseManualClass } from "@/lib/shipping/temp-class";
+import { saveManualTempClass } from "@/lib/shipping/temp-class/save-manual";
 
 export async function GET(request: NextRequest) {
   const skusParam = request.nextUrl.searchParams.get("skus") || "";
@@ -36,55 +38,27 @@ interface Body {
   class?: string;
   setBy?: string;
   note?: string;
+  /** Channel of the order the class is set from — "walmart" allows Dry only. */
+  channel?: string;
 }
 
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Body;
   const sku = String(body?.sku ?? "").trim();
-  const klass = String(body?.class ?? "").trim().toUpperCase();
   if (!sku) {
     return NextResponse.json({ error: "sku is required" }, { status: 400 });
   }
-  if (!isTempClass(klass)) {
-    return NextResponse.json(
-      { error: 'class must be "FROZEN", "CHILLED" or "DRY"' },
-      { status: 400 },
-    );
-  }
-
-  const existing = await prisma.skuTemperatureClass.findUnique({
-    where: { sku },
-    select: { class: true },
+  const parsed = parseManualClass(body?.class, {
+    isWalmart: isWalmartChannel(body?.channel),
   });
-  const fromClass = existing?.class ?? null;
-
-  if (fromClass !== klass) {
-    await prisma.skuTemperatureClass.upsert({
-      where: { sku },
-      create: {
-        sku,
-        class: klass,
-        source: "manual",
-        setBy: body.setBy ?? null,
-        note: body.note ?? null,
-      },
-      update: {
-        class: klass,
-        source: "manual",
-        setBy: body.setBy ?? null,
-        note: body.note ?? null,
-      },
-    });
-    await prisma.skuTemperatureClassChange.create({
-      data: {
-        sku,
-        fromClass,
-        toClass: klass,
-        source: "manual",
-        setBy: body.setBy ?? null,
-      },
-    });
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
-
-  return NextResponse.json({ success: true, sku, class: klass, fromClass });
+  const { fromClass } = await saveManualTempClass({
+    sku,
+    klass: parsed.klass,
+    setBy: body.setBy ?? null,
+    note: body.note ?? null,
+  });
+  return NextResponse.json({ success: true, sku, class: parsed.klass, fromClass });
 }

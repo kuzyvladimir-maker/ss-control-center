@@ -273,7 +273,7 @@ const CATALOG: RouteGroup[] = [
       {
         path: "/api/shipping/fix-tag",
         methods: ["POST"],
-        description: "Fix Frozen/Dry tag for a Veeqo product",
+        description: "Set a product's temperature class: Frozen / Chilled / Dry (Chilled needs sku)",
       },
       {
         path: "/api/shipping-labels/walmart/verify/{orderId}",

@@ -24,6 +24,7 @@ import {
   User,
   Search,
   X,
+  Thermometer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoxPresetPicker } from "./components/BoxPresetPicker";
@@ -71,6 +72,7 @@ import {
   strictestCardClass,
   type CardClass,
 } from "@/lib/shipping/temp-class/card-class";
+import { WALMART_COLD_REASON } from "@/lib/shipping/temp-class/manual-class";
 // DYMO Connect Web Service path was tried (port 41951 HTTPS / 41952 HTTP) but
 // the local DYMO Label service only enumerates older LabelWriter models
 // (e.g. 450) — it doesn't see the 5XL that's wired in via the macOS CUPS
@@ -3602,13 +3604,25 @@ export default function ShippingLabelsPage() {
       onSetTempClass={async (cls: string) => {
         const sku = o.items[0]?.sku;
         if (!sku) return;
+        if (o.isWalmart && cls !== "DRY") {
+          toast.error(`${o.orderNumber}: ${WALMART_COLD_REASON}`);
+          return;
+        }
         try {
           const res = await fetch("/api/shipping/temperature-class", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sku, class: cls, setBy: "shipping-ui" }),
+            body: JSON.stringify({
+              sku,
+              class: cls,
+              setBy: "shipping-ui",
+              channel: o.isWalmart ? "walmart" : undefined,
+            }),
           });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            throw new Error(j?.error || `HTTP ${res.status}`);
+          }
           // Show the new class on every card carrying this SKU right away —
           // orders without a plan (e.g. waiting for procurement) included.
           setData((prev) =>
@@ -3634,6 +3648,7 @@ export default function ShippingLabelsPage() {
           requoteAmazonOrder(o);
         } catch (e) {
           console.warn("[temp-class] set failed:", e);
+          toast.error(`${o.orderNumber}: class not saved — ${errMsg(e)}`);
         }
       }}
       onPacking={() => setPackingModal(o)}
@@ -6125,6 +6140,13 @@ function OrderRow({
               type="button"
               onClick={() => {
                 if (!onSetTempClass) return onManual();
+                // Several different SKUs → each line gets its own class in the
+                // Set product type dialog. Cycling here used to save only the
+                // first line's SKU (topic 135, 2026-10-30).
+                const skus = new Set(
+                  order.items.map((i) => (i.sku ?? "").trim()).filter(Boolean),
+                );
+                if (skus.size !== 1) return onManual();
                 const order3 = ["FROZEN", "CHILLED", "DRY"];
                 const cur = order3.indexOf(cardClass.toUpperCase());
                 onSetTempClass(order3[(cur + 1) % 3]);
@@ -7152,6 +7174,55 @@ interface AiRowResult {
   reasoning: string;
 }
 
+/** The three classes an operator can pick for a line (topic 135). */
+const CLASS_CHOICES: {
+  cls: CardClass;
+  icon: typeof Snowflake;
+  iconCls: string;
+}[] = [
+  { cls: "Frozen", icon: Snowflake, iconCls: "text-info" },
+  { cls: "Chilled", icon: Thermometer, iconCls: "text-info" },
+  { cls: "Dry", icon: Package, iconCls: "text-ink-2" },
+];
+
+/** Line class as the card shows it: manual 3-way class, else the tag type. */
+function lineClass(i: DashboardItem): CardClass | null {
+  return i.tempClass ?? (i.knownType === "Frozen" || i.knownType === "Dry" ? i.knownType : null);
+}
+
+/**
+ * Save one line's temperature class — Frozen, Chilled or Dry. The server sets
+ * the SKU's manual class (what the chip, the plan and the rate engine read
+ * first) and, for Frozen/Dry, keeps the legacy row + Veeqo tag mirror as
+ * before. A refusal (e.g. cold on Walmart) comes back as the error text.
+ */
+async function saveLineClass(args: {
+  productId: number;
+  sku: string;
+  cls: CardClass;
+  isWalmart: boolean;
+  source: "manual" | "ai";
+  ai?: AiRowResult;
+}): Promise<void> {
+  const r = await fetch("/api/shipping/product-type", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      productId: args.productId,
+      sku: args.sku,
+      type: args.cls,
+      channel: args.isWalmart ? "walmart" : undefined,
+      source: args.source,
+      aiConfidence: args.source === "ai" ? args.ai?.confidence : undefined,
+      aiReasoning: args.source === "ai" ? args.ai?.reasoning : undefined,
+    }),
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    throw new Error(j?.error || `HTTP ${r.status}`);
+  }
+}
+
 /**
  * Per-item AI classification. For multi-item orders runs the AI call in
  * parallel for each line with a non-null productId, then lets the operator
@@ -7178,14 +7249,15 @@ function ClassifyAiDialog({
     Object.fromEntries(classifiableItems.map((i) => [i.productId, true])),
   );
   const [errors, setErrors] = useState<Record<number, string>>({});
-  const [savedTypes, setSavedTypes] = useState<Record<number, "Frozen" | "Dry">>(
+  const [savedTypes, setSavedTypes] = useState<Record<number, CardClass>>(
     () =>
       Object.fromEntries(
         classifiableItems
-          .filter((i) => i.knownType)
-          .map((i) => [i.productId, i.knownType as "Frozen" | "Dry"]),
+          .map((i) => [i.productId, lineClass(i)] as const)
+          .filter((e): e is readonly [number, CardClass] => e[1] !== null),
       ),
   );
+  const [saveErrors, setSaveErrors] = useState<Record<number, string>>({});
   const [savingPid, setSavingPid] = useState<number | null>(null);
   const dirtyRef = useRef(false);
 
@@ -7235,26 +7307,34 @@ function ClassifyAiDialog({
   }, [order.orderId]);
 
   async function save(
-    productId: number,
-    type: "Frozen" | "Dry",
+    item: DashboardItem & { productId: number },
+    type: CardClass,
     source: "ai" | "manual",
   ) {
+    const productId = item.productId;
+    setSaveErrors((p) => {
+      const n = { ...p };
+      delete n[productId];
+      return n;
+    });
+    if (order.isWalmart && type !== "Dry") {
+      setSaveErrors((p) => ({ ...p, [productId]: WALMART_COLD_REASON }));
+      return;
+    }
     setSavingPid(productId);
     try {
-      const aiResult = results[productId];
-      await fetch("/api/shipping/product-type", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,
-          type,
-          source,
-          aiConfidence: source === "ai" ? aiResult?.confidence : undefined,
-          aiReasoning: source === "ai" ? aiResult?.reasoning : undefined,
-        }),
+      await saveLineClass({
+        productId,
+        sku: item.sku,
+        cls: type,
+        isWalmart: !!order.isWalmart,
+        source,
+        ai: results[productId],
       });
       setSavedTypes((p) => ({ ...p, [productId]: type }));
       dirtyRef.current = true;
+    } catch (e) {
+      setSaveErrors((p) => ({ ...p, [productId]: errMsg(e) }));
     } finally {
       setSavingPid(null);
     }
@@ -7342,33 +7422,52 @@ function ClassifyAiDialog({
                       <div className="mt-0.5 line-clamp-2 text-[10.5px] text-ink-3">
                         {result.reasoning}
                       </div>
-                      <div className="mt-1.5 flex gap-1.5">
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
                         <Button
                           size="sm"
                           variant={saved === result.type ? "default" : "outline"}
                           className="h-7 text-[11px]"
-                          disabled={isBusy}
-                          onClick={() => save(pid, result.type, "ai")}
+                          disabled={
+                            isBusy || (order.isWalmart && result.type !== "Dry")
+                          }
+                          title={
+                            order.isWalmart && result.type !== "Dry"
+                              ? WALMART_COLD_REASON
+                              : undefined
+                          }
+                          onClick={() => save(item, result.type, "ai")}
                         >
                           {isBusy && savedTypes[pid] !== result.type ? (
                             <Loader2 size={10} className="mr-1 animate-spin" />
                           ) : null}
                           Confirm {result.type}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            saved && saved !== result.type ? "default" : "outline"
-                          }
-                          className="h-7 text-[11px]"
-                          disabled={isBusy}
-                          onClick={() =>
-                            save(pid, result.type === "Frozen" ? "Dry" : "Frozen", "manual")
-                          }
-                        >
-                          Override to {result.type === "Frozen" ? "Dry" : "Frozen"}
-                        </Button>
+                        {/* Override to either other class — Chilled included
+                            (the AI only answers Frozen/Dry). */}
+                        {CLASS_CHOICES.filter((c) => c.cls !== result.type).map(
+                          (c) => {
+                            const blocked = order.isWalmart && c.cls !== "Dry";
+                            return (
+                              <Button
+                                key={c.cls}
+                                size="sm"
+                                variant={saved === c.cls ? "default" : "outline"}
+                                className="h-7 text-[11px]"
+                                disabled={isBusy || blocked}
+                                title={blocked ? WALMART_COLD_REASON : undefined}
+                                onClick={() => save(item, c.cls, "manual")}
+                              >
+                                Override to {c.cls}
+                              </Button>
+                            );
+                          },
+                        )}
                       </div>
+                    </div>
+                  )}
+                  {saveErrors[pid] && (
+                    <div className="mt-1.5 rounded border border-danger/30 bg-danger-tint px-1.5 py-1 text-[11px] text-danger">
+                      Not saved: {saveErrors[pid]}
                     </div>
                   )}
                 </div>
@@ -7392,7 +7491,9 @@ function ClassifyAiDialog({
  * for items[0] — for a multi-item order with 3 different products, the
  * other two stayed null and the dashboard kept flagging the order
  * "no_type" forever. Now every line with a productId gets its own
- * Frozen/Dry pick that writes independently to ProductTypeOverride.
+ * Frozen / Chilled / Dry pick (Chilled added 2026-10-30, topic 135), saved
+ * independently as that SKU's manual class. On a Walmart order only Dry is
+ * allowed — frozen & chilled are forbidden there.
  */
 function ManualTypeDialog({
   order,
@@ -7404,27 +7505,42 @@ function ManualTypeDialog({
   const classifiableItems = order.items.filter(
     (i): i is DashboardItem & { productId: number } => i.productId !== null,
   );
-  const [savedTypes, setSavedTypes] = useState<Record<number, "Frozen" | "Dry">>(
+  const [savedTypes, setSavedTypes] = useState<Record<number, CardClass>>(
     () =>
       Object.fromEntries(
         classifiableItems
-          .filter((i) => i.knownType)
-          .map((i) => [i.productId, i.knownType as "Frozen" | "Dry"]),
+          .map((i) => [i.productId, lineClass(i)] as const)
+          .filter((e): e is readonly [number, CardClass] => e[1] !== null),
       ),
   );
+  const [saveErrors, setSaveErrors] = useState<Record<number, string>>({});
   const [savingPid, setSavingPid] = useState<number | null>(null);
   const dirtyRef = useRef(false);
 
-  async function save(productId: number, type: "Frozen" | "Dry") {
+  async function save(item: DashboardItem & { productId: number }, type: CardClass) {
+    const productId = item.productId;
+    setSaveErrors((p) => {
+      const n = { ...p };
+      delete n[productId];
+      return n;
+    });
+    if (order.isWalmart && type !== "Dry") {
+      setSaveErrors((p) => ({ ...p, [productId]: WALMART_COLD_REASON }));
+      return;
+    }
     setSavingPid(productId);
     try {
-      await fetch("/api/shipping/product-type", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, type, source: "manual" }),
+      await saveLineClass({
+        productId,
+        sku: item.sku,
+        cls: type,
+        isWalmart: !!order.isWalmart,
+        source: "manual",
       });
       setSavedTypes((p) => ({ ...p, [productId]: type }));
       dirtyRef.current = true;
+    } catch (e) {
+      setSaveErrors((p) => ({ ...p, [productId]: errMsg(e) }));
     } finally {
       setSavingPid(null);
     }
@@ -7448,9 +7564,15 @@ function ManualTypeDialog({
           <DialogDescription>
             {classifiableItems.length === 1
               ? classifiableItems[0]!.productTitle
-              : "Pick Frozen or Dry for each line independently"}
+              : "Pick Frozen, Chilled or Dry for each line independently"}
           </DialogDescription>
         </DialogHeader>
+
+        {order.isWalmart && (
+          <div className="rounded border border-warn-strong/40 bg-warn-tint px-2.5 py-1.5 text-[12px] text-warn-strong">
+            Walmart order: {WALMART_COLD_REASON}
+          </div>
+        )}
 
         <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
           {classifiableItems.map((item) => {
@@ -7482,35 +7604,35 @@ function ManualTypeDialog({
                     <span>SKU {item.sku}</span>
                   </div>
                 </div>
-                <div className="flex shrink-0 gap-1.5">
-                  <Button
-                    size="sm"
-                    variant={saved === "Frozen" ? "default" : "outline"}
-                    className="h-8 px-2.5 text-[11.5px]"
-                    disabled={isBusy}
-                    onClick={() => save(pid, "Frozen")}
-                  >
-                    {isBusy && saved !== "Frozen" ? (
-                      <Loader2 size={11} className="mr-1 animate-spin" />
-                    ) : (
-                      <Snowflake size={11} className="mr-1 text-info" />
-                    )}
-                    Frozen
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={saved === "Dry" ? "default" : "outline"}
-                    className="h-8 px-2.5 text-[11.5px]"
-                    disabled={isBusy}
-                    onClick={() => save(pid, "Dry")}
-                  >
-                    {isBusy && saved !== "Dry" ? (
-                      <Loader2 size={11} className="mr-1 animate-spin" />
-                    ) : (
-                      <Package size={11} className="mr-1 text-ink-2" />
-                    )}
-                    Dry
-                  </Button>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <div className="flex gap-1.5">
+                    {CLASS_CHOICES.map(({ cls, icon: Icon, iconCls }) => {
+                      const blocked = order.isWalmart && cls !== "Dry";
+                      return (
+                        <Button
+                          key={cls}
+                          size="sm"
+                          variant={saved === cls ? "default" : "outline"}
+                          className="h-8 px-2.5 text-[11.5px]"
+                          disabled={isBusy || blocked}
+                          title={blocked ? WALMART_COLD_REASON : undefined}
+                          onClick={() => save(item, cls)}
+                        >
+                          {isBusy && saved !== cls ? (
+                            <Loader2 size={11} className="mr-1 animate-spin" />
+                          ) : (
+                            <Icon size={11} className={cn("mr-1", iconCls)} />
+                          )}
+                          {cls}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  {saveErrors[pid] && (
+                    <div className="max-w-[260px] text-right text-[11px] text-danger">
+                      Not saved: {saveErrors[pid]}
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -14,5 +14,6 @@ export * from "./shadow";
 export * from "./profile";
 export * from "./engine-line";
 export * from "./card-class";
+export * from "./manual-class";
 export { getRouteWeather, CLEARWATER_LAT, CLEARWATER_LON } from "./weather";
 export type { RouteWeather } from "./weather";
