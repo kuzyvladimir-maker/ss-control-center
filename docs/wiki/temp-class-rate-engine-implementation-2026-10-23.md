@@ -131,3 +131,7 @@ FedEx Ground Economy (4 d, EDD 10/30) and USPS Ground Advantage (5 d, EDD
 
 Summer v3.5 (`rate-selection.ts`, profile `summer`) keeps its $3 rule
 unchanged. Commit e5c108a04.
+
+## 2026-10-30 — Chilled in manual classification
+
+The Set product type dialog, the AI dialog, the card chip and the save APIs accept Chilled; every pick sets the SKU's manual class; Walmart allows Dry only. See [shipping-chilled-manual-class-2026-10-30](shipping-chilled-manual-class-2026-10-30.md).
