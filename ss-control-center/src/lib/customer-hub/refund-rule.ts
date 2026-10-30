@@ -15,7 +15,7 @@ import { transitFacts, type TransitEvent } from "./transit";
 
 /** Buyer says the product arrived in bad condition. */
 export const SPOILAGE_RE =
-  /\b(thaw(ed|ing)?|melt(ed|ing)?|defrost(ed)?|(arrived|came|was|were|is|are|very|all) (all |completely |very )?(warm|hot|room temp(erature)?)|not (cold|frozen|refrigerated)|without (any )?(ice|ice packs|gel packs|cooler)|no (ice|ice packs|gel packs)|spoil(ed|t)?|rotten|rancid|mo(u)?ld(y)?|smell(s|ed|y)?|stink(s|ing)?|sour|leak(ed|ing|s)?|damaged|crushed|smashed|smushed|squished|broken|torn|punctured|soggy|swollen|bloated|ruined|expired|no expiration date|wrong (item|product|flavor|flavour|size)|(was |were )?(sent|shipped|received|got) (me )?(the )?wrong|instead of|missing|only (got|received)|ordered\b[^.]{0,80}\b(got|received|was (sent|shipped)|shipped))\b/i;
+  /\b(thaw(ed|ing)?|melt(ed|ing)?|defrost(ed)?|(arrived|came|was|were|is|are|very|all) (all |completely |very )?(warm|hot|room temp(erature)?)|not (cold|frozen|refrigerated)|without (any )?(ice|ice packs|gel packs|cooler)|no (ice|ice packs|gel packs)|spoil(ed|t)?|rotten|rancid|mo(u)?ld(y)?|smell(s|ed|y)?|stink(s|ing)?|sour|leak(ed|ing|s)?|damaged|crushed|smashed|smushed|squished|broken|torn|punctured|soggy|swollen|bloated|ruined|expired|no expiration date|wrong (item|product|flavor|flavour|size)|(was |were )?(sent|shipped|received|got) (me )?(the )?wrong|instead of|missing|only (got|received)|not (sent |send |receive |get )?what (i|we) ordered|ordered\b[^.]{0,80}\b(got|received|was (sent|shipped)|shipped))\b/i;
 
 /** The reply offers / announces money back. */
 export const REFUND_OFFER_RE =

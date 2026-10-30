@@ -23,6 +23,21 @@ import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 import { answeredAfter } from "@/lib/customer-hub/thread-state";
 import { processCase } from "@/lib/customer-hub/cs-pipeline";
 
+/**
+ * The owner answered in Seller Central himself: any open approval card for
+ * this message is stale — close it so it cannot be approved and sent twice.
+ */
+async function closeCardsAnsweredElsewhere(messageId: string) {
+  try {
+    await prisma.csCard.updateMany({
+      where: { buyerMessageId: messageId, status: { in: ["PENDING", "PUBLISHED", "WRONG", "REWORK"] } },
+      data: { status: "SUPERSEDED" },
+    });
+  } catch (e) {
+    console.warn("[Sync] closing stale cards failed:", e);
+  }
+}
+
 export interface SyncBuyerMessagesResult {
   synced: number;
   /** New messages left for the next run because budgetMs ran out. */
@@ -350,6 +365,7 @@ export async function syncBuyerMessagesFromGmail(
                     responseSentAt: sentAt,
                   },
                 });
+                await closeCardsAnsweredElsewhere(target.id);
                 confirmationsSynced++;
                 console.log(
                   "[Sync] Confirmation detected for order:",
@@ -426,6 +442,7 @@ export async function syncBuyerMessagesFromGmail(
                     resolution: "auto_resolved_our_reply_in_thread",
                   },
                 });
+                await closeCardsAnsweredElsewhere(sm.id);
                 autoResolvedStale++;
                 console.log(
                   `[Sync] Stale re-check: ${sm.id} (thread ${sm.gmailThreadId}) has our reply → RESOLVED`

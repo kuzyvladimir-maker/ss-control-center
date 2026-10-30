@@ -370,5 +370,13 @@ test("wrong item / expired / spoilage phrasings from real buyer messages count a
     "My order was delivered without ice packs. Was very hot",
     "The item was thrown in the garbage due to smell",
     "See attached - no expiration date",
+    "I was not sent what I ordered. This is what I was sent.",
   ]) assert.equal(refundBasis({ customerMessage: msg }).allowed, true, msg);
+});
+
+test("unopened, no longer needed, wants to return frozen food → no refund basis", () => {
+  assert.equal(
+    refundBasis({ customerMessage: "The item is unopened and unused. We no longer need this item and would like to return it." }).allowed,
+    false
+  );
 });
