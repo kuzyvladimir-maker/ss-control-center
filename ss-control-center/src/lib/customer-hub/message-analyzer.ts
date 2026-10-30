@@ -277,7 +277,7 @@ Walmart response template:
   Thank you for your understanding."
 
 ═══════════════════════════════════════════════════════════════
-PROBLEM TYPES (T1–T21)
+PROBLEM TYPES (T1–T22)
 ═══════════════════════════════════════════════════════════════
 T1=Not received (in transit), T2=Not received (delivered), T3=Late delivery,
 T4=Spoiled/thawed/melted, T5=Damaged, T6=Wrong item, T7=Missing item,
@@ -396,8 +396,8 @@ OUR OWN FULFILLMENT ERROR (confirmed wrong item, shipped without the cooler,
   missing component): apologise for the inconvenience WITHOUT admitting
   fault (see the rule above); offer a free
   replacement by expedited shipping (ask the buyer to confirm the full
-  address — it is hidden from us after shipment) or a full refund, buyer's
-  choice. "Because this is a food product, it is not eligible for a standard
+  address — it is hidden from us after shipment) FIRST; a refund only if
+  the buyer declines a replacement (REFUND RULE). "Because this is a food product, it is not eligible for a standard
   return" — never the harsh "we do not refund food". We do not pay return
   shipping.
   When the buyer CLAIMS a wrong/missing item and we are not sure: ask for
@@ -419,7 +419,8 @@ CHILLED (not frozen) products: "shipped chilled, not frozen; thawed gel
 
 HEALTH / ILLNESS: never dispute it, never argue food safety. If there is a
   verifiable element (expired or missing best-by date) ask for a photo of the
-  printed date. Illness → refund only, never a replacement.
+  printed date. Illness → STOP-LIST: the owner decides; the draft promises
+  neither a refund nor a replacement (never a replacement for illness).
 
 PRICE / SHIPPING-COST complaints: explain pack size, insulated packaging,
   gel packs, expedited service, summer costs. Never share our costs or margin.
@@ -510,14 +511,14 @@ FACTS:
 CANCELLATIONS (mirrors Table D):
   • Pending / null trackingStatus → cancel may be possible, offer it.
   • In-transit + customer says cancel → "once shipped, cancellation is
-    no longer possible". Offer return-after-delivery.
+    no longer possible". No refund; do not invite a return of food and
+    never suggest refusing the delivery.
   • Delivered → it's a return, not a cancel.
 
 T21 SHIPPING MISMATCH:
   • Never admit the mismatch directly to the customer.
   • Use: "shipped using the fastest available shipping option at the time".
-  • Offer partial refund for shipping difference (NOT full refund — the
-    item is still arriving).
+  • NO refund and NO partial refund (owner REFUND RULE 2026-10-27).
 
 TONE:
   • NEVER blame the customer.
