@@ -11,7 +11,7 @@ import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { ownerStatedDates, transitFacts } from "./transit";
 import { FAULT_ADMISSION_RE } from "./autosend-policy";
-import { REFUND_ACTIONS, REFUND_OFFER_RE, REFUSE_DELIVERY_RE, refundBasis } from "./refund-rule";
+import { REFUND_ACTIONS, REFUND_OFFER_RE, REFUND_REASON_HINT_RE, REFUSE_DELIVERY_RE, refundBasis } from "./refund-rule";
 import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
@@ -1192,6 +1192,9 @@ export function detectResponseViolations(
   if (REFUSE_DELIVERY_RE.test(response)) {
     violations.push("Response tells the buyer to refuse the delivery — owner ban");
   }
+  if (REFUND_REASON_HINT_RE.test(response)) {
+    violations.push("Response hints which reasons would qualify for a refund — owner ban (refund reason hint)");
+  }
 
   // Owner rule 2026-10-20: never admit fault in the buyer text.
   if (FAULT_ADMISSION_RE.test(response)) {
@@ -1343,6 +1346,7 @@ ${input.extraInstruction ? `- OWNER CORRECTIONS (verified facts, they win over t
 MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
+- NEVER hint which reasons would qualify for a refund (no "as there is no issue with the condition", no "unless it arrived damaged")
 - NEVER offer a refund or partial refund unless the product arrived spoiled/thawed/damaged or there was no first carrier scan — and then offer a REPLACEMENT first; never invite a return of food; never tell the buyer to refuse the delivery
 - NEVER admit fault (no "our error/mistake/fault", "on our side", "it never left us", "not the carrier's fault") and NEVER concede "we understand something went wrong"; say ONLY "we apologize for the inconvenience" instead
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
@@ -1538,6 +1542,7 @@ export async function analyzeMessage(
             "refund without our-fault basis",
             "refund before a replacement",
             "refuse the delivery",
+            "refund reason hint",
           ];
           const hardViolations = warnings.filter((w) =>
             hardKeywords.some((kw) =>

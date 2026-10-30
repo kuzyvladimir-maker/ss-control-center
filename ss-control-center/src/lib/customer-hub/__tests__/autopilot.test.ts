@@ -323,7 +323,7 @@ test("dates the owner states in a correction count as verified", () => {
 
 // ── Owner REFUND RULE (2026-10-27) ────────────────────────────────────
 
-import { REFUND_OFFER_RE, REFUSE_DELIVERY_RE, refundBasis } from "../refund-rule";
+import { REFUND_OFFER_RE, REFUND_REASON_HINT_RE, REFUSE_DELIVERY_RE, refundBasis } from "../refund-rule";
 
 const delivered = [
   { date: "2026-10-19", time: "18:00", description: "Picked up", status: "P" },
@@ -379,4 +379,10 @@ test("unopened, no longer needed, wants to return frozen food → no refund basi
     refundBasis({ customerMessage: "The item is unopened and unused. We no longer need this item and would like to return it." }).allowed,
     false
   );
+});
+
+test("no hints about which reasons would qualify for a refund", () => {
+  assert.ok(REFUND_REASON_HINT_RE.test("As there is no issue with the condition of the item, we are unable to issue a refund."));
+  assert.ok(REFUND_REASON_HINT_RE.test("We cannot refund unless the item arrived damaged."));
+  assert.ok(!REFUND_REASON_HINT_RE.test("Under Amazon's policy, food and pet food are not returnable."));
 });

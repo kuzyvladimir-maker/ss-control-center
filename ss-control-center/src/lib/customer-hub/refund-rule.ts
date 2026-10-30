@@ -25,6 +25,14 @@ export const REFUND_OFFER_RE =
 export const REFUSE_DELIVERY_RE =
   /\b(refus(e|ing) (the |your )?(delivery|package|shipment|parcel|order)|decline (the )?delivery|return(ed)? to sender)\b/i;
 
+/**
+ * Hinting which reasons WOULD qualify ("as there is no issue with the
+ * condition", "unless it arrived damaged") — owner 27.10 15:50: the buyer
+ * will simply claim that reason next.
+ */
+export const REFUND_REASON_HINT_RE =
+  /\b((as|since|because) there (is|was) no (issue|problem) with the (condition|quality|product|item)|unless (it|the (item|product|food)) (arrived|was|is) (damaged|thawed|spoiled|defective|warm)|only (eligible|refundable|qualif\w*) (for a refund )?(if|when)|(would|could) (qualify|be eligible) for a refund (if|when)|if (it|the (item|product|food)) (had )?(arrived|was) (damaged|thawed|spoiled|warm))\b/i;
+
 export const REFUND_ACTIONS = new Set(["full_refund", "partial_refund"]);
 
 export interface RefundBasisInput {
