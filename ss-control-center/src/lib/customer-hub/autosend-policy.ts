@@ -14,6 +14,8 @@
  * claims and anything about money stay drafts for one-click approval.
  */
 
+import { REFUND_OFFER_RE, REFUSE_DELIVERY_RE } from "./refund-rule";
+
 export type AutosendMode = "off" | "shadow" | "on";
 
 export const AUTOSEND_SETTING_KEY = "customer_hub_autosend";
@@ -100,6 +102,8 @@ export function replyContentViolations(text: string): string[] {
   if (REVIEW_ASK_RE.test(text)) out.push("reply mentions reviews/feedback");
   if (HEALTH_RE.test(text)) out.push("reply makes a health claim");
   if (FAULT_ADMISSION_RE.test(text)) out.push("reply admits fault");
+  if (REFUSE_DELIVERY_RE.test(text)) out.push("reply tells the buyer to refuse the delivery");
+  if (REFUND_OFFER_RE.test(text)) out.push("reply offers a refund");
   if (FAULT_CONCESSION_RE.test(text)) out.push("reply concedes something went wrong");
   return out;
 }

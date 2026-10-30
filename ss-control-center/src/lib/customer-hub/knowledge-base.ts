@@ -10,6 +10,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { predictProblemTypes, rankKnowledgeBase } from "./kb-retrieval";
+import { REFUND_ACTIONS, refundBasis } from "./refund-rule";
 
 export interface KnowledgeBaseEntryInput {
   problemType: string;
@@ -79,8 +80,14 @@ export async function findRelevantCases(
     where: types.length > 0 ? { problemType: { in: types } } : {},
     take: 500,
   });
+  // Owner REFUND RULE (2026-10-27): older examples that refunded without an
+  // our-fault basis (dislike, "too long", "half my money back") are kept in
+  // the table but never shown to the model again.
+  const usable = rows.filter(
+    (r) => !REFUND_ACTIONS.has(r.correctAction) || refundBasis({ customerMessage: r.customerSaid }).allowed
+  );
   const ranked = rankKnowledgeBase(
-    rows,
+    usable,
     {
       customerMessage: input.customerMessage,
       productType: input.productType,

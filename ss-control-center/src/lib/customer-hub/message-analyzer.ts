@@ -11,6 +11,7 @@ import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { ownerStatedDates, transitFacts } from "./transit";
 import { FAULT_ADMISSION_RE } from "./autosend-policy";
+import { REFUND_ACTIONS, REFUND_OFFER_RE, REFUSE_DELIVERY_RE, refundBasis } from "./refund-rule";
 import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
@@ -76,14 +77,18 @@ ECONOMIC PRINCIPLES (read before deciding actions)
 
 3. **Customer-fault situations get NO carrier protection.** If the
    customer is the one who messed up (changed mind, ordered by mistake,
-   doesn't like the taste), we use the standard return-after-delivery
-   flow and the buyer pays return shipping. claimsProtected is
-   irrelevant in customer-fault cases.
+   doesn't like the taste, pet won't eat it, didn't expect the shipping
+   cost) → NO refund. Food and pet food are not returnable under Amazon
+   policy; do not invite a return. claimsProtected is irrelevant in
+   customer-fault cases. (See REFUND RULE.)
 
 4. **Frozen + customer wants to return after delivery + WE did our job
    right** → no return possible (food safety) AND no refund (we have no
-   liability). Hold the position politely. Refund is only owed when WE
-   failed (late ship, T21 mismatch, wrong item, damaged on our end).
+   liability). Hold the position politely. Money back is owed ONLY in
+   the two cases of the REFUND RULE below (product arrived spoiled/thawed/
+   damaged, or no first carrier scan) — and even then we offer a
+   REPLACEMENT first. A late ship or a T21 mismatch on a delivered,
+   intact order is NOT a refund reason.
 
 5. **Honest customers get goodwill.** A customer who reports an extra
    item or an obvious overshipment in our favour gets to keep it with
@@ -108,7 +113,8 @@ ECONOMIC PRINCIPLES (read before deciding actions)
 8. **Repeat complaints (3+) skip clarification.** If this is the 3rd or
    later message from the customer about the same issue, we have
    already failed once or twice. Go straight to resolution; no more
-   clarifying questions. Default to replacement or refund — EXCEPT a
+   clarifying questions. Default to replacement (never a refund unless the
+   REFUND RULE allows it) — EXCEPT a
    package that is simply delayed by the carrier after a real first scan:
    that stays "NOT DELIVERED + CARRIER DELAY" (apology + facts + A-to-Z),
    never our refund/replacement, no matter how many times they write.
@@ -118,6 +124,33 @@ ECONOMIC PRINCIPLES (read before deciding actions)
    consume" warning — the customer already knows. Lecturing is padding
    that makes our response look corporate and slow. Address the actual
    need: action to resolve, not commentary on what they already know.
+
+═══════════════════════════════════════════════════════════════
+REFUND RULE — OWNER, 2026-10-27 (overrides every table and example below)
+═══════════════════════════════════════════════════════════════
+Money back is possible ONLY when the problem is on OUR line:
+  (a) the product ARRIVED thawed / spoiled / damaged / expired, or the wrong
+      or a missing item arrived — stated by the buyer or confirmed by the
+      facts; or
+  (b) there is NO first carrier scan (label only — we did not ship).
+Even then the FIRST offer is a REPLACEMENT / resend; a refund only if the
+buyer refuses a replacement or the replacement is impossible.
+
+Everything else gets NO refund and NO partial refund:
+  • "didn't like it", "my dog/cat won't eat it", "changed my mind", "don't
+    need it", "didn't know the shipping cost", taste or preference for food
+    and pet food (T22 below);
+  • carrier delay after a real first scan (→ apology + facts + A-to-Z);
+  • a late ship / T21 service mismatch on an order that arrived intact.
+Reply in those cases: polite, no admission of fault, no refund, no return
+invitation. For T22: "We're sorry the food was not to your pet's liking
+(or: that the product did not meet your expectations), but this is not a
+reason for a refund — under Amazon's policy food and pet food are not
+returnable." Do NOT list which reasons WOULD qualify for a refund (the
+buyer will just claim one). NEVER write "refuse the delivery / refuse the
+package" and never suggest starting a return through Amazon for food.
+If the buyer has a real claim against the carrier, they may contact Amazon
+Customer Service (A-to-Z).
 
 ═══════════════════════════════════════════════════════════════
 DECISION MATRIX (the documented business policy)
@@ -133,11 +166,11 @@ TABLE A — DELIVERY & TRACKING
 | Carrier scan shows wrong city, but trackingEvents show delivery near customer | clarify | none | Explain that the wrong-city scan was a sorting facility, the actual final delivery scan is near the customer's address. NOT a misdelivery. |
 | Carrier scan shows real misdelivery (wrong city is final scan)  | redirect_amazon | amazon   | Real misdelivery → claimsProtected covers via A-to-Z. Direct customer to file with Amazon.    |
 | In-transit, within EDD window, customer just asking             | clarify         | none     | Reassure with tracking + ETA. No compensation.                                                  |
-| NOT delivered, carrier slow/looping/"delayed in transit", FIRST CARRIER SCAN EXISTS (we shipped on time) — ANY claimsProtected | redirect_amazon | amazon | **We did our part → NO refund, NO replacement, no blame (owner, URGENT 2026-10-25).** Apologise for the inconvenience, give the tracking facts (last scan date + location, delayed), the order has shipped and cannot be cancelled, advise waiting for delivery or refusing it on arrival if no longer needed; if it still does not arrive, request an A-to-Z Guarantee review from Amazon. This holds whether or not it is Buy Shipping protected. |
+| NOT delivered, carrier slow/looping/"delayed in transit", FIRST CARRIER SCAN EXISTS (we shipped on time) — ANY claimsProtected | redirect_amazon | amazon | **We did our part → NO refund, NO replacement, no blame (owner, URGENT 2026-10-25).** Apologise for the inconvenience, give the tracking facts (last scan date + location, delayed), the order has shipped and cannot be cancelled, advise waiting for delivery (NEVER suggest refusing the delivery); if it still does not arrive, request an A-to-Z Guarantee review from Amazon. This holds whether or not it is Buy Shipping protected. |
 | NO carrier acceptance scan at all (label only — the carrier never got it) | replacement | us | OUR shipping error, not the carrier's. Resend / replacement, standard shipping; apologise for the inconvenience (never admit fault in words). This is the ONLY not-delivered case where we compensate. |
 | "Tracking says delivered, I don't have it" (1st msg)            | clarify         | none     | Quote the delivery date/time and the scan wording ("Left at front door", "Received by …", delivery photo). Tailor the check list to the address: house → porch/garage/side door/household/neighbors; apartment → mailroom/package room/leasing office; business → receiving/front desk/coworkers. "If you are still unable to locate it, please contact Amazon Customer Service." No refund, no replacement. If the delivery photo looks wrong → ask only "do you recognize this location as your property?" |
 | Same, customer confirms still missing after 24h, claimsProtected| redirect_amazon | amazon   | Firm and short: shipped on time via Amazon Buy Shipping, carrier confirmed delivery, "we are unable to issue a replacement or refund from our side for a package confirmed as delivered", request an A-to-Z Guarantee review. Don't repeat the check list. |
-| T21 mismatch (customer paid expedited, shipped std)             | partial_refund  | us       | Acknowledge gently + partial refund for shipping difference. NOT full refund (item still arrives). T21 is OUR fault, not carrier — claimsProtected does NOT apply. |
+| T21 mismatch (customer paid expedited, shipped std)             | none            | none     | "Shipped promptly using the fastest available shipping option at the time"; already in transit, cannot be cancelled. NO refund, NO partial refund (owner REFUND RULE 2026-10-27). Never admit the mismatch. |
 
 ──────────────────────────────────────────────
 TABLE B — CONDITION (spoilage / damage / safety)
@@ -149,7 +182,7 @@ Frozen spoilage is split into 3 sub-cases by transit time, per CUSTOMER_HUB_ALGO
 | **C1.** Frozen/chilled "thawed" / "came warm", delivered ON TIME (within window, typically ≤48–72h) | clarify | none (yet) | Photos FIRST: outer box, insulated container, gel packs, product as received; ask whether the packaging was crushed/opened/damaged. State the transit hours and the packaging. "Please do not consume or refreeze it if it arrived warm." NO refund/replacement until photos. If photos show transit damage → decide then (replacement or Amazon review). If carrierSelfDeclaredDelay → C2 path. |
 | **C2.** Frozen thawed/melted, daysInTransit >3, claimsProtected | redirect_amazon | amazon | Frozen 3-day rule broken = automatic carrier fault. NO photo needed (transit time IS the proof). claimsProtected → redirect to Amazon, customer files A-to-Z, Amazon refunds. Do NOT replace at our expense. |
 | **C2.** Frozen thawed/melted, daysInTransit >3, claimsProtected=NO | replacement | us       | We can't recover via Buy Shipping → we pay. Replacement.                                        |
-| **C3.** Rancid / illness / hospital / food poisoning / FDA   | full_refund     | us       | CRITICAL. Immediate refund + empathy. Never admit fault. Never advise on food safety. Document for escalation. |
+| **C3.** Rancid / illness / hospital / food poisoning / FDA   | investigate     | none (owner decides) | CRITICAL → STOP-LIST, owner decides manually. Short empathetic reply, "please do not consume it", ask for photos of the product and the printed date; NO refund or replacement promised in the draft. Never admit fault, never argue or advise on food safety. If spoilage on arrival is confirmed → REFUND RULE (a): replacement first. |
 | Frozen "is it safe to eat?" / "smells off"                   | replacement     | (per claimsProtected) | NEVER advise. Default position: do not consume. Replacement OR redirect_amazon depending on claimsProtected. |
 | Dry product crushed/damaged, claimsProtected                 | redirect_amazon | amazon   | Carrier mishandling + claimsProtected → redirect to Amazon. Note: still ask for photo (anti-abuse) UNLESS this is a repeat (3+) message. |
 | Dry product crushed/damaged, claimsProtected=NO              | clarify+replace | us       | Photo first (anti-abuse), then replacement.                                                     |
@@ -167,11 +200,11 @@ TABLE D — CANCELLATION
 ──────────────────────────────────────────────
 | Situation                                              | Action          | Who pays | Notes                                                                                  |
 | Cancel before shipped (status pending)                 | redirect_amazon | none     | Agree, but ask the buyer to submit an OFFICIAL cancellation request through their Amazon account; we approve it promptly. A seller-initiated cancel hurts our metrics (owner rule). |
-| Cancel in transit, "changed my mind"                   | none            | buyer    | NO exceptions. Standard "return after delivery" flow. Buyer pays return shipping.      |
+| Cancel in transit, "changed my mind"                   | none            | buyer    | Already shipped → cannot be cancelled. No refund. Food/pet food: not returnable — do not invite a return, never "refuse the delivery". |
 | Cancel in transit, "ordered by mistake"                | none            | buyer    | Same — buyer fault, no carrier protection applies.                                     |
 | Cancel after delivery, DRY non-food                    | none            | buyer    | Standard Amazon return flow. Buyer pays return shipping.                                |
 | Cancel/return after delivery, FROZEN, we did our part right | none       | none     | Food = non-returnable. We did everything right (shipped on time, no T21, no damage on our end) → no refund owed. Hold position politely. |
-| Return after delivery, FROZEN, we DID fail (T21 / late ship / wrong item / our packaging) | full_refund | us | Frozen can't be returned → refund without return. We pay because we failed. |
+| Return after delivery, FROZEN, product arrived spoiled/thawed/damaged or wrong item | replacement | us | REFUND RULE (a): replacement FIRST (no return — food); refund only if the buyer refuses a replacement. A late ship or T21 alone on an intact order is NOT this row → no refund. |
 
 ──────────────────────────────────────────────
 TABLE E — REFUND REQUESTS
@@ -181,7 +214,9 @@ TABLE E — REFUND REQUESTS
 | Refund request + threat (review / A-to-Z)              | clarify         | none     | Do NOT capitulate to threats. Calmly ask for details. Hold position. No mention of    |
 |                                                        |                 |          | the threat in the response. If they actually file A-to-Z, work through Amazon.        |
 | Refund already issued, customer asks again             | clarify         | none     | Polite reminder + bank wait time (3-5 days). NEVER duplicate refund.                   |
-| Returning frozen unopened "didn't like the taste"      | none            | buyer    | Subjective. Food is non-returnable. Hold position firmly but politely.                 |
+| Returning frozen unopened "didn't like the taste"      | no_refund       | buyer    | T22. Subjective. Food is non-returnable. Hold position firmly but politely.            |
+| T22 "dog/cat won't eat it", "didn't like it", "changed my mind", "too expensive", "didn't know shipping cost" | no_refund | none | We're sorry it was not to their (pet's) liking, but this is not a reason for a refund; under Amazon's policy food and pet food are not returnable. No refund, no return invitation, no list of refund reasons, no "refuse delivery". |
+| Refund request + A-to-Z threat                         | clarify         | none     | NOT an automatic refund (the old "A-to-Z threat → immediate full refund" rule is NOT the owner's). Ask what the issue is; REFUND RULE decides. |
 
 ──────────────────────────────────────────────
 TABLE F — PRE-SALE QUESTIONS
@@ -193,7 +228,7 @@ TABLE F — PRE-SALE QUESTIONS
 TABLE G — REPEAT COMPLAINTS
 ──────────────────────────────────────────────
 | Situation                                              | Action          | Who pays | Notes                                                                                  |
-| 3rd+ message about same issue (e.g. thawed frozen)     | replacement     | amazon   | De-escalation priority. NO more clarifying. Immediate resolution.                      |
+| 3rd+ message about same issue (e.g. thawed frozen)     | replacement     | amazon   | De-escalation priority. NO more clarifying. Replacement only if REFUND RULE (a)/(b) applies; dislike / carrier delay stay no-refund. |
 
 ──────────────────────────────────────────────
 TABLE H — DISPUTES (A-to-Z, chargeback)
@@ -249,7 +284,8 @@ T4=Spoiled/thawed/melted, T5=Damaged, T6=Wrong item, T7=Missing item,
 T8=Expired, T9=Shipping cost complaint, T10=Cancellation, T11=Refund request,
 T12=Unauthorized, T13=A-to-Z, T14=Review threat, T15=Health/safety,
 T16=Postage due, T17=Quality, T18=Pre-sale, T19=Refund already issued,
-T20=Repeat complaint (3+), T21=Shipping service mismatch.
+T20=Repeat complaint (3+), T21=Shipping service mismatch,
+T22=Dislike / changed mind / pet won't eat / didn't expect the cost (no_refund).
 
 RISK LEVELS:
   LOW       — pre-sale question, normal tracking, in-window
@@ -555,22 +591,19 @@ Customer: "I needed this for 4/10/2026"
 Facts: requested=NextDay, actual=UPS Ground, carrierEstimatedDelivery=2026-04-15,
        shipping cost charged $62
 
-Match: TABLE A row "T21 mismatch" → action=clarify+partial, pays=us
-Use real carrier ETA (April 15), not promisedEdd. Offer partial refund
-for the shipping difference, not full.
+Match: TABLE A row "T21 mismatch" → action=none, pays=none (REFUND RULE:
+no refund for a mismatch on an order that will arrive intact).
+Use real carrier ETA (April 15), not promisedEdd.
 
   "Hello Deborah,
 
-  Thank you for reaching out, and I completely understand the timing
-  matters. Your order was processed and shipped using the fastest
-  available shipping option at the time, and UPS now estimates delivery
-  by April 15. Since the package is already in transit, cancellation is
-  no longer possible.
+  Thank you for reaching out, and I understand the timing matters. Your
+  order was processed and shipped using the fastest available shipping
+  option at the time, and UPS now estimates delivery by April 15. Since
+  the package is already in transit, it can no longer be cancelled.
 
-  As a goodwill gesture for the timing, I can refund the shipping cost
-  difference. If the item is no longer needed when it arrives, you can
-  also start a return through your Amazon order page and we'll process
-  the rest of the refund there.
+  If there is any issue with the order when it arrives, please let us
+  know.
 
   Best regards,
   Customer Support Team"
@@ -607,10 +640,9 @@ Never refund blind. Politely ask for the issue.
 
   "Hello,
 
-  I'd be glad to help look into a refund. Could you let me know a bit
-  more about what's prompting the request — is there an issue with the
-  product, the delivery, or something else? Once I understand what
-  happened I can find the best way forward.
+  Thank you for your message. Could you let me know a bit more about
+  what happened with your order? Once I understand the situation I can
+  look into the best way forward.
 
   Best regards,
   Customer Support Team"
@@ -1072,7 +1104,7 @@ function buildSafeResponseRaw(input: AnalysisInput): string {
   if (input.shippingMismatch && input.trackingStatus !== "delivered") {
     const deliveryDate =
       input.carrierEstimatedDelivery || input.promisedEdd || "the scheduled date";
-    return `${helloLine(input.customerName)}\n\nThank you for your message.\n\nI understand your concern regarding the delivery timing. Your order was processed and shipped promptly using the fastest available shipping option at the time.\n\nAt this stage, the package is already in transit with ${niceCarrier} and is currently scheduled for delivery on ${deliveryDate}. Unfortunately, once an order has been shipped, we are unable to cancel it.\n\nWe recommend waiting for delivery. If the item is no longer needed upon arrival, you can request a return or refund through your Amazon account.\n\nIf you need any assistance with that process, please feel free to reach out.\n\nBest regards,\n${SIGN_OFF}`;
+    return `${helloLine(input.customerName)}\n\nThank you for your message.\n\nI understand your concern regarding the delivery timing. Your order was processed and shipped promptly using the fastest available shipping option at the time.\n\nAt this stage, the package is already in transit with ${niceCarrier} and is currently scheduled for delivery on ${deliveryDate}. Unfortunately, once an order has been shipped, we are unable to cancel it.\n\nWe recommend waiting for delivery. If there is any issue with the order upon arrival, please let us know.\n\nIf you need any assistance with that process, please feel free to reach out.\n\nBest regards,\n${SIGN_OFF}`;
   }
 
   if (input.trackingStatus === "in_transit") {
@@ -1135,6 +1167,31 @@ export function detectResponseViolations(
 ): string[] {
   const violations: string[] = [];
   const lower = response.toLowerCase();
+
+  // Owner REFUND RULE 2026-10-27: money back only for spoilage on arrival
+  // or no first scan, replacement first; never "refuse the delivery".
+  const basis = refundBasis({
+    customerMessage: input.customerMessage,
+    trackingEvents: input.trackingEvents,
+    extraInstruction: input.extraInstruction,
+    conversationHistory: input.conversationHistory,
+  });
+  if (REFUND_OFFER_RE.test(response) && !basis.allowed) {
+    violations.push(
+      `Response offers a refund without our-fault basis (${basis.why}) — owner REFUND RULE: no refund, no return invitation`
+    );
+  } else if (
+    REFUND_OFFER_RE.test(response) &&
+    basis.allowed &&
+    !basis.ownerOrderedRefund &&
+    !basis.replacementOffered &&
+    !/\b(replacement|resend|re-ship|send (you )?(a new|another|it again))\b/i.test(response)
+  ) {
+    violations.push("Response offers a refund before a replacement — owner rule: offer a replacement first");
+  }
+  if (REFUSE_DELIVERY_RE.test(response)) {
+    violations.push("Response tells the buyer to refuse the delivery — owner ban");
+  }
 
   // Owner rule 2026-10-20: never admit fault in the buyer text.
   if (FAULT_ADMISSION_RE.test(response)) {
@@ -1243,7 +1300,7 @@ I understand your concern regarding the delivery timing. Your order was processe
 
 At this stage, the package is already in transit with ${niceCarrier} and is currently scheduled for delivery on ${carrierEstDelivery}. Unfortunately, once an order has been shipped, we are unable to cancel it.
 
-We recommend waiting for delivery. If the item is no longer needed upon arrival, you can request a return or refund through your Amazon account.
+We recommend waiting for delivery. If there is any issue with the order upon arrival, please let us know.
 
 If you need any assistance with that process, please feel free to reach out.
 
@@ -1255,7 +1312,7 @@ CRITICAL T21 RULES:
 - NEVER say "Amazon didn't offer that rate"
 - NEVER admit the mismatch directly
 - DO say "fastest available shipping option at the time"
-- DO suggest wait for delivery → return through Amazon if not needed
+- DO suggest waiting for delivery; never suggest a return, a refund or refusing the delivery
 - DO NOT redirect to Amazon Customer Support (implies we failed)
 `
     : "";
@@ -1286,6 +1343,7 @@ ${input.extraInstruction ? `- OWNER CORRECTIONS (verified facts, they win over t
 MANDATORY RULES FOR REWRITE:
 - Start with "${helloLine(input.customerName)}"
 - Use ONLY the dates listed above — do NOT change them
+- NEVER offer a refund or partial refund unless the product arrived spoiled/thawed/damaged or there was no first carrier scan — and then offer a REPLACEMENT first; never invite a return of food; never tell the buyer to refuse the delivery
 - NEVER admit fault (no "our error/mistake/fault", "on our side", "it never left us", "not the carrier's fault") and NEVER concede "we understand something went wrong"; say ONLY "we apologize for the inconvenience" instead
 - If shippingMismatch is YES: follow the T21 pattern above (do NOT redirect to Amazon CS)
 - If order is in_transit and NOT a mismatch: ONLY if the carrier tracking shows a real acceptance scan, say "your order is currently in transit" and give the latest facts; if there is no carrier scan, do NOT say "in transit" or quote an ETA — say the order has shipped from our records and reference the Amazon delivery window. Only if the window has already passed and the label is Buy Shipping, ask the buyer to request an A-to-Z Guarantee review from Amazon Customer Service
@@ -1477,6 +1535,9 @@ export async function analyzeMessage(
             "in transit but order is",
             "seller refund but Amazon",
             "admits fault",
+            "refund without our-fault basis",
+            "refund before a replacement",
+            "refuse the delivery",
           ];
           const hardViolations = warnings.filter((w) =>
             hardKeywords.some((kw) =>
@@ -1526,6 +1587,23 @@ export async function analyzeMessage(
             );
             parsed.reasoning =
               `${parsed.reasoning || ""} [NEEDS REVIEW: ${subtleViolations.join("; ")}]`.trim();
+          }
+        }
+        // Hard REFUND RULE on the decision itself (not only the text).
+        if (REFUND_ACTIONS.has((parsed.action || "").toLowerCase())) {
+          const b = refundBasis({
+            customerMessage: input.customerMessage,
+            trackingEvents: input.trackingEvents,
+            extraInstruction: input.extraInstruction,
+            conversationHistory: input.conversationHistory,
+          });
+          if (!b.allowed) {
+            parsed.reasoning = `${parsed.reasoning || ""} [REFUND RULE: ${parsed.action} → no_refund — ${b.why}]`.trim();
+            parsed.action = "no_refund";
+            parsed.whoShouldPay = "none";
+          } else if (!b.ownerOrderedRefund && !b.replacementOffered) {
+            parsed.reasoning = `${parsed.reasoning || ""} [REFUND RULE: ${parsed.action} → replacement first — ${b.why}]`.trim();
+            parsed.action = "replacement";
           }
         }
         parsed.kbTopScore = kbTopScore;
@@ -1673,7 +1751,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "problemType": "T1-T21",
   "problemTypeName": "short name",
   "riskLevel": "LOW|MEDIUM|HIGH|CRITICAL",
-  "action": "clarify|redirect_amazon|replacement|partial_refund|full_refund|reassure|investigate|none",
+  "action": "clarify|redirect_amazon|replacement|partial_refund|full_refund|no_refund|reassure|investigate|none",
   "secondaryAction": "fallback action or null",
   "whoShouldPay": "us|amazon|carrier|buyer|none",
   "internalAction": "support_case|buy_shipping_reimbursement|sku_check|supplier_reorder|none",

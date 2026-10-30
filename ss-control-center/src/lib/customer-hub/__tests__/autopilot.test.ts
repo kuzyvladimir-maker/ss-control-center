@@ -320,3 +320,55 @@ test("dates the owner states in a correction count as verified", () => {
   assert.deepEqual(ownerStatedDates("shipped 2026-10-20, eta 10/22", "2026-10-04").sort(), ["2026-10-20", "2026-10-22"]);
   assert.deepEqual(ownerStatedDates("трек 1Z29K3Y40313308184, 3.5 lb", null), []);
 });
+
+// ── Owner REFUND RULE (2026-10-27) ────────────────────────────────────
+
+import { REFUND_OFFER_RE, REFUSE_DELIVERY_RE, refundBasis } from "../refund-rule";
+
+const delivered = [
+  { date: "2026-10-19", time: "18:00", description: "Picked up", status: "P" },
+  { date: "2026-10-27", time: "07:22", description: "Delivered", status: "D" },
+];
+
+test("Lin: pet won't eat it → no refund basis (late label is not a reason)", () => {
+  const b = refundBasis({ customerMessage: "My dog just will Not eat this food. It is too expensive to just throw away", trackingEvents: delivered });
+  assert.equal(b.allowed, false);
+});
+
+test("dislike / changed mind / shipping cost → no refund basis", () => {
+  for (const msg of ["I didn't like the taste", "I changed my mind, I don't need it", "I didn't know shipping would cost $40"])
+    assert.equal(refundBasis({ customerMessage: msg, trackingEvents: delivered }).allowed, false, msg);
+});
+
+test("arrived thawed / damaged → basis, replacement first", () => {
+  const b = refundBasis({ customerMessage: "Everything arrived completely thawed and leaking", trackingEvents: delivered });
+  assert.equal(b.allowed, true);
+  assert.equal(b.replacementOffered, false);
+});
+
+test("no first carrier scan → basis", () => {
+  const b = refundBasis({
+    customerMessage: "Where is my order?",
+    trackingEvents: [{ date: "2026-10-04", time: "16:29", description: "Shipper created a label, UPS has not received the package yet.", status: "M" }],
+  });
+  assert.equal(b.noFirstScan, true);
+  assert.equal(b.allowed, true);
+});
+
+test("refund offers and 'refuse delivery' are detected in the buyer text", () => {
+  assert.ok(REFUND_OFFER_RE.test("We will arrange a full refund for this order, with no return required."));
+  assert.ok(REFUND_OFFER_RE.test("A full refund has been issued."));
+  assert.ok(!REFUND_OFFER_RE.test("Under Amazon's policy food and pet food are not returnable."));
+  assert.ok(REFUSE_DELIVERY_RE.test("If you no longer need it, you may refuse the delivery."));
+  assert.ok(!REFUSE_DELIVERY_RE.test("We recommend waiting for delivery."));
+});
+
+test("wrong item / expired / spoilage phrasings from real buyer messages count as our line", () => {
+  for (const msg of [
+    "I ordered tuna tetrazzini helper and was shipped beef stroganoff helper",
+    "You sent me a package with all of these uncrustables out of their boxes. They were smushed",
+    "My order was delivered without ice packs. Was very hot",
+    "The item was thrown in the garbage due to smell",
+    "See attached - no expiration date",
+  ]) assert.equal(refundBasis({ customerMessage: msg }).allowed, true, msg);
+});
