@@ -15,6 +15,10 @@
       "schedule": "*/10 * * * *"
     },
     {
+      "path": "/api/cron/customer-hub-reconcile",
+      "schedule": "5,20,35,50 * * * *"
+    },
+    {
       "path": "/api/cron/orders-amazon",
       "schedule": "0 */2 * * *"
     },

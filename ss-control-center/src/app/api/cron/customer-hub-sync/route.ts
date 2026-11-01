@@ -1,8 +1,8 @@
 /**
  * GET /api/cron/customer-hub-sync
  *
- * Every 30 min: ingest new Amazon buyer messages from the Gmail mailboxes of
- * ACTIVE Amazon stores into the Customer Hub (same code path as the hub's
+ * Every 10 min: ingest new Amazon buyer messages from the Gmail mailboxes of
+ * all five Amazon stores into the Customer Hub (same code path as the hub's
  * Sync button — src/lib/customer-hub/sync-messages.ts).
  *
  * Before 2026-10-18 there was no cron at all; ingest ran only when someone
@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncBuyerMessagesFromGmail } from "@/lib/customer-hub/sync-messages";
+import { WATCHED_STORES } from "@/lib/customer-hub/inbox-watch";
 
 export const maxDuration = 300;
 
@@ -34,8 +35,11 @@ export async function GET(request: NextRequest) {
       ? w
       : "2d";
 
+  // All five Amazon accounts (owner, 2026-11-01). Until then only stores
+  // marked active (store 1) were ingested, although buyers of the other
+  // accounts write too and their mailboxes are connected.
   const stores = await prisma.store.findMany({
-    where: { channel: "Amazon", active: true, storeIndex: { not: null } },
+    where: { channel: "Amazon", storeIndex: { in: WATCHED_STORES } },
     select: { storeIndex: true },
   });
   const storeIndexes = stores.map((s) => s.storeIndex as number);

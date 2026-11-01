@@ -7,14 +7,35 @@
 import { prisma } from "@/lib/prisma";
 import { enqueueSendTask } from "./cs-tasks";
 import { saveToKnowledgeBase } from "./knowledge-base";
+import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
 
+/**
+ * Cards to post. Alert cards (inbox-watch.ts: kind "alert", no buttons) come
+ * first; every reply card carries `urgency` (overdue / due_soon / card_stale /
+ * ok), its Amazon deadline and hours left (owner, 2026-11-01).
+ */
 export async function pendingCards(limit = 10) {
   const rows = await prisma.csCard.findMany({
     where: { status: "PENDING" },
     orderBy: { createdAt: "asc" },
     take: limit,
   });
-  return rows.map((r) => JSON.parse(r.cardJson));
+  const now = new Date();
+  const out = await Promise.all(
+    rows.map(async (r) => {
+      const card = JSON.parse(r.cardJson);
+      if (r.buyerMessageId === ALERT_CARD_MESSAGE_ID) return card;
+      const u = await cardUrgency(r, now);
+      return {
+        ...card,
+        urgency: u?.level ?? "ok",
+        urgencyFlags: u?.flags ?? [],
+        deadline: u?.deadline ?? null,
+        hoursLeft: u?.hoursLeft ?? null,
+      };
+    })
+  );
+  return out.sort((a, b) => Number(b.kind === "alert") - Number(a.kind === "alert"));
 }
 
 export async function markPublished(cardId: string, telegramMessageId: string) {
@@ -54,6 +75,7 @@ export async function cardAction(
 ): Promise<CardActionResult> {
   const card = await prisma.csCard.findUnique({ where: { id: cardId } });
   if (!card) throw new Error(`Card ${cardId} not found`);
+  if (card.buyerMessageId === ALERT_CARD_MESSAGE_ID) throw new Error(`Card ${cardId} is an alert — it has no buttons`);
   if (!["PENDING", "PUBLISHED", "WRONG", "REWORK"].includes(card.status))
     throw new Error(`Card ${cardId} is ${card.status} — act on the latest version`);
   let m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });

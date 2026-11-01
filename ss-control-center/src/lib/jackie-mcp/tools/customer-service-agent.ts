@@ -12,9 +12,21 @@ import { after } from "next/server";
 import { cardAction, markPublished, pendingCards } from "@/lib/customer-hub/cs-cards";
 import { claimTask, completeTask, listTasks } from "@/lib/customer-hub/cs-tasks";
 import { processCase, setApprovedReply } from "@/lib/customer-hub/cs-pipeline";
+import { inboxStatus, reconcileInbox } from "@/lib/customer-hub/inbox-watch";
 import { prisma } from "@/lib/prisma";
 import { optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
+
+function reconcileLater() {
+  after(async () => {
+    try {
+      const r = await reconcileInbox({ budgetMs: 200_000 });
+      console.log("[cs-agent] reconcile after inbox scan:", JSON.stringify(r));
+    } catch (e) {
+      console.error("[cs-agent] reconcile failed:", e);
+    }
+  });
+}
 
 function reprocessLater(messageId: string, ownerInstruction?: string) {
   after(async () => {
@@ -31,7 +43,7 @@ function reprocessLater(messageId: string, ownerInstruction?: string) {
 const cardsPending: JackieTool = {
   name: "cs_cards_pending",
   description:
-    "Customer Service approval cards waiting to be posted to Telegram topic 42. Each has textRu (ready Russian message) and buttons[] with callbackData 'cs:<cardId>:<approve|wrong|rework>'. After posting call cs_card_published.",
+    "Customer Service cards waiting to be posted to Telegram topic 42. Each has textRu (ready Russian message) and buttons[] with callbackData 'cs:<cardId>:<approve|wrong|rework>'. Reply cards carry urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), deadline and hoursLeft. Cards with kind:'alert' are inbox alarms (unanswered / overdue buyer messages): post textRu as is, no buttons. After posting ANY card call cs_card_published.",
   write: false,
   input_schema: { type: "object", properties: { limit: { type: "number" } }, additionalProperties: false },
   handler: async (args) => pendingCards(typeof args.limit === "number" ? args.limit : 10),
@@ -88,11 +100,11 @@ const cardActionTool: JackieTool = {
 const tasksList: JackieTool = {
   name: "cs_tasks_list",
   description:
-    "QUEUED Customer Service tasks for ONE Amazon account (store_index). Run only on that account's VPS. kind SEND = post the approved reply in Seller Central Buyer-Seller Messaging; LOOKUP = read-only data search. Payload has instructionsRu.",
+    "QUEUED Customer Service tasks for ONE Amazon account (store_index). Run only on that account's VPS. kind SEND = post the approved reply in Seller Central Buyer-Seller Messaging; LOOKUP = read-only data search; INBOX_SCAN = read-only list of the Seller Central Buyer Messages inbox filtered by Response needed (incl. Over SLA), report result {items:[{orderId, buyerName, subject, receivedAt, overSla, text}]} — queued every 30 min per account. Payload has instructionsRu.",
   write: false,
   input_schema: {
     type: "object",
-    properties: { store_index: { type: "number" }, kind: { type: "string", enum: ["SEND", "LOOKUP"] } },
+    properties: { store_index: { type: "number" }, kind: { type: "string", enum: ["SEND", "LOOKUP", "INBOX_SCAN"] } },
     required: ["store_index"],
     additionalProperties: false,
   },
@@ -120,7 +132,7 @@ const taskClaim: JackieTool = {
 const taskComplete: JackieTool = {
   name: "cs_task_complete",
   description:
-    "Report a claimed task. outcome DONE / FAILED / UNKNOWN (UNKNOWN = not sure the message went out; it is never re-sent — read the thread and report). SEND: pass screenshot_url of the sent message. LOOKUP: pass result {\"M6\": \"found text\", …} keyed by the requested items.",
+    "Report a claimed task. outcome DONE / FAILED / UNKNOWN (UNKNOWN = not sure the message went out; it is never re-sent — read the thread and report). SEND: pass screenshot_url of the sent message. LOOKUP: pass result {\"M6\": \"found text\", …} keyed by the requested items. INBOX_SCAN: pass result {\"items\": [{orderId, buyerName, subject, receivedAt, overSla, text}]} (empty inbox = items: []); the hub then reopens/creates cards for every Response Needed message.",
   write: true,
   input_schema: {
     type: "object",
@@ -143,6 +155,7 @@ const taskComplete: JackieTool = {
       error: optionalString(args, "error"),
     });
     if ("reprocessMessageId" in res && res.reprocessMessageId) reprocessLater(res.reprocessMessageId);
+    if ("reconcile" in res && res.reconcile) reconcileLater();
     return res;
   },
 };
@@ -218,4 +231,20 @@ const cardSetReply: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];
+const inboxStatusTool: JackieTool = {
+  name: "cs_inbox_status",
+  description:
+    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, per store (all 5 Amazon accounts), with the latest Seller Central inbox scan per store (Response Needed / Over SLA counts) and every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing cards, posts alerts).",
+  // reconcile=true writes (cards, alerts); the plain call only reads.
+  write: true,
+  input_schema: { type: "object", properties: { reconcile: { type: "boolean" } }, additionalProperties: false },
+  handler: async (args) => {
+    if (args.reconcile === true) {
+      const r = await reconcileInbox({ budgetMs: 150_000 });
+      return { reconcile: r, ...(await inboxStatus()) };
+    }
+    return inboxStatus();
+  },
+};
+
+export const tools: JackieTool[] = [inboxStatusTool, caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];

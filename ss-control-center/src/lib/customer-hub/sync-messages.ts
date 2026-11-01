@@ -22,6 +22,8 @@ import { translateText } from "@/lib/customer-hub/translator";
 import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 import { answeredAfter } from "@/lib/customer-hub/thread-state";
 import { processCase } from "@/lib/customer-hub/cs-pipeline";
+import { closeAnsweredByReply } from "@/lib/customer-hub/answered";
+import { inboxStillNeedsReply } from "@/lib/customer-hub/inbox-watch";
 
 /**
  * The owner answered in Seller Central himself: any open approval card for
@@ -347,31 +349,26 @@ export async function syncBuyerMessagesFromGmail(
                 sentAt = new Date(parseInt(fullCm.internalDate));
               }
 
-              const target = await prisma.buyerMessage.findFirst({
-                where: {
-                  amazonOrderId: orderId,
-                  direction: "incoming",
-                  status: { in: ["NEW", "ANALYZED"] },
-                },
-                orderBy: { createdAt: "desc" },
-              });
-
-              if (target) {
-                await prisma.buyerMessage.update({
-                  where: { id: target.id },
-                  data: {
-                    status: "SENT",
-                    responseSentVia: "SELLER_CENTRAL",
-                    responseSentAt: sentAt,
-                  },
-                });
-                await closeCardsAnsweredElsewhere(target.id);
-                confirmationsSynced++;
+              // Only messages that arrived BEFORE this reply are answered by
+              // it (answered.ts). Until 2026-11-01 any confirmation of the
+              // last 7 days closed the newest open message of the order —
+              // brenda's 31.10 follow-up was closed by our 26.10 reply. And
+              // a fresh Seller Central inbox scan that still lists the order
+              // as Response Needed after this reply wins over the email.
+              const closed = await closeAnsweredByReply(
+                account.storeIndex,
+                orderId,
+                sentAt,
+                "SELLER_CENTRAL",
+                { skip: () => inboxStillNeedsReply(account.storeIndex, orderId, sentAt) }
+              );
+              if (closed.length) {
+                confirmationsSynced += closed.length;
                 console.log(
                   "[Sync] Confirmation detected for order:",
                   orderId,
                   "-> marked",
-                  target.id,
+                  closed.join(","),
                   "as SENT"
                 );
               }
@@ -433,7 +430,8 @@ export async function syncBuyerMessagesFromGmail(
               );
               if (
                 sm.gmailMessageId &&
-                answeredAfter(thread.messages, sm.gmailMessageId, account.email)
+                answeredAfter(thread.messages, sm.gmailMessageId, account.email) &&
+                !(sm.amazonOrderId && (await inboxStillNeedsReply(account.storeIndex, sm.amazonOrderId, new Date(0))))
               ) {
                 await prisma.buyerMessage.update({
                   where: { id: sm.id },

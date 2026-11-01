@@ -1,5 +1,5 @@
 /**
- * Customer Hub VPS agent tasks (SEND / LOOKUP) — queue, claim, complete.
+ * Customer Hub VPS agent tasks (SEND / LOOKUP / INBOX_SCAN) — queue, claim, complete.
  * One task = one attempt. An UNKNOWN send result is never re-queued; the
  * agent only reads the thread back (AGENTS.md §7). Tasks for store N are
  * returned only when the caller names store N, so the VPS of one Amazon
@@ -7,6 +7,7 @@
  */
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { closeAnsweredByReply } from "./answered";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
 
@@ -81,6 +82,10 @@ export async function completeTask(
     },
   });
 
+  // Seller Central inbox scan (inbox-watch.ts): the caller reconciles the hub
+  // against it in the background.
+  if (task.kind === "INBOX_SCAN") return { ok: true, reconcile: outcome === "DONE" };
+
   const m = await prisma.buyerMessage.findUnique({ where: { id: task.buyerMessageId } });
   if (!m) return { ok: true };
 
@@ -113,6 +118,10 @@ export async function completeTask(
         },
       });
       if (task.cardId) await prisma.csCard.update({ where: { id: task.cardId }, data: { status: "SENT" } });
+      // One Seller Central reply answers the whole thread: earlier buyer
+      // messages of this order that are still open are answered too.
+      if (m.amazonOrderId)
+        await closeAnsweredByReply(m.storeIndex, m.amazonOrderId, now, "VPS_AGENT", { exceptId: m.id });
     } else {
       await prisma.buyerMessage.update({
         where: { id: m.id },
