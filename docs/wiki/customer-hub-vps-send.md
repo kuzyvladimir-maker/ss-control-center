@@ -226,3 +226,10 @@ table, tracking in backticks), «Решение движка» (bold verdict + b
 «Не удалось проверить» (only if gaps), «Ответ покупателю (по-русски, для
 тебя)» (quote, `draftRu`) and «Что уйдёт покупателю (по-английски)» (quote,
 `draftEn`). Only `draftEn` is ever sent. Code: `card-format.ts`.
+
+## Inbox watch (2026-11-01)
+
+Michael and brenda went Over SLA in Seller Central while the hub showed
+nothing. Causes, the "reply only counts if sent after the message" rule, the
+15-minute reconcile, `INBOX_SCAN`, alert cards and `cs_inbox_status` are in
+[[customer-hub-inbox-watch]].
