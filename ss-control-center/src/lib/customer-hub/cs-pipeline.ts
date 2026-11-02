@@ -30,7 +30,7 @@ import {
 } from "./case-data-gate";
 import { runAutosend } from "./autosend-runner";
 import { FACT_LABEL_RU, renderCardText, verdictFromBrief } from "./card-format";
-import { cancelAlertRu, cancelFactRu, cancelInstruction } from "./cancel-rules";
+import { cancelAlertRu, cancelFactRu, cancelInstruction, easternDay } from "./cancel-rules";
 export { enqueueSendTask } from "./cs-tasks";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
@@ -182,11 +182,17 @@ export async function createCard(
     data: { status: "SUPERSEDED" },
   });
   const original = (m.customerMessage || "").replace(/\s*View Message\s*$/i, "").trim();
-  const clientRu =
+  const clientRu = (
     a?.clientGistRu ||
     m.customerMessageRu ||
     (await translateText(original.slice(0, 1500), "en-ru").catch(() => null)) ||
-    original.slice(0, 300);
+    original.slice(0, 300)
+  )
+    // The stored translation keeps Amazon's "View Message" footer and its
+    // blank lines.
+    .replace(/\s*(View Message|Просмотреть сообщение)\s*$/i, "")
+    .replace(/\n\s*\n\s*/g, "\n\n")
+    .trim();
   const card = await prisma.csCard.create({
     data: { buyerMessageId: m.id, version, cardJson: "{}" },
   });
@@ -420,12 +426,22 @@ export async function infoCard(messageId: string, decisionRu?: string | null): P
     data: { ...patch, caseDataJson: JSON.stringify(snapshot) },
   });
   const whoRu = { buyer: "покупатель", us: "мы", amazon: "Amazon" } as const;
-  const day = (iso: string) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}` : "—");
-  const own = (m.receivedAt || m.createdAt).toISOString();
+  const day = (iso: string) => {
+    if (!iso) return "—";
+    const d = easternDay(new Date(iso));
+    return `${d.slice(8, 10)}.${d.slice(5, 7)}`;
+  };
   const historyRu = [
-    ...thread.map((t) => `${day(t.at)} ${whoRu[t.who]}: ${t.text.replace(/\s+/g, " ").slice(0, 220)}`),
-    `${day(own)} покупатель: ${(m.customerMessage || "").replace(/\s*View Message\s*$/i, "").replace(/\s+/g, " ").trim().slice(0, 220)}`,
-  ].join("\n");
+    ...thread,
+    {
+      at: (m.receivedAt || m.createdAt).toISOString(),
+      who: "buyer" as const,
+      text: (m.customerMessage || "").replace(/\s*View Message\s*$/i, ""),
+    },
+  ]
+    .sort((x, y) => x.at.localeCompare(y.at))
+    .map((t) => `${day(t.at)} ${whoRu[t.who]}: ${t.text.replace(/\s+/g, " ").trim().slice(0, 220)}`)
+    .join("\n");
   const c = snapshot.cancelRequest;
   const verdictRu =
     (decisionRu && decisionRu.trim()) ||
