@@ -12,6 +12,8 @@ import { getUpsTracking } from "@/lib/carriers/ups-tracking";
 import { getFedexTracking } from "@/lib/carriers/fedex-tracking";
 import { getUspsTracking } from "@/lib/carriers/usps-tracking";
 import { transitFacts, type TransitEvent } from "./transit";
+import { cancelFactForOrder } from "./cancel-requests";
+import type { CancelRequestFact } from "./cancel-rules";
 import {
   type CaseDataItem,
   type CaseDataKey,
@@ -25,6 +27,8 @@ export interface ThreadEntry {
   at: string;
   who: "buyer" | "us" | "amazon";
   text: string;
+  /** An Amazon system notice (cancellation request), not a message. */
+  notice?: boolean;
 }
 
 export interface CollectResult {
@@ -110,6 +114,7 @@ export async function collectCaseData(
   // ── M2 thread ───────────────────────────────────────────────────────
   const thread: ThreadEntry[] = [];
   const m2tried: SourceAttempt[] = [];
+  let cancelRequest: CancelRequestFact | null = null;
   try {
     const rows = orderId
       ? await prisma.buyerMessage.findMany({
@@ -137,6 +142,25 @@ export async function collectCaseData(
         thread.push({ at: date ? `${date}T12:00:00.000Z` : "", who: "us", text: k.correctResponse });
     }
     m2tried.push({ source: "ваши ответы из писем-подтверждений Amazon", ok: true, note: `${ownerReplies.length}` });
+    // Amazon's cancellation notice is part of the order's history (owner,
+    // 2026-11-02 — brenda's 17.10 request never reached the hub).
+    if (orderId) {
+      try {
+        cancelRequest = await cancelFactForOrder(orderId);
+      } catch (e) {
+        m2tried.push({ source: "уведомления Amazon об отмене", ok: false, note: errText(e) });
+      }
+      if (cancelRequest)
+        thread.push({
+          at: cancelRequest.requestedAt,
+          who: "amazon",
+          notice: true,
+          text:
+            cancelRequest.kind === "CANCELLED"
+              ? "Amazon notification: the order was cancelled at the buyer's request."
+              : "Amazon notification: the buyer submitted an official order cancellation request.",
+        });
+    }
     thread.sort((a, b) => a.at.localeCompare(b.at));
   } catch (e) {
     m2tried.push({ source: "база хаба", ok: false, note: errText(e) });
@@ -448,7 +472,7 @@ export async function collectCaseData(
   }
 
   return {
-    snapshot: { collectedAt: new Date().toISOString(), items, vpsLookup },
+    snapshot: { collectedAt: new Date().toISOString(), items, vpsLookup, cancelRequest },
     thread,
     patch,
   };

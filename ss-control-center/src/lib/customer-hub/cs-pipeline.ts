@@ -30,6 +30,7 @@ import {
 } from "./case-data-gate";
 import { runAutosend } from "./autosend-runner";
 import { FACT_LABEL_RU, renderCardText, verdictFromBrief } from "./card-format";
+import { cancelAlertRu, cancelFactRu, cancelInstruction } from "./cancel-rules";
 export { enqueueSendTask } from "./cs-tasks";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
@@ -78,7 +79,7 @@ function analysisInput(m: Msg, history: ThreadEntry[], caseFacts: string, extra?
     boughtThroughVeeqo: m.boughtThroughVeeqo,
     claimsProtected: m.claimsProtected,
     shippedOnTime: m.shippedOnTime,
-    messageNumber: history.filter((h) => h.who !== "us").length + 1,
+    messageNumber: history.filter((h) => h.who !== "us" && !h.notice).length + 1,
     conversationHistory: history.map((h) => ({
       date: h.at.slice(0, 10),
       direction: h.who === "us" ? "outgoing" : "incoming",
@@ -129,6 +130,10 @@ function deadlineRu(m: Msg): string {
 export interface CardPayload {
   cardId: string;
   version: number;
+  /** "info": no buttons, nothing to send (owner decides off-card). */
+  kind?: "info";
+  /** Red line at the top of the card (cancellation before shipment). */
+  alertRu?: string | null;
   buyerMessageId: string;
   store: string;
   storeIndex: number;
@@ -158,7 +163,13 @@ export async function createCard(
     verdictRu?: string | null;
     pointsRu?: string[] | null;
   } | null,
-  missingRu: string | null
+  missingRu: string | null,
+  /**
+   * infoOnly (owner, 2026-11-02): an information card on a case that is
+   * already answered — no buttons, no draft to send, the message's
+   * caseStage is left as is.
+   */
+  opts: { infoOnly?: boolean } = {}
 ) {
   const prev = await prisma.csCard.findMany({
     where: { buyerMessageId: m.id },
@@ -179,9 +190,16 @@ export async function createCard(
   const card = await prisma.csCard.create({
     data: { buyerMessageId: m.id, version, cardJson: "{}" },
   });
+  const alertRu = snap.cancelRequest ? cancelAlertRu(snap.cancelRequest) : null;
+  const facts = snap.items
+    .filter((i) => i.present && i.factRu && i.key !== "M1")
+    .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: i.factRu }));
+  if (snap.cancelRequest) facts.push({ what: "Отмена", value: cancelFactRu(snap.cancelRequest) });
   const payload: CardPayload = {
     cardId: card.id,
     version,
+    ...(opts.infoOnly ? { kind: "info" as const } : {}),
+    alertRu,
     buyerMessageId: m.id,
     store: m.storeName,
     storeIndex: m.storeIndex,
@@ -191,32 +209,35 @@ export async function createCard(
     clientOriginal: original,
     historyRu: a?.historyRu || null,
     // M1 is the buyer text itself — already shown as "Клиент".
-    dataRu: snap.items.filter((i) => i.present && i.factRu && i.key !== "M1").map((i) => i.factRu),
+    dataRu: facts.map((f) => f.value),
     missingRu,
     decisionRu: a?.ownerBriefRu || (missingRu ? "Решения нет: не хватает данных (см. выше)." : "—"),
     draftRu: null,
-    draftEn: (m.editedResponse || m.suggestedResponse || "").trim(),
+    draftEn: opts.infoOnly ? "" : (m.editedResponse || m.suggestedResponse || "").trim(),
     attachments: [],
-    buttons: [
-      { action: "approve", label: "Утвердить и отправить", callbackData: `cs:${card.id}:approve` },
-      { action: "wrong", label: "Не так", callbackData: `cs:${card.id}:wrong` },
-      { action: "rework", label: "Доработать", callbackData: `cs:${card.id}:rework` },
-    ],
+    buttons: opts.infoOnly
+      ? []
+      : [
+          { action: "approve", label: "Утвердить и отправить", callbackData: `cs:${card.id}:approve` },
+          { action: "wrong", label: "Не так", callbackData: `cs:${card.id}:wrong` },
+          { action: "rework", label: "Доработать", callbackData: `cs:${card.id}:rework` },
+        ],
     textRu: "",
   };
-  payload.draftRu =
-    (m.editedResponse ? m.editedResponseRu : m.suggestedResponseRu) ||
-    (payload.draftEn ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
+  payload.draftRu = opts.infoOnly
+    ? null
+    : (m.editedResponse ? m.editedResponseRu : m.suggestedResponseRu) ||
+      (payload.draftEn ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
   payload.textRu = renderCardText({
     orderId: payload.orderId,
     store: payload.store,
     version,
+    alertRu,
+    infoOnly: opts.infoOnly,
     deadlineRu: payload.deadlineRu,
     clientRu,
     historyRu: payload.historyRu,
-    facts: snap.items
-      .filter((i) => i.present && i.factRu && i.key !== "M1")
-      .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: i.factRu })),
+    facts,
     verdictRu: a?.verdictRu || verdictFromBrief(a?.ownerBriefRu),
     pointsRu: a?.pointsRu || [],
     missing: snap.items
@@ -230,7 +251,7 @@ export async function createCard(
     attachments: payload.attachments,
   });
   await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify(payload) } });
-  await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "CARD_PENDING" } });
+  if (!opts.infoOnly) await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "CARD_PENDING" } });
   return card.id;
 }
 
@@ -324,12 +345,13 @@ export async function processCase(
       .join("\n") || undefined;
 
   const missingRu = step === "OWNER" ? exhaustedNoteRu(snapshot) : null;
-  const a = await analyzeMessage(
-    analysisInput(
+  const cancelRule = snapshot.cancelRequest ? cancelInstruction(snapshot.cancelRequest) : null;
+  const input = analysisInput(
       m,
       thread,
       factsForPrompt(snapshot),
       [
+        cancelRule,
         missingRu
           ? "Some minimum case data could not be found (see the note below). If a playbook rule fully determines the decision regardless of the missing items — e.g. NOT HANDED OVER (no carrier acceptance scan) — follow that rule and write the final reply. Otherwise draft a safe reply without a money decision. Either way, mention the gaps in ownerBriefRu.\nMissing: " + missingRu.replace(/\n/g, " ")
           : null,
@@ -337,8 +359,9 @@ export async function processCase(
       ]
         .filter(Boolean)
         .join("\n") || undefined
-    )
-  );
+    );
+  input.cancelRequest = snapshot.cancelRequest ?? null;
+  const a = await analyzeMessage(input);
   const suggestedRu = a.suggestedResponse
     ? await translateText(a.suggestedResponse, "en-ru").catch(() => null)
     : null;
@@ -371,11 +394,54 @@ export async function processCase(
   });
 
   try {
-    await runAutosend(m.id, { kbTopScore: a.kbTopScore, isFallback: a.isFallback, neverSend: Boolean(missingRu) });
+    // A cancellation requested before shipment is always the owner's call.
+    await runAutosend(m.id, { kbTopScore: a.kbTopScore, isFallback: a.isFallback, neverSend: Boolean(missingRu || cancelRule) });
   } catch (e) {
     console.warn("[cs-pipeline] autosend verdict failed:", e);
   }
 
   const cardId = await createCard(m, snapshot, a, missingRu);
   return { stage: step === "OWNER" ? "NEEDS_OWNER_DATA" : "CARD_PENDING", cardId, missing: missingKeys(snapshot) };
+}
+
+/**
+ * Information card for a case that is ALREADY answered (owner, topic 42,
+ * 2026-11-02 — brenda v4: the refusal went out on 01.11 before the hub knew
+ * of her 17.10 cancellation request). Fresh case data (incl. the
+ * cancellation fact), the owner's decision line, no draft, no buttons —
+ * nothing can be sent from it.
+ */
+export async function infoCard(messageId: string, decisionRu?: string | null): Promise<{ cardId: string; version: number }> {
+  const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
+  if (!m || m.direction !== "incoming") throw new Error(`Incoming message ${messageId} not found`);
+  const { snapshot, thread, patch } = await collectCaseData(m, parseSnapshot(m.caseDataJson));
+  await prisma.buyerMessage.update({
+    where: { id: m.id },
+    data: { ...patch, caseDataJson: JSON.stringify(snapshot) },
+  });
+  const whoRu = { buyer: "покупатель", us: "мы", amazon: "Amazon" } as const;
+  const day = (iso: string) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}` : "—");
+  const own = (m.receivedAt || m.createdAt).toISOString();
+  const historyRu = [
+    ...thread.map((t) => `${day(t.at)} ${whoRu[t.who]}: ${t.text.replace(/\s+/g, " ").slice(0, 220)}`),
+    `${day(own)} покупатель: ${(m.customerMessage || "").replace(/\s*View Message\s*$/i, "").replace(/\s+/g, " ").trim().slice(0, 220)}`,
+  ].join("\n");
+  const c = snapshot.cancelRequest;
+  const verdictRu =
+    (decisionRu && decisionRu.trim()) ||
+    (c && cancelAlertRu(c)?.replace(/^🔴\s*/, "")) ||
+    "Только информация — решение за вами.";
+  const pointsRu = [
+    m.responseSentAt
+      ? `Ответ покупателю уже отправлен ${m.responseSentAt.toLocaleString("ru-RU", { timeZone: "America/New_York", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })} ET (${m.responseSentVia || "—"}) — повторно не шлём.`
+      : "Ответ покупателю по этому сообщению не отправлялся.",
+    c?.beforeShipment === true
+      ? "Возврат — в Seller Central вручную или командой агенту на VPS; отсюда ничего не уходит."
+      : null,
+  ].filter((x): x is string => Boolean(x));
+  const cardId = await createCard(m, snapshot, { historyRu, verdictRu, pointsRu, ownerBriefRu: verdictRu }, null, {
+    infoOnly: true,
+  });
+  const card = await prisma.csCard.findUnique({ where: { id: cardId } });
+  return { cardId, version: card?.version ?? 1 };
 }

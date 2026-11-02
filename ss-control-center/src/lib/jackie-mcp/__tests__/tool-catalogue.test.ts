@@ -88,6 +88,10 @@ test("every write tool is flagged write=true; every read tool is write=false", (
     "cs_card_set_reply",
     "cs_task_claim",
     "cs_task_complete",
+    // reconcile / backfill flags write (cards, alerts, cancel notices)
+    "cs_inbox_status",
+    "cs_cancel_requests",
+    "cs_case_info_card",
   ]);
   for (const t of ALL) {
     if (writeNames.has(t.name)) {

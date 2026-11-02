@@ -5328,3 +5328,35 @@ model CsOwnerRule {
 
   @@index([createdAt])
 }
+
+// Amazon buyer cancellation notices (owner, topic 42, 2026-11-02). Amazon
+// emails the seller "Order cancelation request for Order ID: …" (and "Your
+// order … has been cancelled as per customer's request") from
+// donotreply@ / order-update@amazon.com — never through buyer messaging, so
+// the buyer-message sync missed them and the hub told the owner "no
+// cancellation on record" (brenda, 114-2471869-1927461: request 17.10, label
+// 20.10). One row per notice email. labelPurchasedAt / beforeShipment are
+// resolved lazily from Veeqo (shipment.created_at) and cached here.
+// src/lib/customer-hub/cancel-requests.ts
+model AmazonCancelRequest {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  storeIndex       Int
+  amazonOrderId    String
+  kind             String // REQUEST | CANCELLED
+  requestedAt      DateTime // email Date header
+  source           String    @default("amazon-notification")
+  gmailMessageId   String    @unique
+  subject          String?
+  // Earliest Veeqo shipment created_at (label bought) — null until resolved.
+  labelPurchasedAt DateTime?
+  labelSource      String? // veeqo | ship-date | none
+  // true = requested before the label was bought (our fault if shipped);
+  // false = after; null = unknown (no label data / same-day date only).
+  beforeShipment   Boolean?
+  resolvedAt       DateTime?
+
+  @@index([amazonOrderId])
+  @@index([requestedAt])
+}

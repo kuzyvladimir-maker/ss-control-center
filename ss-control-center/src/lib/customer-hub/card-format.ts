@@ -11,6 +11,10 @@ export interface CardView {
   orderId: string | null;
   store: string;
   version: number;
+  /** Red line right under the title (cancellation before shipment). */
+  alertRu?: string | null;
+  /** Information card: no reply to send (the case is already answered). */
+  infoOnly?: boolean;
   deadlineRu: string;
   clientRu: string;
   historyRu: string | null;
@@ -31,6 +35,7 @@ export function renderCardText(v: CardView): string {
   const blocks: string[] = [];
   blocks.push(`# Заказ ${v.orderId || "—"} · ${v.store}`);
   blocks.push(`**${v.deadlineRu}** · v${v.version}`);
+  if (v.alertRu?.trim()) blocks.push(`**${v.alertRu.trim()}**`);
   blocks.push(`## Что пишет клиент\n\n${v.clientRu.trim()}`);
   if (v.historyRu?.trim()) blocks.push(`## История переписки\n\n${v.historyRu.trim()}`);
   if (v.facts.length)
@@ -46,6 +51,10 @@ export function renderCardText(v: CardView): string {
       .split("\n")
       .map((l) => (l.trim() ? `> ${l}` : ">"))
       .join("\n");
+  if (v.infoOnly) {
+    blocks.push("Карточка только для информации: покупателю ничего не уйдёт, кнопок нет.");
+    return blocks.join("\n\n");
+  }
   // The owner does not read English (2026-10-20): Russian first, then the
   // English text that actually goes out.
   if (v.draftRu?.trim()) blocks.push(`## Ответ покупателю (по-русски, для тебя)\n\n${quote(v.draftRu)}`);

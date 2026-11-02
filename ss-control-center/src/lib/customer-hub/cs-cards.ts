@@ -24,7 +24,7 @@ export async function pendingCards(limit = 10) {
   const out = await Promise.all(
     rows.map(async (r) => {
       const card = JSON.parse(r.cardJson);
-      if (r.buyerMessageId === ALERT_CARD_MESSAGE_ID) return card;
+      if (r.buyerMessageId === ALERT_CARD_MESSAGE_ID || card.kind === "info") return card;
       const u = await cardUrgency(r, now);
       return {
         ...card,
@@ -76,6 +76,9 @@ export async function cardAction(
   const card = await prisma.csCard.findUnique({ where: { id: cardId } });
   if (!card) throw new Error(`Card ${cardId} not found`);
   if (card.buyerMessageId === ALERT_CARD_MESSAGE_ID) throw new Error(`Card ${cardId} is an alert — it has no buttons`);
+  // Information cards (cancellation before shipment on an answered case,
+  // 2026-11-02) have no buttons: approving one would re-send to the buyer.
+  if (/"kind":"info"/.test(card.cardJson)) throw new Error(`Card ${cardId} is information only — it has no buttons`);
   if (!["PENDING", "PUBLISHED", "WRONG", "REWORK"].includes(card.status))
     throw new Error(`Card ${cardId} is ${card.status} — act on the latest version`);
   let m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });

@@ -11,7 +11,16 @@ import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { ownerStatedDates, transitFacts } from "./transit";
 import { FAULT_ADMISSION_RE } from "./autosend-policy";
-import { REFUND_ACTIONS, REFUND_OFFER_RE, REFUND_REASON_HINT_RE, REFUSE_DELIVERY_RE, refundBasis } from "./refund-rule";
+import {
+  ATOZ_REDIRECT_RE,
+  REFUND_ACTIONS,
+  REFUND_OFFER_RE,
+  REFUND_REASON_HINT_RE,
+  REFUND_REFUSAL_RE,
+  REFUSE_DELIVERY_RE,
+  refundBasis,
+} from "./refund-rule";
+import type { CancelRequestFact } from "./cancel-rules";
 import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
@@ -199,6 +208,7 @@ TABLE C — WRONG / MISSING ITEMS
 TABLE D — CANCELLATION
 ──────────────────────────────────────────────
 | Situation                                              | Action          | Who pays | Notes                                                                                  |
+| CASE DATA says "CANCELLATION REQUESTED BEFORE SHIPMENT" (buyer's official request predates our label) | full_refund (≤ $50) / investigate (> $50) | us | **Refusal FORBIDDEN (owner 2026-11-02).** No "unable to refund", no A-to-Z redirect, no argument about timing, never admit fault. ≤ $50: confirm a full refund. > $50: say we reviewed the order with the cancellation request and will follow up shortly — the owner decides. |
 | Cancel before shipped (status pending)                 | redirect_amazon | none     | Agree, but ask the buyer to submit an OFFICIAL cancellation request through their Amazon account; we approve it promptly. A seller-initiated cancel hurts our metrics (owner rule). |
 | Cancel in transit, "changed my mind"                   | none            | buyer    | Already shipped → cannot be cancelled. No refund. Food/pet food: not returnable — do not invite a return, never "refuse the delivery". |
 | Cancel in transit, "ordered by mistake"                | none            | buyer    | Same — buyer fault, no carrier protection applies.                                     |
@@ -768,6 +778,17 @@ export interface AnalysisInput {
   extraInstruction?: string;
   /** Verified minimum case data (case-data-gate.ts factsForPrompt). */
   caseFacts?: string;
+  /** Buyer's official cancellation request (Amazon notification), 2026-11-02. */
+  cancelRequest?: CancelRequestFact | null;
+}
+
+/** Refund-rule fields for a buyer cancellation request (cancel-rules.ts). */
+function cancelBasis(input: AnalysisInput) {
+  const c = input.cancelRequest;
+  return {
+    cancelBeforeShipment: Boolean(c && c.kind === "REQUEST" && c.beforeShipment === true),
+    orderTotal: c?.orderTotal ?? input.orderTotal ?? null,
+  };
 }
 
 export interface FactCheckMismatch {
@@ -1176,8 +1197,21 @@ export function detectResponseViolations(
     trackingEvents: input.trackingEvents,
     extraInstruction: input.extraInstruction,
     conversationHistory: input.conversationHistory,
+    ...cancelBasis(input),
   });
-  if (REFUND_OFFER_RE.test(response) && !basis.allowed) {
+  if (basis.cancelBeforeShipment) {
+    // Owner 2026-11-02: cancellation requested before the label → never refuse.
+    if (REFUND_REFUSAL_RE.test(response) || ATOZ_REDIRECT_RE.test(response)) {
+      violations.push(
+        "Response refuses a refund or redirects to A-to-Z although the buyer requested cancellation before shipment — owner rule: refusal forbidden"
+      );
+    }
+    if (REFUND_OFFER_RE.test(response) && basis.ownerDecides && !basis.ownerOrderedRefund) {
+      violations.push(
+        "Response promises a refund on a cancellation-before-shipment order over $50 — the owner decides the refund, no money promise in the draft"
+      );
+    }
+  } else if (REFUND_OFFER_RE.test(response) && !basis.allowed) {
     violations.push(
       `Response offers a refund without our-fault basis (${basis.why}) — owner REFUND RULE: no refund, no return invitation`
     );
@@ -1204,8 +1238,11 @@ export function detectResponseViolations(
     );
   }
 
-  // RULE 1 — cancel suggested but order is shipped (pending counts as ok)
+  // RULE 1 — cancel suggested but order is shipped (pending counts as ok).
+  // Not when the buyer's own cancellation request predates the label: the
+  // reply may refer to that request.
   if (
+    !basis.cancelBeforeShipment &&
     lower.includes("cancel") &&
     input.trackingStatus &&
     input.trackingStatus !== "pending" &&
@@ -1596,7 +1633,23 @@ export async function analyzeMessage(
           }
         }
         // Hard REFUND RULE on the decision itself (not only the text).
-        if (REFUND_ACTIONS.has((parsed.action || "").toLowerCase())) {
+        const cb = cancelBasis(input);
+        if (cb.cancelBeforeShipment) {
+          // Owner 2026-11-02: cancellation requested before the label — never
+          // a refusal; over $50 (or unknown) the owner decides the refund.
+          const b = refundBasis({
+            customerMessage: input.customerMessage,
+            extraInstruction: input.extraInstruction,
+            ...cb,
+          });
+          const act = (parsed.action || "").toLowerCase();
+          const target = b.ownerDecides && !b.ownerOrderedRefund ? "investigate" : "full_refund";
+          if (act !== target && !(target === "full_refund" && REFUND_ACTIONS.has(act))) {
+            parsed.reasoning = `${parsed.reasoning || ""} [CANCEL BEFORE SHIPMENT: ${parsed.action} → ${target}]`.trim();
+            parsed.action = target;
+            parsed.whoShouldPay = target === "full_refund" ? "us" : "none";
+          }
+        } else if (REFUND_ACTIONS.has((parsed.action || "").toLowerCase())) {
           const b = refundBasis({
             customerMessage: input.customerMessage,
             trackingEvents: input.trackingEvents,

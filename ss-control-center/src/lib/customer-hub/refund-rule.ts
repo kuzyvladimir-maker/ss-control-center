@@ -10,8 +10,14 @@
  * intact order → no refund. Never tell the buyer to refuse the delivery.
  * First case: Lin, 114-4815954-1015457 ("my dog will not eat this food" →
  * the engine offered a full refund because the label was 2 days late).
+ *
+ * (c) Owner, 2026-11-02 (brenda, 114-2471869-1927461): the buyer filed an
+ *     official cancellation request BEFORE we bought the label. Refusing a
+ *     refund is then forbidden; no replacement-first; over $50 the owner
+ *     decides the refund (cancel-rules.ts).
  */
 import { transitFacts, type TransitEvent } from "./transit";
+import { OWNER_ASK_OVER_USD } from "./cancel-rules";
 
 /** Buyer says the product arrived in bad condition. */
 export const SPOILAGE_RE =
@@ -33,6 +39,13 @@ export const REFUSE_DELIVERY_RE =
 export const REFUND_REASON_HINT_RE =
   /\b((as|since|because) there (is|was) no (issue|problem) with the (condition|quality|product|item)|unless (it|the (item|product|food)) (arrived|was|is) (damaged|thawed|spoiled|defective|warm)|only (eligible|refundable|qualif\w*) (for a refund )?(if|when)|(would|could) (qualify|be eligible) for a refund (if|when)|if (it|the (item|product|food)) (had )?(arrived|was) (damaged|thawed|spoiled|warm))\b/i;
 
+/** The reply refuses money back or sends the buyer to Amazon instead. */
+export const REFUND_REFUSAL_RE =
+  /\b((are |is )?(unable|not able) to (issue|offer|provide|process|give)( you)?( a| any)?( full| partial)? refund|(cannot|can't|can not|won't|will not) (issue|offer|provide|process|give)( you)?( a| any)?( full| partial)? refund|not (eligible|qualif\w*) for( a)? refund|no refund|refund (is|was) (denied|declined|not possible))\b/i;
+
+/** Redirecting the buyer to an A-to-Z claim. */
+export const ATOZ_REDIRECT_RE = /\b(a-to-z|a to z)( guarantee)?( claim| review| request)?\b/i;
+
 export const REFUND_ACTIONS = new Set(["full_refund", "partial_refund"]);
 
 export interface RefundBasisInput {
@@ -41,6 +54,9 @@ export interface RefundBasisInput {
   /** Owner's correction for this case (an explicit refund decision wins). */
   extraInstruction?: string | null;
   conversationHistory?: Array<{ direction: string; text: string }>;
+  /** Buyer's official cancellation request came before we bought the label. */
+  cancelBeforeShipment?: boolean;
+  orderTotal?: number | null;
 }
 
 export interface RefundBasis {
@@ -50,6 +66,10 @@ export interface RefundBasis {
   ownerOrderedRefund: boolean;
   /** We already offered a replacement earlier on this order. */
   replacementOffered: boolean;
+  /** (c): refusal forbidden, no replacement-first. */
+  cancelBeforeShipment: boolean;
+  /** (c) and the total is over $50 or unknown: the owner decides the refund. */
+  ownerDecides: boolean;
   why: string;
 }
 
@@ -61,13 +81,27 @@ export function refundBasis(i: RefundBasisInput): RefundBasis {
   const replacementOffered = (i.conversationHistory || []).some(
     (h) => h.direction === "outgoing" && /\b(replacement|resend|re-ship|send (you )?(a new|another|it again))\b/i.test(h.text)
   );
-  const allowed = spoilageClaimed || noFirstScan || ownerOrderedRefund;
+  const cancelBeforeShipment = Boolean(i.cancelBeforeShipment);
+  const ownerDecides =
+    cancelBeforeShipment && (i.orderTotal === null || i.orderTotal === undefined || i.orderTotal > OWNER_ASK_OVER_USD);
+  const allowed = spoilageClaimed || noFirstScan || ownerOrderedRefund || cancelBeforeShipment;
   const why = ownerOrderedRefund
     ? "owner ordered a refund"
-    : spoilageClaimed
+    : cancelBeforeShipment
+      ? "buyer requested cancellation before we bought the label"
+      : spoilageClaimed
       ? "buyer reports the product arrived in bad condition"
       : noFirstScan
         ? "no first carrier scan (not shipped)"
         : "no our-fault basis (dislike / changed mind / delay / late ship on an intact order)";
-  return { allowed, spoilageClaimed, noFirstScan, ownerOrderedRefund, replacementOffered, why };
+  return {
+    allowed,
+    spoilageClaimed,
+    noFirstScan,
+    ownerOrderedRefund,
+    replacementOffered,
+    cancelBeforeShipment,
+    ownerDecides,
+    why,
+  };
 }

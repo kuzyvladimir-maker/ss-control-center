@@ -59,3 +59,7 @@ while `cs_cards_pending` and `cs_tasks_list` were empty.
   scan says otherwise.
 - The Seller Central inbox can be read only from each account's own VPS.
   Today only the Salutem VPS (`ss_hands.sh`) is wired for Jackie.
+
+## Cancellation requests (2026-11-02)
+
+Buyer cancellation notices and the before-shipment refund rule: [[customer-hub-cancel-requests]].

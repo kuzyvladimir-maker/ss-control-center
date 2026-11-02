@@ -8,6 +8,8 @@
  * Chains: docs/wiki/customer-hub-vps-send.md. Collector: case-data.ts.
  */
 
+import { cancelFactForPrompt, type CancelRequestFact } from "./cancel-rules";
+
 export type CaseDataKey = "M1" | "M2" | "M3" | "M4" | "M5" | "M6" | "M7" | "M8";
 
 export const MINIMUM: Record<CaseDataKey, { labelRu: string; chain: string[] }> = {
@@ -65,6 +67,12 @@ export interface CaseDataSnapshot {
   items: CaseDataItem[];
   /** Result returned by the VPS read-only lookup, if one ran. */
   vpsLookup?: { status: string; result?: Record<string, unknown>; at: string } | null;
+  /**
+   * Buyer's official cancellation request (Amazon notification email), with
+   * whether it came before we bought the label (owner, 2026-11-02). Optional:
+   * no notice means no request — it never blocks the gate.
+   */
+  cancelRequest?: CancelRequestFact | null;
 }
 
 export function missingKeys(s: CaseDataSnapshot): CaseDataKey[] {
@@ -99,5 +107,6 @@ export function exhaustedNoteRu(s: CaseDataSnapshot): string {
 /** Facts block for the analyzer prompt. */
 export function factsForPrompt(s: CaseDataSnapshot): string {
   const lines = s.items.filter((i) => i.present && i.fact).map((i) => `- ${i.fact}`);
+  if (s.cancelRequest) lines.push(`- ${cancelFactForPrompt(s.cancelRequest)}`);
   return lines.length ? `CASE DATA (verified minimum set):\n${lines.join("\n")}` : "";
 }

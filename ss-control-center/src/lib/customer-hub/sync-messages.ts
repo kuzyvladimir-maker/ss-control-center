@@ -24,6 +24,7 @@ import { answeredAfter } from "@/lib/customer-hub/thread-state";
 import { processCase } from "@/lib/customer-hub/cs-pipeline";
 import { closeAnsweredByReply } from "@/lib/customer-hub/answered";
 import { inboxStillNeedsReply } from "@/lib/customer-hub/inbox-watch";
+import { syncCancelNotices } from "@/lib/customer-hub/cancel-requests";
 
 /**
  * The owner answered in Seller Central himself: any open approval card for
@@ -47,6 +48,8 @@ export interface SyncBuyerMessagesResult {
   confirmations: number;
   autoResolved: number;
   accounts: number;
+  /** New Amazon buyer-cancellation notices stored (cancel-requests.ts). */
+  cancelNotices?: number;
   errors?: string[];
 }
 
@@ -100,6 +103,19 @@ export async function syncBuyerMessagesFromGmail(
       );
     }
 
+    // Buyer cancellation requests reach us only as Amazon notification
+    // emails, never as buyer messages (owner, 2026-11-02 — brenda). Cheap
+    // (metadata only), so it runs before the per-message budget.
+    let cancelNotices = 0;
+    const cancelErrors: string[] = [];
+    try {
+      const r = await syncCancelNotices(accounts, opts.window ?? "2d");
+      cancelNotices = r.created;
+      cancelErrors.push(...r.errors);
+    } catch (e) {
+      cancelErrors.push(`cancel notices: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
     // Preload email→store mapping once from Setting table so
     // parseAmazonBuyerEmail doesn't hit the DB for every message.
     const emailToStoreMap = await loadEmailToStoreMap();
@@ -109,7 +125,7 @@ export async function syncBuyerMessagesFromGmail(
     let totalSynced = 0;
     let confirmationsSynced = 0;
     let autoResolvedStale = 0;
-    const errors: string[] = [];
+    const errors: string[] = [...cancelErrors];
 
     for (const account of accounts) {
       try {
@@ -480,6 +496,7 @@ export async function syncBuyerMessagesFromGmail(
       confirmations: confirmationsSynced,
       autoResolved: autoResolvedStale,
       accounts: accounts.length,
+      cancelNotices,
       errors: errors.length > 0 ? errors : undefined,
     };
 }

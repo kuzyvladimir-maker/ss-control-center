@@ -11,7 +11,9 @@
 import { after } from "next/server";
 import { cardAction, markPublished, pendingCards } from "@/lib/customer-hub/cs-cards";
 import { claimTask, completeTask, listTasks } from "@/lib/customer-hub/cs-tasks";
-import { processCase, setApprovedReply } from "@/lib/customer-hub/cs-pipeline";
+import { infoCard, processCase, setApprovedReply } from "@/lib/customer-hub/cs-pipeline";
+import { listCancelRequests, syncCancelNotices } from "@/lib/customer-hub/cancel-requests";
+import { getConnectedGmailAccounts } from "@/lib/gmail-api";
 import { inboxStatus, reconcileInbox } from "@/lib/customer-hub/inbox-watch";
 import { prisma } from "@/lib/prisma";
 import { optionalString, requireString } from "../channels";
@@ -247,4 +249,66 @@ const inboxStatusTool: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [inboxStatusTool, caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];
+const cancelRequestsTool: JackieTool = {
+  name: "cs_cancel_requests",
+  description:
+    "Buyer cancellation requests (Amazon 'Order cancelation request' notification emails, all store mailboxes) per order, with the order status, total, when we bought the label (Veeqo) and before_shipment: true = the buyer asked to cancel BEFORE the label → shipping it was our fault, a refund refusal is forbidden (owner, 2026-11-02); false = asked after the label; null = not proven / not shipped. days = lookback (default 30). sync_days = first pull notices from Gmail for that many days (backfill, 1–60). before_shipment_only=true filters.",
+  // sync_days stores notices and label times; otherwise read + cache only.
+  write: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      days: { type: "number" },
+      sync_days: { type: "number" },
+      before_shipment_only: { type: "boolean" },
+    },
+    additionalProperties: false,
+  },
+  handler: async (args) => {
+    const days = typeof args.days === "number" && args.days > 0 ? Math.min(args.days, 90) : 30;
+    let sync: { created: number; errors: string[] } | null = null;
+    if (typeof args.sync_days === "number" && args.sync_days > 0) {
+      const n = Math.min(Math.round(args.sync_days), 60);
+      sync = await syncCancelNotices(await getConnectedGmailAccounts(), `${n}d`);
+    }
+    const items = await listCancelRequests({ days, onlyBeforeShipment: args.before_shipment_only === true });
+    return {
+      sync,
+      days,
+      total: items.length,
+      beforeShipment: items.filter((i) => i.beforeShipment === true).length,
+      items,
+    };
+  },
+};
+
+const caseInfoCard: JackieTool = {
+  name: "cs_case_info_card",
+  description:
+    "Build an INFORMATION card (kind 'info', no buttons, nothing to send) for a buyer message that is already answered — e.g. a cancellation requested before shipment discovered after the refusal went out. Fresh case data incl. the cancellation fact; decision_ru overrides the decision line. It appears in cs_cards_pending; post it without buttons (cs_card_published as usual).",
+  write: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      message_id: { type: "string" },
+      amazon_order_id: { type: "string" },
+      decision_ru: { type: "string" },
+    },
+    additionalProperties: false,
+  },
+  handler: async (args) => {
+    let id = optionalString(args, "message_id");
+    const orderId = optionalString(args, "amazon_order_id");
+    if (!id && orderId) {
+      const m = await prisma.buyerMessage.findFirst({
+        where: { amazonOrderId: orderId, direction: "incoming" },
+        orderBy: { receivedAt: "desc" },
+      });
+      id = m?.id;
+    }
+    if (!id) throw new Error("message_id or amazon_order_id with an incoming message is required");
+    return infoCard(id, optionalString(args, "decision_ru"));
+  },
+};
+
+export const tools: JackieTool[] = [inboxStatusTool, cancelRequestsTool, caseInfoCard, caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];
