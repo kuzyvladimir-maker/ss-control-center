@@ -1,0 +1,7 @@
+# Deployment inputs only; accumulated audit output stays on the workstation.
+release-artifacts/
+docs/
+design/
+ss-control-center/data/
+ss-control-center/docs/
+**/__pycache__/

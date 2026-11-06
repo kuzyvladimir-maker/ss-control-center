@@ -78,6 +78,7 @@ export async function findRelevantCases(
   const types = predicted.map((p) => p.problemType);
   const rows = await prisma.knowledgeBaseEntry.findMany({
     where: types.length > 0 ? { problemType: { in: types } } : {},
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
     take: 500,
   });
   // Owner REFUND RULE (2026-10-27): older examples that refunded without an

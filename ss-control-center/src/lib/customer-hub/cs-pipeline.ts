@@ -1,3 +1,4 @@
+import { learnOwnerReply } from "./owner-learning";
 import { assertActiveCsStore } from "./config";
 /**
  * Customer Hub case pipeline (owner design, 2026-10-20 — topic 42):
@@ -129,6 +130,8 @@ function deadlineRu(m: Msg): string {
 }
 
 export interface CardPayload {
+  promptAuditId?: string | null;
+  draftSource?: string;
   cardId: string;
   version: number;
   /** "info": no buttons, nothing to send (owner decides off-card). */
@@ -163,6 +166,7 @@ export async function createCard(
     ownerBriefRu?: string | null;
     verdictRu?: string | null;
     pointsRu?: string[] | null;
+    promptAuditId?: string | null;
   } | null,
   missingRu: string | null,
   /**
@@ -205,6 +209,8 @@ export async function createCard(
   if (snap.cancelRequest) facts.push({ what: "Отмена", value: cancelFactRu(snap.cancelRequest) });
   const payload: CardPayload = {
     cardId: card.id,
+    promptAuditId: a?.promptAuditId ?? null,
+    draftSource: m.editedResponse ? "owner_verbatim" : opts.infoOnly ? "information" : "analysis",
     version,
     ...(opts.infoOnly ? { kind: "info" as const } : {}),
     alertRu,
@@ -296,6 +302,7 @@ export async function setApprovedReply(
   const missing = missingKeys(snap);
   const missingRu = missing.length ? exhaustedNoteRu(snap) : null;
   const cardId = await createCard(m, snap, { ownerBriefRu: m.ownerBrief }, missingRu);
+  await learnOwnerReply(m, text, cardId, null, true);
   const card = await prisma.csCard.findUnique({ where: { id: cardId } });
   return { cardId, version: card?.version ?? 1 };
 }

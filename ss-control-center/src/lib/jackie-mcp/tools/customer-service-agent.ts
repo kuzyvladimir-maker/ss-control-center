@@ -75,10 +75,11 @@ const cardActionTool: JackieTool = {
       card_id: { type: "string" },
       action: { type: "string", enum: ["approve", "wrong", "rework"] },
       comment: { type: "string", description: "Owner's explanation / how he would answer (Russian is fine)." },
+      refund_authorized: { type: "boolean", description: "True only after the owner explicitly authorizes this refund amount. Required for refund promises over $50 or unknown total." },
       override_text: {
         type: "string",
         description:
-          "approve only: send THIS exact reply verbatim (becomes the message's editedResponse, SEND task carries it unchanged — no regeneration/scrub).",
+          "Exact owner final reply: approve queues it; wrong/rework saves an owner-corrected example and creates a new approval card without sending. Use THIS reply verbatim (becomes the message's editedResponse, SEND task carries it unchanged — no regeneration/scrub).",
       },
     },
     required: ["card_id", "action"],
@@ -92,7 +93,8 @@ const cardActionTool: JackieTool = {
       action as "approve" | "wrong" | "rework",
       optionalString(args, "comment") ?? null,
       ctx.actor,
-      optionalString(args, "override_text") ?? null
+      optionalString(args, "override_text") ?? null,
+      args.refund_authorized === true
     );
     if (res.reprocessMessageId) reprocessLater(res.reprocessMessageId, res.ownerInstruction);
     return res;
@@ -311,6 +313,22 @@ const caseInfoCard: JackieTool = {
   },
 };
 
+const cardAuditTool: JackieTool = {
+  name: "cs_card_audit",
+  description: "Read the exact prompt evidence for a card: KB IDs/examples, retrieval status, injected matrix rows, owner rules and provider attempts. include_prompt=true includes the saved system and user prompts. Older cards without evidence are explicitly marked unavailable; owner_verbatim cards did not invoke the analyzer.",
+  write: false,
+  input_schema: { type: "object", properties: { card_id: { type: "string" }, include_prompt: { type: "boolean" } }, required: ["card_id"], additionalProperties: false },
+  handler: async (args) => {
+    const card = await prisma.csCard.findUniqueOrThrow({ where: { id: requireString(args, "card_id") } });
+    const payload = JSON.parse(card.cardJson);
+    const row = payload.promptAuditId ? await prisma.setting.findUnique({ where: { key: payload.promptAuditId } }) : null;
+    if (!row) return { cardId: card.id, source: payload.draftSource || "historical", evidence: "unavailable", promptAuditId: null };
+    const audit = JSON.parse(row.value);
+    if (args.include_prompt !== true) { delete audit.systemPrompt; delete audit.userMessage; }
+    return { cardId: card.id, promptAuditId: payload.promptAuditId, ...audit };
+  },
+};
+
 const openThreadsTool: JackieTool = {
   name: "cs_open_threads",
   description: "Confirmed Response Needed threads for active store 1 (Salutem Solutions), order, buyer, deadline, card status, Telegram link and last scan time. stale=true if no complete scan within 60 minutes. A stale empty list does not prove an empty inbox.",
@@ -319,4 +337,4 @@ const openThreadsTool: JackieTool = {
   handler: async () => openThreads(),
 };
 
-export const tools: JackieTool[] = [openThreadsTool, inboxStatusTool, cancelRequestsTool, caseInfoCard, caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];
+export const tools: JackieTool[] = [cardAuditTool, openThreadsTool, inboxStatusTool, cancelRequestsTool, caseInfoCard, caseProcess, cardsPending, cardPublished, cardActionTool, cardSetReply, tasksList, taskClaim, taskComplete];

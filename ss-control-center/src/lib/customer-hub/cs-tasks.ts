@@ -1,3 +1,4 @@
+import { assertSendPolicy } from "./reply-policy";
 import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
 import { validateInboxScan } from "./inbox-rules";
 /**
@@ -17,11 +18,14 @@ const sha = (s: string) => createHash("sha1").update(s).digest("hex").slice(0, 1
 
 export async function enqueueSendTask(
   m: Msg,
-  opts: { approvedBy: string; cardId?: string | null; attachments?: string[] }
+  opts: { approvedBy: string; cardId?: string | null; attachments?: string[]; ownerRefundAuthorized?: boolean }
 ) {
   assertActiveCsStore(m.storeIndex);
   const body = (m.editedResponse || m.suggestedResponse || "").trim();
   if (!body) throw new Error("No reply text to send");
+  if (!opts.approvedBy.startsWith("owner")) throw new Error("Explicit owner send instruction required");
+  assertSendPolicy(body, m.orderTotal, opts.ownerRefundAuthorized);
+  if (m.status === "RESOLVED") throw new Error("Case already closed in Amazon");
   if (m.responseSentAt) throw new Error(`Already sent ${m.responseSentAt.toISOString()}`);
   const idempotencyKey = `send:${m.id}:${sha(body)}`;
   const existing = await prisma.csTask.findUnique({ where: { idempotencyKey } });

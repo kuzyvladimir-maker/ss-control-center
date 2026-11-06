@@ -1,3 +1,4 @@
+import { assertSendPolicy } from "./reply-policy";
 import { ACTIVE_CS_STORES, assertActiveCsStore } from "./config";
 /**
  * Telegram approval cards for Customer Hub (topic 42). The hub writes cards;
@@ -7,7 +8,7 @@ import { ACTIVE_CS_STORES, assertActiveCsStore } from "./config";
  */
 import { prisma } from "@/lib/prisma";
 import { enqueueSendTask } from "./cs-tasks";
-import { saveToKnowledgeBase } from "./knowledge-base";
+import { learnOwnerReply, ownerRuleId } from "./owner-learning";
 import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
 
 /**
@@ -56,6 +57,7 @@ export interface CardActionResult {
   ok: boolean;
   /** approve → the queued SEND task. */
   taskId?: string;
+  replacementCardId?: string;
   /** wrong/rework without a comment → ask the owner this, then call again with the comment. */
   askOwnerRu?: string;
   /** wrong/rework with a comment → re-run processCase(messageId) in the background. */
@@ -71,9 +73,10 @@ export async function cardAction(
   /**
    * Owner, topic 42, 2026-10-25: approve with an EXACT reply text. When set, it
    * becomes the message's editedResponse and the SEND task carries it verbatim
-   * (no regeneration/scrub). Ignored for wrong/rework.
+   * (no regeneration/scrub). For wrong/rework it creates a corrected approval card.
    */
-  overrideText?: string | null
+  overrideText?: string | null,
+  ownerRefundAuthorized = false
 ): Promise<CardActionResult> {
   const card = await prisma.csCard.findUnique({ where: { id: cardId } });
   if (!card) throw new Error(`Card ${cardId} not found`);
@@ -95,31 +98,16 @@ export async function cardAction(
       });
       m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
       if (!m) throw new Error("Buyer message not found");
-  assertActiveCsStore(m.storeIndex);
+      assertActiveCsStore(m.storeIndex);
     }
-    const task = await enqueueSendTask(m, { approvedBy: `owner via ${actor}`, cardId });
+    const finalReply = m.editedResponse || m.suggestedResponse || "";
+    assertSendPolicy(finalReply, m.orderTotal, ownerRefundAuthorized);
+    await learnOwnerReply(m, finalReply, cardId, comment, Boolean(overrideText));
+    const task = await enqueueSendTask(m, { approvedBy: `owner via ${actor}`, cardId, ownerRefundAuthorized });
     await prisma.csCard.update({
       where: { id: cardId },
       data: { status: "APPROVED", decision: "approve", decidedAt: new Date(), ownerComment: comment },
     });
-    // An approved draft is a confirmed owner example for later cases.
-    const reply = (m.editedResponse || m.suggestedResponse || "").trim();
-    if (reply && m.customerMessage) {
-      await saveToKnowledgeBase({
-        problemType: m.problemType || "T18",
-        scenario: `Owner-approved reply (${new Date().toISOString().slice(0, 10)}): ${m.ownerBrief?.split("\n")[0]?.slice(0, 200) || m.problemTypeName || ""}`,
-        customerSaid: m.customerMessage.slice(0, 2000),
-        productType: m.productType,
-        correctAction: m.action || "info",
-        correctResponse: reply,
-        reasoning: "Approved by the owner from the Telegram card without changes.",
-        // Not "orderId:" — case-data.ts reads orderId-tagged owner_edit rows as
-        // replies already sent on that order.
-        tags: `card:${cardId},ord:${m.amazonOrderId}`,
-        source: "owner_edit",
-        channel: m.channel === "Walmart" ? "Walmart" : "Amazon",
-      });
-    }
     return { ok: true, taskId: task.id };
   }
 
@@ -135,13 +123,22 @@ export async function cardAction(
   });
   if (!text) return { ok: true, askOwnerRu: ASK_COMMENT_RU };
 
-  await prisma.csOwnerRule.create({
-    data: {
+  const kind = action === "wrong" ? "correction" : "rework";
+  const ruleId = ownerRuleId(cardId, kind, text);
+  await prisma.csOwnerRule.upsert({
+    where: { id: ruleId }, update: {},
+    create: {
+      id: ruleId,
       text,
       problemType: m.problemType,
       cardId,
       kind: action === "wrong" ? "correction" : "rework",
     },
   });
+  if (overrideText?.trim()) {
+    const { setApprovedReply } = await import("./cs-pipeline");
+    const replacement = await setApprovedReply(m.id, overrideText.trim());
+    return { ok: true, replacementCardId: replacement.cardId };
+  }
   return { ok: true, reprocessMessageId: m.id, ownerInstruction: text };
 }

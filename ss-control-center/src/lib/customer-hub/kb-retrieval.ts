@@ -95,6 +95,7 @@ export interface RankableKbRow {
   customerSaid: string;
   productType?: string | null;
   source?: string | null;
+  tags?: string | null;
   channel?: string | null;
 }
 
@@ -137,6 +138,11 @@ export function rankKnowledgeBase<T extends RankableKbRow>(
 
   return scored
     .filter((s) => s.score > 0.2)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => ownerPriority(b.row.tags) - ownerPriority(a.row.tags) || b.score - a.score)
     .slice(0, limit);
+}
+
+export function ownerPriority(tags?: string | null) {
+  const set = new Set((tags || "").split(","));
+  return set.has("owner-corrected") ? 2 : set.has("owner-approved") ? 1 : 0;
 }

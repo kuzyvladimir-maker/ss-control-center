@@ -12,7 +12,6 @@ import {
   parseAutosendMode,
   type AutosendMode,
 } from "./autosend-policy";
-import { enqueueSendTask } from "./cs-tasks";
 
 export interface StoredAutosendDecision {
   mode: AutosendMode;
@@ -44,7 +43,9 @@ export async function runAutosend(
     neverSend?: boolean;
   } = {}
 ): Promise<StoredAutosendDecision | null> {
-  const mode = await getAutosendMode();
+  const configuredMode = await getAutosendMode();
+  // Owner 2026-11-06: analysis is never permission to send.
+  const mode: AutosendMode = configuredMode === "on" ? "shadow" : configuredMode;
   if (mode === "off") return null;
 
   const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
@@ -97,26 +98,8 @@ export async function runAutosend(
 
   const decision: StoredAutosendDecision = { mode, ...verdict };
 
-  // "on": an eligible reply is approved by the autopilot and queued for the
-  // account's VPS agent (Seller Central) — never sent from here.
-  if (mode === "on" && verdict.eligible && !extra.neverSend) {
-    try {
-      const task = await enqueueSendTask(m, { approvedBy: "autopilot" });
-      decision.sent = true;
-      decision.sendError = undefined;
-      console.log(`[autosend] queued VPS send task ${task.id} for ${m.id}`);
-    } catch (e) {
-      decision.sent = false;
-      decision.sendError = e instanceof Error ? e.message : String(e);
-      // Emergency stop: a failed autopilot queueing drops the hub back to
-      // shadow mode until the owner looks at it.
-      await prisma.setting.upsert({
-        where: { key: AUTOSEND_SETTING_KEY },
-        create: { key: AUTOSEND_SETTING_KEY, value: "shadow" },
-        update: { value: "shadow" },
-      });
-    }
-  }
+  // Owner 2026-11-06: this path records recommendations only.
+  decision.sent = false;
 
   await prisma.buyerMessage.update({
     where: { id: m.id },

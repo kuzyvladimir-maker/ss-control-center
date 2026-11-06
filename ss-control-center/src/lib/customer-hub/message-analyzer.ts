@@ -1,3 +1,5 @@
+import { CUSTOMER_SIGN_OFF, OWNER_REPLY_RULES, removeApologies, salutemClosing, APOLOGY_RE } from "./reply-policy";
+import { createPromptAudit, updatePromptAudit } from "./prompt-audit";
 /**
  * Customer Hub Decision Engine — AI analysis of buyer messages with
  * automatic fallback between Claude (primary) and OpenAI (fallback).
@@ -25,7 +27,7 @@ import { prisma } from "@/lib/prisma";
 
 type KnowledgeBaseHint = Awaited<ReturnType<typeof findRelevantCases>>["cases"][number];
 
-const SYSTEM_PROMPT = `You are a senior Amazon-seller customer-support specialist for a grocery / chilled / frozen / perishable business. You read each customer message carefully, reason about what actually happened, decide the right action against a documented decision matrix, and write a response that resolves the situation correctly. You are NOT filling in a template — you are doing real customer service against documented business policy.
+const SYSTEM_PROMPT = OWNER_REPLY_RULES + "\n\n" + `You are a senior Amazon-seller customer-support specialist for a grocery / chilled / frozen / perishable business. You read each customer message carefully, reason about what actually happened, decide the right action against a documented decision matrix, and write a response that resolves the situation correctly. You are NOT filling in a template — you are doing real customer service against documented business policy.
 
 ═══════════════════════════════════════════════════════════════
 SOURCE-OF-TRUTH HIERARCHY — read this before anything else
@@ -805,9 +807,9 @@ export interface FactCheckResult {
 }
 
 // Owner house style (2026-10-19): 171 of 175 real Seller Central replies
-// open with "Hello {first name}," and 163 sign off "Customer Support Team"
+// open with "Hello {first name},". Owner 2026-11-06 overrides the old sign-off.
 // — see scripts/import-owner-replies-from-gmail.ts.
-export const SIGN_OFF = "Customer Support Team";
+export const SIGN_OFF = CUSTOMER_SIGN_OFF;
 const HAS_GREETING_RE = /^(hello|hi|dear|estimad[oa])\b/i;
 
 // ---------------------------------------------------------------------------
@@ -819,7 +821,7 @@ const HAS_GREETING_RE = /^(hello|hi|dear|estimad[oa])\b/i;
 // the model obeying the prompt:
 //
 //   1. Never concede that "something went wrong" — a soft fault admission. We
-//      keep a plain apology for the inconvenience and drop the concession.
+//      drop apologies too under the owner rule of 2026-11-06.
 //   2. Never claim the package is "in transit" or quote a carrier delivery ETA
 //      unless the carrier tracking shows a real acceptance scan. The enricher
 //      marks an order "in_transit" from a Veeqo allocation status of "shipped"
@@ -840,7 +842,7 @@ function fixSentenceCase(text: string): string {
 
 export function scrubBuyerReply(text: string, trackingVerified: boolean): string {
   if (!text) return text;
-  let out = text;
+  let out = removeApologies(text);
 
   // 1. Drop the "something went wrong" concession (with or without a lead-in).
   out = out.replace(
@@ -913,6 +915,7 @@ export interface AnalysisResult {
   /** Best KB match score (kb-retrieval.ts) — 0 when no example matched.
    *  Read by autosend-policy.ts: no close example → never auto-send. */
   kbTopScore?: number;
+  promptAuditId?: string;
   /** True when every provider failed and this is the safe template. */
   isFallback?: boolean;
 }
@@ -1188,6 +1191,7 @@ export function detectResponseViolations(
   analysisContext: ValidatorAnalysisContext = {}
 ): string[] {
   const violations: string[] = [];
+  if (APOLOGY_RE.test(response)) violations.push("Response contains an apology, forbidden by current owner rules");
   const lower = response.toLowerCase();
 
   // Owner REFUND RULE 2026-10-27: money back only for spoilage on arrival
@@ -1479,69 +1483,20 @@ export async function analyzeMessage(
   // provider from the Settings UI (Setting table). Providers without a
   // valid .env key are stripped from the chain automatically.
   const config = await getAIConfig();
-  if (config.providerChain.length === 0) {
-    console.error(
-      "[Analyzer] No AI providers configured. Check the provider chain in Settings; "
-      + "both providers run on the box worker's subscriptions, not on API keys."
-    );
-    return fallbackResult(input);
+  const context = await prepareAnalysisPrompt(input);
+  const { userMessage, kbTopScore } = context;
+  const promptAuditId = await createPromptAudit({ ...context, orderId: input.amazonOrderId });
+  const attempts: { provider: string; at: string; status: string }[] = [];
+  if (!config.providerChain.length) {
+    await updatePromptAudit(promptAuditId, { status: "fallback", error: "No configured provider; prompt not submitted" });
+    return { ...fallbackResult(input), promptAuditId };
   }
-
-  // Pull similar past cases from the knowledge base to give Claude/OpenAI
-  // concrete worked examples — keyword pre-classifier + in-memory ranking
-  // (kb-retrieval.ts). Owner examples rank above hand seeds.
-  let similarCases: KnowledgeBaseHint[] = [];
-  let kbTopScore = 0;
-  let voiceGuide: string | null = null;
-  try {
-    const kb = await findRelevantCases(
-      {
-        customerMessage: input.customerMessage,
-        productType: input.productType,
-        channel: input.channel || "Amazon",
-        shippingMismatch: input.shippingMismatch,
-      },
-      4
-    );
-    similarCases = kb.cases;
-    kbTopScore = kb.topScore;
-    console.log(
-      `[Analyzer] KB: predicted ${kb.predicted.map((p) => p.problemType).join(",") || "none"}, ${similarCases.length} case(s), top score ${kbTopScore}`
-    );
-  } catch (e) {
-    console.warn(
-      "[Analyzer] Knowledge base lookup failed:",
-      e instanceof Error ? e.message : String(e)
-    );
-  }
-  try {
-    voiceGuide = await loadVoiceGuide();
-  } catch {
-    voiceGuide = null;
-  }
-  // Owner corrections from Telegram cards ("Wrong" / "Rework"). Append-only
-  // table; newest first; they ADD to the playbook, never replace it.
-  let ownerRules: string[] = [];
-  try {
-    // "rework" comments are about one case and reach only that case (via
-    // cs-pipeline ownerInstruction); general rules/corrections go everywhere.
-    const rows = await prisma.csOwnerRule.findMany({
-      where: { active: true, kind: { not: "rework" } },
-      orderBy: { createdAt: "desc" },
-      take: 40,
-    });
-    ownerRules = rows.map(
-      (r) => `[${r.createdAt.toISOString().slice(0, 10)}${r.problemType ? ` ${r.problemType}` : ""}] ${r.text}`
-    );
-  } catch {
-    ownerRules = [];
-  }
-
-  const userMessage = buildContextMessage(input, similarCases, voiceGuide, ownerRules);
   let lastError = "";
 
   for (const provider of config.providerChain) {
     try {
+      attempts.push({ provider, at: new Date().toISOString(), status: "started" });
+      await updatePromptAudit(promptAuditId, { attempts, status: "submitted" });
       console.log(`[Analyzer] Trying ${provider} on its subscription…`);
       const text =
         provider === "claude"
@@ -1665,7 +1620,21 @@ export async function analyzeMessage(
             parsed.action = "replacement";
           }
         }
+        parsed.suggestedResponse = salutemClosing(removeApologies(parsed.suggestedResponse));
+        if ((input.orderTotal === null || input.orderTotal > 50) &&
+            (REFUND_ACTIONS.has(parsed.action) || REFUND_OFFER_RE.test(parsed.suggestedResponse))) {
+          parsed.action = "investigate";
+          parsed.suggestedResponse = salutemClosing(`${helloLine(input.customerName)}\n\nThank you for your message. We are reviewing your request and will provide an update.`);
+          parsed.ownerBriefRu = `${parsed.ownerBriefRu || ""}\nТребуется решение владельца: возврат свыше $50 или сумма неизвестна.`;
+        }
+        if (FAULT_ADMISSION_RE.test(parsed.suggestedResponse)) {
+          parsed.suggestedResponse = fallbackResult(input).suggestedResponse;
+          parsed.isFallback = true;
+        }
         parsed.kbTopScore = kbTopScore;
+        parsed.promptAuditId = promptAuditId;
+        attempts[attempts.length - 1].status = "completed";
+        await updatePromptAudit(promptAuditId, { attempts, status: "completed", appliedReasoning: parsed.reasoning, problemType: parsed.problemType });
         return parsed;
       }
       lastError = `${provider} returned unparseable response`;
@@ -1680,7 +1649,69 @@ export async function analyzeMessage(
   console.error(
     `[Analyzer] All providers failed. Last error: ${lastError}. Using heuristic fallback.`
   );
-  return fallbackResult(input);
+  await updatePromptAudit(promptAuditId, { attempts, status: "fallback", error: lastError });
+  return { ...fallbackResult(input), promptAuditId };
+}
+
+export async function prepareAnalysisPrompt(input: AnalysisInput) {
+  // Pull similar past cases from the knowledge base to give Claude/OpenAI
+  // concrete worked examples — keyword pre-classifier + in-memory ranking
+  // (kb-retrieval.ts). Owner examples rank above hand seeds.
+  let similarCases: KnowledgeBaseHint[] = [];
+  let kbTopScore = 0;
+  let retrievalStatus = "ok";
+  let predicted: string[] = [];
+  let voiceGuide: string | null = null;
+  try {
+    const kb = await findRelevantCases(
+      {
+        customerMessage: input.customerMessage,
+        productType: input.productType,
+        channel: input.channel || "Amazon",
+        shippingMismatch: input.shippingMismatch,
+      },
+      4
+    );
+    similarCases = kb.cases;
+    predicted = kb.predicted.map(p => p.problemType);
+    kbTopScore = kb.topScore;
+    console.log(
+      `[Analyzer] KB: predicted ${kb.predicted.map((p) => p.problemType).join(",") || "none"}, ${similarCases.length} case(s), top score ${kbTopScore}`
+    );
+  } catch (e) {
+    retrievalStatus = `error: ${e instanceof Error ? e.message : String(e)}`;
+    console.warn(
+      "[Analyzer] Knowledge base lookup failed:",
+      e instanceof Error ? e.message : String(e)
+    );
+  }
+  try {
+    voiceGuide = (await loadVoiceGuide())?.split("\n").filter(line => !APOLOGY_RE.test(line)).join("\n").replace(/Customer Support Team/g, CUSTOMER_SIGN_OFF) || null;
+  } catch {
+    voiceGuide = null;
+  }
+  // Owner corrections from Telegram cards ("Wrong" / "Rework"). Append-only
+  // table; newest first; they ADD to the playbook, never replace it.
+  let ownerRules: string[] = [];
+  try {
+    // "rework" comments are about one case and reach only that case (via
+    // cs-pipeline ownerInstruction); general rules/corrections go everywhere.
+    const rows = await prisma.csOwnerRule.findMany({
+      where: { active: true, kind: { not: "rework" } },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    });
+    ownerRules = rows.map(
+      (r) => `[${r.createdAt.toISOString().slice(0, 10)}${r.problemType ? ` ${r.problemType}` : ""}] ${r.text}`
+    );
+  } catch {
+    ownerRules = [];
+  }
+
+  const userMessage = buildContextMessage(input, similarCases, voiceGuide, ownerRules);
+  return { userMessage, systemPrompt: SYSTEM_PROMPT, kbTopScore, retrievalStatus, predicted,
+    kbExamples: similarCases.map(k => ({ id: k.id, problemType: k.problemType, scenario: k.scenario, response: k.correctResponse, source: k.source, tags: k.tags })),
+    matrixRows: SYSTEM_PROMPT.split("\n").filter(line => line.startsWith("|")), ownerRules };
 }
 
 // Re-export the provider type so other modules can reference it
@@ -1779,7 +1810,7 @@ ${notAccepted}- First carrier scan: ${tf.firstCarrierScan || "None"}
       msg += `Scenario: ${kb.scenario}\n`;
       msg += `Customer said: ${kb.customerSaid}\n`;
       msg += `Correct action: ${kb.correctAction}\n`;
-      msg += `Correct response: ${kb.correctResponse.substring(0, 600)}\n`;
+      msg += `Correct response: ${salutemClosing(removeApologies(kb.correctResponse))}\n`;
       msg += `Reasoning: ${kb.reasoning}\n`;
       msg += `Outcome: ${kb.outcome || "unknown"}\n`;
     }
@@ -1826,7 +1857,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no backticks):
   "supplierReorderNote": "REQUIRED when action=replacement: '{product} × {qty} | reason: {short} | original: {orderId}'. NULL otherwise."
 }`;
 
-  return msg;
+  return msg + "\n\n" + OWNER_REPLY_RULES;
 }
 
 // Belt-and-braces: Claude sometimes still skips the greeting despite the
@@ -1861,18 +1892,8 @@ function ensureClosing(
   input: AnalysisInput
 ): string {
   if (!response) return response;
-  const trimmed = response.trimEnd();
-  // Accept any "Best regards", "Kind regards", "Sincerely", or Spanish
-  // "Atentamente" / "Saludos" as evidence of an explicit closing.
-  const hasClosing =
-    /(best regards|kind regards|sincerely|atentamente|saludos|cordialmente)/i.test(
-      trimmed
-    );
-  if (hasClosing) return response;
-
-  const isSpanish = /^es/i.test(input.language);
-  const closing = isSpanish ? "Atentamente," : "Best regards,";
-  return `${trimmed}\n\n${closing}\n${SIGN_OFF}`;
+  void input;
+  return salutemClosing(response);
 }
 
 // Provider-loop parser. Returns null on failure so the caller can fall

@@ -9,12 +9,12 @@ import {
 //  (1) never concede "something went wrong",
 //  (2) no "in transit" / carrier ETA without a verified carrier scan.
 
-test("drops the 'something went wrong' concession, keeps the apology", () => {
+test("drops the concession and apology under the current owner rule", () => {
   const input =
     "Hello Brenda,\n\nWe understand something went wrong with your order, we apologize for the inconvenience; we will resend your order right away.\n\nBest regards,\nCustomer Support Team";
   const out = scrubBuyerReply(input, false);
   assert.ok(!/something (went|has gone) wrong/i.test(out), "concession removed");
-  assert.ok(/We apologize for the inconvenience/.test(out), "apology kept, capitalised");
+  assert.ok(!/apolog/i.test(out), "apology removed");
   assert.ok(/resend your order/.test(out), "resend commitment kept");
 });
 
@@ -24,7 +24,7 @@ test("bare 'something went wrong' sentence is removed too", () => {
     true,
   );
   assert.ok(!/something went wrong/i.test(out));
-  assert.ok(/We apologize for the inconvenience/.test(out));
+  assert.ok(!/apolog/i.test(out));
 });
 
 test("unverified tracking: drops 'in transit' claim and the carrier ETA", () => {
