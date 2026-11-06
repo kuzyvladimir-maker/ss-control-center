@@ -249,7 +249,7 @@ async function queueInboxScans(now: Date): Promise<number> {
       orderBy: { createdAt: "desc" },
     });
     if (last && LIVE_TASK.includes(last.status)) continue;
-    if (last && now.getTime() - last.createdAt.getTime() < INBOX_SCAN_EVERY_MIN * 60_000) continue;
+    if (last && Math.floor(last.createdAt.getTime() / (INBOX_SCAN_EVERY_MIN * 60_000)) === slot) continue;
     if (
       last &&
       last.status === "FAILED" &&

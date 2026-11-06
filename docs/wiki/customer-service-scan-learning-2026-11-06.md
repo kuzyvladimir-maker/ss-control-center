@@ -148,3 +148,7 @@ Source: `ss-control-center/ops/customer-service/`.
 
 Related: [[customer-hub-inbox-watch]], [[customer-hub-vps-send]],
 [[customer-hub-owner-playbook]], [[customer-hub-decision-engine]].
+
+## Production verification
+
+Production MCP worker completed scan task `cmw52n33d0000wkfzso1ejg0a`: observed at 2026-11-06T14:48:03.918Z, 2 Response Needed and 743 Resolved. Production `cs_open_threads` returns only store 1, Dee and Scott, scan time and Telegram links; pending cards contain no alerts. Scheduling uses half-hour UTC slots (not a sliding 30-minute interval that could skip a cron tick after transport latency).
