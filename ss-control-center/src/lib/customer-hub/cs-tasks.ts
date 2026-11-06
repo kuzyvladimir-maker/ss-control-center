@@ -1,3 +1,5 @@
+import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
+import { validateInboxScan } from "./inbox-rules";
 /**
  * Customer Hub VPS agent tasks (SEND / LOOKUP / INBOX_SCAN) — queue, claim, complete.
  * One task = one attempt. An UNKNOWN send result is never re-queued; the
@@ -17,6 +19,7 @@ export async function enqueueSendTask(
   m: Msg,
   opts: { approvedBy: string; cardId?: string | null; attachments?: string[] }
 ) {
+  assertActiveCsStore(m.storeIndex);
   const body = (m.editedResponse || m.suggestedResponse || "").trim();
   if (!body) throw new Error("No reply text to send");
   if (m.responseSentAt) throw new Error(`Already sent ${m.responseSentAt.toISOString()}`);
@@ -47,6 +50,7 @@ export async function enqueueSendTask(
 }
 
 export async function listTasks(storeIndex: number, kind?: string) {
+  assertActiveCsStore(storeIndex);
   return prisma.csTask.findMany({
     where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : {}) },
     orderBy: { createdAt: "asc" },
@@ -56,7 +60,7 @@ export async function listTasks(storeIndex: number, kind?: string) {
 
 export async function claimTask(taskId: string, vps: string) {
   const res = await prisma.csTask.updateMany({
-    where: { id: taskId, status: "QUEUED" },
+    where: { id: taskId, status: "QUEUED", storeIndex: { in: ACTIVE_CS_STORES } },
     data: { status: "CLAIMED", claimedBy: vps, claimedAt: new Date() },
   });
   if (res.count !== 1) throw new Error(`Task ${taskId} is not QUEUED (already claimed or finished)`);
@@ -71,7 +75,9 @@ export async function completeTask(
   const task = await prisma.csTask.findUnique({ where: { id: taskId } });
   if (!task) throw new Error(`Task ${taskId} not found`);
   if (task.status !== "CLAIMED") throw new Error(`Task ${taskId} is ${task.status}, expected CLAIMED`);
+  assertActiveCsStore(task.storeIndex);
   const now = new Date();
+  if (task.kind === "INBOX_SCAN" && outcome === "DONE") validateInboxScan(opts.result, now);
   await prisma.csTask.update({
     where: { id: taskId },
     data: {

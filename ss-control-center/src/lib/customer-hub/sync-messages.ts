@@ -1,3 +1,4 @@
+import { ACTIVE_CS_STORES } from "./config";
 /**
  * Gmail → Customer Hub ingest: pulls Amazon buyer messages from every
  * connected seller mailbox, enriches + AI-analyses new ones, then runs the
@@ -75,6 +76,7 @@ export async function syncBuyerMessagesFromGmail(
       accounts = [];
     }
 
+    accounts = accounts.filter((acc) => ACTIVE_CS_STORES.includes(acc.storeIndex));
     if (opts.storeIndexes) {
       const allow = new Set(opts.storeIndexes);
       accounts = accounts.filter((acc) => allow.has(acc.storeIndex));

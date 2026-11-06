@@ -90,3 +90,19 @@ export function parseInboxResult(result: unknown): InboxItem[] {
     };
   });
 }
+
+/** A full two-folder observation is required before absence can close a case. */
+export function validateInboxScan(result: unknown, now = new Date()) {
+  const r = result as Record<string, unknown> | null;
+  if (!r || r.complete !== true || r.storeIndex !== 1 || r.accountName !== "Salutem Solutions" ||
+      !Array.isArray(r.items) || !Array.isArray(r.resolved) || typeof r.scannedAt !== "string")
+    throw new Error("INBOX_SCAN requires complete Salutem store 1 Response Needed + Resolved snapshot");
+  const at = new Date(r.scannedAt);
+  if (!Number.isFinite(at.getTime()) || at.getTime() > now.getTime() + 60_000 || now.getTime() - at.getTime() > 3600_000)
+    throw new Error("INBOX_SCAN observation time is invalid or stale");
+  for (const list of [r.items, r.resolved]) {
+    if (list.some((x) => !x || typeof x !== "object")) throw new Error("Invalid inbox item");
+    if (parseInboxResult({ items: list }).some((x) => !x.orderId)) throw new Error("Inbox item missing order ID");
+  }
+  return { scannedAt: at, items: parseInboxResult(r), resolved: parseInboxResult({ items: r.resolved }) };
+}

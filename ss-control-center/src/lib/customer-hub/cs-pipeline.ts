@@ -1,3 +1,4 @@
+import { assertActiveCsStore } from "./config";
 /**
  * Customer Hub case pipeline (owner design, 2026-10-20 — topic 42):
  *
@@ -171,6 +172,7 @@ export async function createCard(
    */
   opts: { infoOnly?: boolean } = {}
 ) {
+  assertActiveCsStore(m.storeIndex);
   const prev = await prisma.csCard.findMany({
     where: { buyerMessageId: m.id },
     orderBy: { version: "desc" },
@@ -287,6 +289,7 @@ export async function setApprovedReply(
   });
   const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
   if (!m) throw new Error(`Message ${messageId} not found`);
+  assertActiveCsStore(m.storeIndex);
   const snap: CaseDataSnapshot =
     parseSnapshot(m.caseDataJson) ?? { collectedAt: new Date().toISOString(), items: [] };
   const missing = missingKeys(snap);
@@ -316,7 +319,8 @@ export async function processCase(
 ): Promise<ProcessResult> {
   let m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
   if (!m || m.direction !== "incoming") return { stage: "SKIPPED" };
-  if (m.responseSentAt) return { stage: "SENT" };
+  assertActiveCsStore(m.storeIndex);
+  if (m.responseSentAt || m.status === "RESOLVED") return { stage: "SENT" };
 
   const prevSnap = parseSnapshot(m.caseDataJson);
   const { snapshot, thread, patch } = await collectCaseData(m, prevSnap);
@@ -420,6 +424,7 @@ export async function processCase(
 export async function infoCard(messageId: string, decisionRu?: string | null): Promise<{ cardId: string; version: number }> {
   const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
   if (!m || m.direction !== "incoming") throw new Error(`Incoming message ${messageId} not found`);
+  assertActiveCsStore(m.storeIndex);
   const { snapshot, thread, patch } = await collectCaseData(m, parseSnapshot(m.caseDataJson));
   await prisma.buyerMessage.update({
     where: { id: m.id },

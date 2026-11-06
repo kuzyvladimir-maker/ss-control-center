@@ -1,3 +1,4 @@
+import { ACTIVE_CS_STORES, assertActiveCsStore } from "./config";
 /**
  * Telegram approval cards for Customer Hub (topic 42). The hub writes cards;
  * Jackie publishes them with inline buttons and relays the owner's press and
@@ -15,8 +16,9 @@ import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
  * ok), its Amazon deadline and hours left (owner, 2026-11-01).
  */
 export async function pendingCards(limit = 10) {
+  const allowed = await prisma.buyerMessage.findMany({ where: { storeIndex: { in: ACTIVE_CS_STORES } }, select: { id: true } });
   const rows = await prisma.csCard.findMany({
-    where: { status: "PENDING" },
+    where: { status: "PENDING", buyerMessageId: { in: allowed.map((m) => m.id) } },
     orderBy: { createdAt: "asc" },
     take: limit,
   });
@@ -83,6 +85,7 @@ export async function cardAction(
     throw new Error(`Card ${cardId} is ${card.status} — act on the latest version`);
   let m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
   if (!m) throw new Error("Buyer message not found");
+  assertActiveCsStore(m.storeIndex);
 
   if (action === "approve") {
     if (overrideText && overrideText.trim()) {
@@ -92,6 +95,7 @@ export async function cardAction(
       });
       m = await prisma.buyerMessage.findUnique({ where: { id: card.buyerMessageId } });
       if (!m) throw new Error("Buyer message not found");
+  assertActiveCsStore(m.storeIndex);
     }
     const task = await enqueueSendTask(m, { approvedBy: `owner via ${actor}`, cardId });
     await prisma.csCard.update({

@@ -25,7 +25,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { processCase } from "./cs-pipeline";
-import { parseInboxResult, urgencyOf, type InboxItem, type Urgency, type UrgencyLevel } from "./inbox-rules";
+import { validateInboxScan, urgencyOf, type InboxItem, type Urgency, type UrgencyLevel } from "./inbox-rules";
 export { closeAnsweredByReply } from "./answered";
 export * from "./inbox-rules";
 
@@ -37,7 +37,7 @@ export const LOOKUP_STALE_MIN = 30;
 const FRESH_SYNC_MIN = 10;
 /** Seller Central inbox scan cadence and how long a scan counts as current. */
 export const INBOX_SCAN_EVERY_MIN = 30;
-export const INBOX_SCAN_FRESH_MIN = 90;
+export const INBOX_SCAN_FRESH_MIN = 60;
 const INBOX_SCAN_FAILED_COOLDOWN_H = 6;
 
 export const LIVE_CARD = ["PENDING", "PUBLISHED", "WRONG", "REWORK", "APPROVED"];
@@ -48,7 +48,8 @@ export const ALERT_CARD_MESSAGE_ID = "cs-alert";
 /** Seller Central inbox scans are not tied to a buyer message either. */
 export const INBOX_SCAN_MESSAGE_ID = "cs-inbox-scan";
 /** Amazon stores covered by the watch (owner: all five accounts). */
-export const WATCHED_STORES = [1, 2, 3, 4, 5];
+export { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
+import { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
 /** Project Telegram group (topic 42 lives there) — for message links only. */
 const TG_GROUP_LINK_ID = "3924739153";
 
@@ -203,7 +204,8 @@ const INBOX_SCAN_INSTRUCTIONS_RU =
   "ТОЛЬКО ЧТЕНИЕ. На VPS этого аккаунта открыть Seller Central → Buyer Messages → фильтр «Response needed» (включая Over SLA). " +
   "Ничего не отправлять, не нажимать «No response needed», не открывать вложения покупателя. " +
   "Для каждого письма в списке вернуть: orderId, buyerName, subject, receivedAt (как показано), overSla (true/false), text (текст последнего сообщения покупателя, если виден). " +
-  "Отчёт: cs_task_complete outcome=DONE result={\"items\":[…]}; пустой инбокс = items:[]. Нет доступа к VPS этого аккаунта — outcome=FAILED с причиной.";
+  "Также прочитать Resolved. Все страницы обоих фильтров; сверить аккаунт Salutem Solutions. " +
+  "Отчёт: cs_task_complete outcome=DONE result={storeIndex:1,accountName:'Salutem Solutions',complete:true,scannedAt:ISO,items:[…],resolved:[…]}. Неполное чтение/нет доступа = FAILED.";
 
 async function latestInboxScans(now: Date): Promise<Map<number, InboxScanView>> {
   const rows = await prisma.csTask.findMany({
@@ -216,18 +218,21 @@ async function latestInboxScans(now: Date): Promise<Map<number, InboxScanView>> 
     const done = mine.find((r) => r.status === "DONE" && r.completedAt);
     const latest = mine[0];
     if (done) {
-      let items: InboxItem[] = [];
+      let parsed;
       try {
-        items = parseInboxResult(done.resultJson ? JSON.parse(done.resultJson) : {});
+        // Validate shape against completion time; freshness uses observation time below.
+        parsed = validateInboxScan(JSON.parse(done.resultJson || "{}"), done.completedAt as Date);
       } catch {
-        items = [];
+        map.set(s, { storeIndex: s, state: "failed", fresh: false, scannedAt: null, items: [], error: "Invalid/incomplete scan" });
+        continue;
       }
-      const fresh = now.getTime() - (done.completedAt as Date).getTime() < INBOX_SCAN_FRESH_MIN * 60_000;
+      const items = parsed.items;
+      const fresh = now.getTime() - parsed.scannedAt.getTime() < INBOX_SCAN_FRESH_MIN * 60_000;
       map.set(s, {
         storeIndex: s,
         state: fresh ? "fresh" : "stale",
         fresh,
-        scannedAt: (done.completedAt as Date).toISOString(),
+        scannedAt: parsed.scannedAt.toISOString(),
         items,
         error: null,
       });
@@ -297,6 +302,27 @@ async function applyInboxScans(
   for (const scan of scans.values()) {
     if (!scan.fresh || !scan.scannedAt) continue;
     const scannedAt = new Date(scan.scannedAt);
+    const needed = scan.items.map((i) => i.orderId as string);
+    const absent = await prisma.buyerMessage.findMany({ where: {
+      channel: "Amazon", storeIndex: scan.storeIndex, direction: "incoming",
+      status: { in: OPEN_STATUS }, responseSentAt: null,
+      createdAt: { lte: scannedAt }, updatedAt: { lte: scannedAt },
+      amazonOrderId: { not: null, notIn: needed },
+      OR: [{ receivedAt: { lte: scannedAt } }, { receivedAt: null }],
+    } });
+    for (const m of absent) {
+      // Never interfere with a send already claimed by the account agent.
+      if (await prisma.csTask.findFirst({ where: { buyerMessageId: m.id, kind: "SEND", status: "CLAIMED" } })) continue;
+      await prisma.$transaction(async (tx) => {
+        const closed = await tx.buyerMessage.updateMany({ where: { id: m.id, updatedAt: m.updatedAt, responseSentAt: null }, data: {
+          status: "RESOLVED", caseStage: "CLOSED_IN_AMAZON",
+          resolution: `Закрыто в Amazon; source=SELLER_CENTRAL_INBOX_SCAN; scannedAt=${scan.scannedAt}`,
+        } });
+        if (!closed.count) return;
+        await tx.csCard.updateMany({ where: { buyerMessageId: m.id, status: { in: LIVE_CARD } }, data: { status: "SUPERSEDED" } });
+        await tx.csTask.updateMany({ where: { buyerMessageId: m.id, status: "QUEUED" }, data: { status: "CANCELLED", error: `Closed in Amazon by scan ${scan.scannedAt}` } });
+      });
+    }
     for (const item of scan.items) {
       if (!item.orderId) continue;
       const msgs = await prisma.buyerMessage.findMany({
@@ -537,7 +563,9 @@ export async function reconcileInbox(
 
 export async function inboxStatus(now: Date = new Date()) {
   const scans = await latestInboxScans(now);
-  const cases = await loadOpenCases(now, scans);
+  const allCases = await loadOpenCases(now, scans);
+  const cases = allCases.filter((c) => c.inbox === "response_needed");
+  const confirmed = await openThreads(now);
   const count = (l: UrgencyLevel) => cases.filter((c) => c.urgency.flags.includes(l)).length;
   const awaiting = await prisma.csCard.findMany({
     where: { status: "PUBLISHED", NOT: { buyerMessageId: ALERT_CARD_MESSAGE_ID } },
@@ -545,21 +573,23 @@ export async function inboxStatus(now: Date = new Date()) {
   });
   return {
     generatedAt: now.toISOString(),
+    stale: confirmed.stale,
+    lastScanAt: confirmed.lastScanAt,
     totals: {
-      unanswered: cases.length,
+      unanswered: confirmed.stale ? null : confirmed.threads.length,
       overdue: count("overdue"),
       dueUnder6h: count("due_soon"),
       noCard: count("no_card"),
       cardWithoutDecision2h: count("card_stale"),
       sendStuck: count("send_stuck"),
-      cardsAwaitingOwner: awaiting.length,
+      cardsAwaitingOwner: awaiting.filter((c) => cases.some((x) => x.messageIds.includes(c.buyerMessageId))).length,
     },
     stores: WATCHED_STORES.map((s) => {
       const mine = cases.filter((c) => c.storeIndex === s);
       const scan = scans.get(s) as InboxScanView;
       return {
         storeIndex: s,
-        unanswered: mine.length,
+        unanswered: scan.fresh ? scan.items.length : null,
         overdue: mine.filter((c) => c.urgency.flags.includes("overdue")).length,
         sellerCentralInbox: {
           state: scan.state,
@@ -627,4 +657,20 @@ export async function inboxStillNeedsReply(storeIndex: number, orderId: string, 
   const s = scans.get(storeIndex);
   if (!s || !s.fresh || !s.scannedAt) return false;
   return new Date(s.scannedAt).getTime() > replySentAt.getTime() && s.items.some((i) => i.orderId === orderId);
+}
+
+/** Only Seller Central observations determine membership; never infer from hub rows. */
+export async function openThreads(now = new Date()) {
+  const scans = await latestInboxScans(now);
+  const scan = scans.get(1)!;
+  const threads = await Promise.all(scan.items.map(async (item) => {
+    const messages = await prisma.buyerMessage.findMany({ where: { storeIndex: 1, amazonOrderId: item.orderId, direction: "incoming" }, orderBy: { receivedAt: "desc" } });
+    const card = await prisma.csCard.findFirst({ where: { buyerMessageId: { in: messages.map((m) => m.id) }, NOT: { buyerMessageId: ALERT_CARD_MESSAGE_ID } }, orderBy: { createdAt: "desc" } });
+    const received = item.receivedAt ? new Date(item.receivedAt) : messages[0]?.receivedAt;
+    return { order: item.orderId, buyer: item.buyerName, storeIndex: 1,
+      deadline: received && Number.isFinite(received.getTime()) ? new Date(received.getTime() + 86400_000).toISOString() : null,
+      overSla: item.overSla, cardStatus: card?.status ?? null,
+      telegramLink: telegramLink(card?.telegramMessageId), lastScanAt: scan.scannedAt, stale: !scan.fresh };
+  }));
+  return { storeIndex: 1, lastScanAt: scan.scannedAt, stale: !scan.fresh, scanState: scan.state, threads };
 }

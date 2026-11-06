@@ -72,3 +72,11 @@ test("INBOX_SCAN result parsing: order id from text, Over SLA from status", () =
   assert.deepEqual(parseInboxResult({ responseNeeded: [] }), []);
   assert.deepEqual(parseInboxResult(null), []);
 });
+
+import { validateInboxScan } from '../inbox-rules';
+test('absence is only authoritative for a complete, fresh, exact-account two-folder scan', () => {
+  const now = t('2026-11-06T14:00:00Z');
+  const good = {storeIndex:1, accountName:'Salutem Solutions', complete:true, scannedAt:now.toISOString(), items:[], resolved:[]};
+  assert.deepEqual(validateInboxScan(good, now).items, []);
+  for (const bad of [{}, {...good,complete:false}, {...good,storeIndex:2}, {...good,resolved:undefined}, {...good,items:[{}]}, {...good,scannedAt:'2026-11-06T12:00:00Z'}]) assert.throws(()=>validateInboxScan(bad,now));
+});
