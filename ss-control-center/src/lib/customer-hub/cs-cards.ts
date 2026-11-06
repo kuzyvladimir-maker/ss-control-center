@@ -11,8 +11,8 @@ import { saveToKnowledgeBase } from "./knowledge-base";
 import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
 
 /**
- * Cards to post. Alert cards (inbox-watch.ts: kind "alert", no buttons) come
- * first; every reply card carries `urgency` (overdue / due_soon / card_stale /
+ * Cards to post, only for active stores. Legacy alerts are never returned.
+ * Every reply card carries `urgency` (overdue / due_soon / card_stale /
  * ok), its Amazon deadline and hours left (owner, 2026-11-01).
  */
 export async function pendingCards(limit = 10) {
@@ -37,7 +37,7 @@ export async function pendingCards(limit = 10) {
       };
     })
   );
-  return out.sort((a, b) => Number(b.kind === "alert") - Number(a.kind === "alert"));
+  return out.filter((c) => c.kind !== "alert");
 }
 
 export async function markPublished(cardId: string, telegramMessageId: string) {

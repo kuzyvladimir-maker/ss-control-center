@@ -16,8 +16,7 @@
  *  2. urgency per open case (overdue / < 6 h / card without decision > 2 h);
  *  3. reconcileInbox() — every open message must have a live card or task,
  *     otherwise the card is built now (cs_case_process with force_card);
- *  4. alerts to topic 42 as alert cards (cardJson.kind = "alert", no
- *     buttons) that Jackie posts exactly like reply cards;
+ *  4. topic reminders are disabled; the owner cron reads cs_open_threads;
  *  5. INBOX_SCAN tasks: the account VPS reads the Seller Central inbox
  *     (Response Needed) read-only; the hub reopens anything it closed that
  *     Seller Central still shows as Response Needed;
@@ -30,7 +29,6 @@ export { closeAnsweredByReply } from "./answered";
 export * from "./inbox-rules";
 
 export const LOOKBACK_DAYS = 7;
-export const ALERT_REPEAT_H = 3;
 /** A LOOKUP task nobody picked up within this time no longer blocks the card. */
 export const LOOKUP_STALE_MIN = 30;
 /** Messages synced less than this ago are still being processed by the sync. */
@@ -59,16 +57,6 @@ const TG_GROUP_LINK_ID = "3924739153";
 
 export function telegramLink(telegramMessageId: string | null | undefined): string | null {
   return telegramMessageId ? `https://t.me/c/${TG_GROUP_LINK_ID}/${telegramMessageId}` : null;
-}
-
-function etTime(d: Date): string {
-  return d.toLocaleString("ru-RU", {
-    timeZone: "America/New_York",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -375,116 +363,6 @@ async function applyInboxScans(
 }
 
 // ---------------------------------------------------------------------------
-// Alerts → topic 42 (alert cards posted by Jackie)
-// ---------------------------------------------------------------------------
-
-const LEVEL_RU: Record<UrgencyLevel, string> = {
-  overdue: "ПРОСРОЧЕНО",
-  due_soon: "меньше 6 ч до срока",
-  no_card: "нет карточки",
-  send_stuck: "одобрено, но не отправлено",
-  card_stale: "карточка без решения больше 2 ч",
-  ok: "ok",
-};
-
-function cardStateRu(c: OpenCase): string {
-  if (c.sendTask) return `ответ одобрен, задача отправки ${c.sendTask.status} с ${etTime(c.sendTask.createdAt)} ET`;
-  if (!c.card) return c.lookupTask ? "ждём VPS-поиск данных" : "карточки нет — собираю";
-  const link = telegramLink(c.card.telegramMessageId);
-  if (c.card.status === "PUBLISHED")
-    return `карточка v${c.card.version} в топике с ${c.card.publishedAt ? etTime(c.card.publishedAt) : "?"} ET, решения нет${link ? ` — ${link}` : ""}`;
-  if (c.card.status === "PENDING") return `карточка v${c.card.version} собрана ${etTime(c.card.createdAt)} ET, ещё не опубликована`;
-  return `карточка v${c.card.version}: ${c.card.status}`;
-}
-
-function alertLine(c: OpenCase, level: UrgencyLevel): string {
-  const due = new Date(c.urgency.deadline);
-  const when = c.urgency.hoursLeft <= 0 ? `срок был ${etTime(due)} ET` : `срок ${etTime(due)} ET (~${Math.max(1, Math.round(c.urgency.hoursLeft))} ч)`;
-  const inbox = c.inbox === "not_listed" ? " · в инбоксе Seller Central уже не Response Needed" : "";
-  return `- **${LEVEL_RU[level]}** · ${c.storeName} · ${c.orderId || "без номера заказа"} · ${c.buyer || "покупатель"} · ${when} · ${cardStateRu(c)}${inbox}`;
-}
-
-export function alertKey(c: OpenCase, level: UrgencyLevel): string {
-  return `${c.key}:${level}`;
-}
-
-async function recentAlertKeys(now: Date): Promise<Set<string>> {
-  const rows = await prisma.csCard.findMany({
-    where: { buyerMessageId: ALERT_CARD_MESSAGE_ID, createdAt: { gte: new Date(now.getTime() - ALERT_REPEAT_H * 3600_000) } },
-    select: { cardJson: true },
-  });
-  const keys = new Set<string>();
-  for (const r of rows) {
-    try {
-      for (const k of (JSON.parse(r.cardJson).keys as string[]) || []) keys.add(k);
-    } catch {
-      /* ignore */
-    }
-  }
-  return keys;
-}
-
-async function postAlert(
-  now: Date,
-  cases: OpenCase[],
-  extraLines: string[],
-  scans: Map<number, InboxScanView>
-): Promise<{ cardId: string | null; keys: string[] }> {
-  const seen = await recentAlertKeys(now);
-  const lines: string[] = [];
-  const keys: string[] = [];
-  for (const c of cases) {
-    const level = c.urgency.flags.find((f) => f !== "ok");
-    if (!level) continue;
-    const key = alertKey(c, level);
-    if (seen.has(key)) continue;
-    keys.push(key);
-    lines.push(alertLine(c, level));
-  }
-  const extraKeys = extraLines.map((l) => `extra:${l}`).filter((k) => !seen.has(k));
-  const extras = extraLines.filter((l) => !seen.has(`extra:${l}`));
-  if (lines.length === 0 && extras.length === 0) return { cardId: null, keys: [] };
-
-  const overdue = cases.filter((c) => c.urgency.flags.includes("overdue")).length;
-  const scanRu = [...scans.values()]
-    .map((s) =>
-      s.state === "fresh"
-        ? `магазин ${s.storeIndex}: Response Needed ${s.items.length}${s.items.some((i) => i.overSla) ? ` (Over SLA ${s.items.filter((i) => i.overSla).length})` : ""}, проверено ${etTime(new Date(s.scannedAt as string))} ET`
-        : `магазин ${s.storeIndex}: инбокс не проверен (${s.state === "queued" ? "задача VPS ждёт агента" : s.state === "failed" ? `агент не смог: ${s.error || "?"}` : s.state === "stale" ? "последняя проверка устарела" : "сканов ещё не было"})`
-    )
-    .join("\n");
-  const textRu = [
-    "# Тревога: письма покупателей без ответа",
-    "",
-    ...lines,
-    ...extras.map((l) => `- ${l}`),
-    "",
-    `Открыто в хабе: ${cases.length}, просрочено: ${overdue}.`,
-    "",
-    "Инбокс Seller Central (VPS, только чтение):",
-    scanRu,
-  ].join("\n");
-
-  const card = await prisma.csCard.create({ data: { buyerMessageId: ALERT_CARD_MESSAGE_ID, cardJson: "{}" } });
-  const worst = cases.find((c) => keys.some((k) => k.startsWith(`${c.key}:`)))?.urgency.level ?? "ok";
-  await prisma.csCard.update({
-    where: { id: card.id },
-    data: {
-      cardJson: JSON.stringify({
-        cardId: card.id,
-        kind: "alert",
-        version: 1,
-        urgency: worst,
-        textRu,
-        buttons: [],
-        keys: [...keys, ...extraKeys],
-      }),
-    },
-  });
-  return { cardId: card.id, keys };
-}
-
-// ---------------------------------------------------------------------------
 // Reconcile (cron) + status (cs_inbox_status)
 // ---------------------------------------------------------------------------
 
@@ -544,10 +422,6 @@ export async function reconcileInbox(
   }
   if (built.length && !opts.dryRun) cases = await loadOpenCases(now, scans);
 
-  const extra = applied.mismatches.map(
-    (k) => `Seller Central показывает Response Needed по ${k.split(":")[1]} (магазин ${k.split(":")[0]}), а по хабу наш ответ уже отправлен агентом — проверить вручную, повторно не отправляю`
-  );
-  const alert = opts.dryRun ? { cardId: null } : await postAlert(now, cases, extra, scans);
 
   return {
     open: cases.length,
@@ -557,7 +431,7 @@ export async function reconcileInbox(
     createdFromInbox: applied.created,
     mismatches: applied.mismatches,
     scansQueued,
-    alertCardId: alert.cardId,
+    alertCardId: null,
     errors,
   };
 }

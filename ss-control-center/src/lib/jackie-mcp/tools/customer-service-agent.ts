@@ -45,7 +45,7 @@ function reprocessLater(messageId: string, ownerInstruction?: string) {
 const cardsPending: JackieTool = {
   name: "cs_cards_pending",
   description:
-    "Customer Service cards waiting to be posted to Telegram topic 42. Each has textRu (ready Russian message) and buttons[] with callbackData 'cs:<cardId>:<approve|wrong|rework>'. Reply cards carry urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), deadline and hoursLeft. Cards with kind:'alert' are inbox alarms (unanswered / overdue buyer messages): post textRu as is, no buttons. After posting ANY card call cs_card_published.",
+    "Customer Service cards waiting to be posted to Telegram topic 42. Each has textRu (ready Russian message) and buttons[] with callbackData 'cs:<cardId>:<approve|wrong|rework>'. Reply cards carry urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), deadline and hoursLeft. Alert cards are disabled; reminders are handled by the owner cron through cs_open_threads. After posting ANY card call cs_card_published.",
   write: false,
   input_schema: { type: "object", properties: { limit: { type: "number" } }, additionalProperties: false },
   handler: async (args) => pendingCards(typeof args.limit === "number" ? args.limit : 10),
@@ -236,7 +236,7 @@ const cardSetReply: JackieTool = {
 const inboxStatusTool: JackieTool = {
   name: "cs_inbox_status",
   description:
-    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, for active store 1 (Salutem Solutions), with the latest Seller Central inbox scan per store (Response Needed / Over SLA counts) and every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing cards, posts alerts).",
+    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, for active store 1 (Salutem Solutions), with the latest Seller Central inbox scan per store (Response Needed / Over SLA counts) and every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing reply cards; never posts alerts).",
   // reconcile=true writes (cards, alerts); the plain call only reads.
   write: true,
   input_schema: { type: "object", properties: { reconcile: { type: "boolean" } }, additionalProperties: false },
