@@ -67,6 +67,7 @@ export interface InboxItem {
   /** The buyer's message text, if the agent copied it. */
   text: string | null;
   overSla: boolean;
+  deadline?: string | null;
 }
 
 /** INBOX_SCAN result → items. Accepts {items:[…]} or {responseNeeded:[…]}. */
@@ -86,6 +87,7 @@ export function parseInboxResult(result: unknown): InboxItem[] {
       subject: str(x.subject),
       receivedAt: str(x.receivedAt) || str(x.received_at) || str(x.date),
       text: str(x.text) || str(x.message),
+      deadline: str(x.deadline),
       overSla: x.overSla === true || x.over_sla === true || /over\s*sla/i.test(String(x.status || "")),
     };
   });
@@ -102,7 +104,7 @@ export function validateInboxScan(result: unknown, now = new Date()) {
     throw new Error("INBOX_SCAN observation time is invalid or stale");
   for (const list of [r.items, r.resolved]) {
     if (list.some((x) => !x || typeof x !== "object")) throw new Error("Invalid inbox item");
-    if (parseInboxResult({ items: list }).some((x) => !x.orderId)) throw new Error("Inbox item missing order ID");
+    if (list === r.items && parseInboxResult({ items: list }).some((x) => !x.orderId)) throw new Error("Inbox item missing order ID");
   }
   return { scannedAt: at, items: parseInboxResult(r), resolved: parseInboxResult({ items: r.resolved }) };
 }

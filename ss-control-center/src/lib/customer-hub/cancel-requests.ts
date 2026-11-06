@@ -1,3 +1,4 @@
+import { ACTIVE_CS_STORES } from "./config";
 /**
  * Amazon buyer cancellation notices → AmazonCancelRequest, and the
  * "requested before shipment?" verdict per order (owner, topic 42, 2026-11-02).
@@ -33,7 +34,7 @@ export async function syncCancelNotices(
 ): Promise<{ created: number; errors: string[] }> {
   let created = 0;
   const errors: string[] = [];
-  for (const a of accounts) {
+  for (const a of accounts.filter((a) => ACTIVE_CS_STORES.includes(a.storeIndex))) {
     try {
       const gmail = google.gmail({ version: "v1", auth: createOAuth2Client(a.refreshToken) });
       const ids: string[] = [];
@@ -188,7 +189,7 @@ export interface CancelRequestRow extends CancelRequestFact {
 export async function listCancelRequests(opts: { days?: number; onlyBeforeShipment?: boolean } = {}) {
   const since = new Date(Date.now() - (opts.days ?? 30) * 86_400_000);
   const rows = await prisma.amazonCancelRequest.findMany({
-    where: { requestedAt: { gte: since } },
+    where: { requestedAt: { gte: since }, storeIndex: { in: ACTIVE_CS_STORES } },
     orderBy: { requestedAt: "asc" },
     select: { amazonOrderId: true, storeIndex: true },
   });

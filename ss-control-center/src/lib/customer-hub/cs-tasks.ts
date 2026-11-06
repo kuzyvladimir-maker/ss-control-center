@@ -52,7 +52,7 @@ export async function enqueueSendTask(
 export async function listTasks(storeIndex: number, kind?: string) {
   assertActiveCsStore(storeIndex);
   return prisma.csTask.findMany({
-    where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : {}) },
+    where: { storeIndex, status: kind === "INBOX_SCAN" ? { in: ["QUEUED", "CLAIMED"] } : "QUEUED", ...(kind ? { kind } : {}) },
     orderBy: { createdAt: "asc" },
     take: 20,
   });

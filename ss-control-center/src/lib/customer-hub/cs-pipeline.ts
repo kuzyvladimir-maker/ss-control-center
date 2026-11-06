@@ -280,6 +280,7 @@ export async function setApprovedReply(
   if (!text) throw new Error("text_en is required");
   const existing = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
   if (!existing) throw new Error(`Message ${messageId} not found`);
+  assertActiveCsStore(existing.storeIndex);
   const ru =
     (textRu && textRu.trim()) ||
     (await translateText(text, "en-ru").catch(() => null));

@@ -38,7 +38,7 @@ const FRESH_SYNC_MIN = 10;
 /** Seller Central inbox scan cadence and how long a scan counts as current. */
 export const INBOX_SCAN_EVERY_MIN = 30;
 export const INBOX_SCAN_FRESH_MIN = 60;
-const INBOX_SCAN_FAILED_COOLDOWN_H = 6;
+const INBOX_SCAN_FAILED_COOLDOWN_H = 0.5;
 
 export const LIVE_CARD = ["PENDING", "PUBLISHED", "WRONG", "REWORK", "APPROVED"];
 const LIVE_TASK = ["QUEUED", "CLAIMED"];
@@ -47,7 +47,7 @@ const OPEN_STATUS = ["NEW", "ANALYZED"];
 export const ALERT_CARD_MESSAGE_ID = "cs-alert";
 /** Seller Central inbox scans are not tied to a buyer message either. */
 export const INBOX_SCAN_MESSAGE_ID = "cs-inbox-scan";
-/** Amazon stores covered by the watch (owner: all five accounts). */
+/** Only stores explicitly enabled by the owner. */
 export { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
 import { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
 /** Project Telegram group (topic 42 lives there) — for message links only. */
@@ -104,7 +104,8 @@ async function loadOpenCases(now: Date, inboxByStore: Map<number, InboxScanView>
       status: { in: OPEN_STATUS },
       responseSentAt: null,
       storeIndex: { in: WATCHED_STORES },
-      OR: [{ receivedAt: { gte: since } }, { receivedAt: null, createdAt: { gte: since } }],
+      OR: [{ receivedAt: { gte: since } }, { receivedAt: null, createdAt: { gte: since } },
+        { amazonOrderId: { in: [...inboxByStore.values()].filter((s) => s.fresh).flatMap((s) => s.items.map((i) => i.orderId).filter((id): id is string => Boolean(id))) } }],
     },
     select: {
       id: true,
@@ -209,7 +210,7 @@ const INBOX_SCAN_INSTRUCTIONS_RU =
 
 async function latestInboxScans(now: Date): Promise<Map<number, InboxScanView>> {
   const rows = await prisma.csTask.findMany({
-    where: { kind: "INBOX_SCAN", createdAt: { gte: new Date(now.getTime() - 3 * 86_400_000) } },
+    where: { kind: "INBOX_SCAN", storeIndex: { in: WATCHED_STORES } },
     orderBy: { createdAt: "desc" },
   });
   const map = new Map<number, InboxScanView>();
@@ -312,8 +313,8 @@ async function applyInboxScans(
     } });
     for (const m of absent) {
       // Never interfere with a send already claimed by the account agent.
-      if (await prisma.csTask.findFirst({ where: { buyerMessageId: m.id, kind: "SEND", status: "CLAIMED" } })) continue;
       await prisma.$transaction(async (tx) => {
+        if (await tx.csTask.findFirst({ where: { buyerMessageId: m.id, kind: "SEND", status: "CLAIMED" } })) return;
         const closed = await tx.buyerMessage.updateMany({ where: { id: m.id, updatedAt: m.updatedAt, responseSentAt: null }, data: {
           status: "RESOLVED", caseStage: "CLOSED_IN_AMAZON",
           resolution: `Закрыто в Amazon; source=SELLER_CENTRAL_INBOX_SCAN; scannedAt=${scan.scannedAt}`,
@@ -668,7 +669,7 @@ export async function openThreads(now = new Date()) {
     const card = await prisma.csCard.findFirst({ where: { buyerMessageId: { in: messages.map((m) => m.id) }, NOT: { buyerMessageId: ALERT_CARD_MESSAGE_ID } }, orderBy: { createdAt: "desc" } });
     const received = item.receivedAt ? new Date(item.receivedAt) : messages[0]?.receivedAt;
     return { order: item.orderId, buyer: item.buyerName, storeIndex: 1,
-      deadline: received && Number.isFinite(received.getTime()) ? new Date(received.getTime() + 86400_000).toISOString() : null,
+      deadline: item.deadline || (received && Number.isFinite(received.getTime()) ? new Date(received.getTime() + 86400_000).toISOString() : null),
       overSla: item.overSla, cardStatus: card?.status ?? null,
       telegramLink: telegramLink(card?.telegramMessageId), lastScanAt: scan.scannedAt, stale: !scan.fresh };
   }));

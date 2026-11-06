@@ -102,7 +102,7 @@ const cardActionTool: JackieTool = {
 const tasksList: JackieTool = {
   name: "cs_tasks_list",
   description:
-    "QUEUED Customer Service tasks for ONE Amazon account (store_index). Run only on that account's VPS. kind SEND = post the approved reply in Seller Central Buyer-Seller Messaging; LOOKUP = read-only data search; INBOX_SCAN = read-only list of the Seller Central Buyer Messages inbox filtered by Response needed (incl. Over SLA), report result {items:[{orderId, buyerName, subject, receivedAt, overSla, text}]} — queued every 30 min per account. Payload has instructionsRu.",
+    "QUEUED Customer Service tasks for ONE Amazon account (store_index). Run only on that account's VPS. kind SEND = post the approved reply in Seller Central Buyer-Seller Messaging; LOOKUP = read-only data search; INBOX_SCAN = read-only list of the Seller Central Buyer Messages inbox filtered by Response needed (incl. Over SLA), report complete store 1 snapshot with accountName, scannedAt, items and resolved arrays. Queued every 30 min; INBOX_SCAN also returns CLAIMED tasks for read-only crash recovery. Payload has instructionsRu.",
   write: false,
   input_schema: {
     type: "object",
@@ -134,7 +134,7 @@ const taskClaim: JackieTool = {
 const taskComplete: JackieTool = {
   name: "cs_task_complete",
   description:
-    "Report a claimed task. outcome DONE / FAILED / UNKNOWN (UNKNOWN = not sure the message went out; it is never re-sent — read the thread and report). SEND: pass screenshot_url of the sent message. LOOKUP: pass result {\"M6\": \"found text\", …} keyed by the requested items. INBOX_SCAN: pass result {\"items\": [{orderId, buyerName, subject, receivedAt, overSla, text}]} (empty inbox = items: []); the hub then reopens/creates cards for every Response Needed message.",
+    "Report a claimed task. outcome DONE / FAILED / UNKNOWN (UNKNOWN = not sure the message went out; it is never re-sent — read the thread and report). SEND: pass screenshot_url of the sent message. LOOKUP: pass result {\"M6\": \"found text\", …} keyed by the requested items. INBOX_SCAN requires result {storeIndex:1, accountName: Salutem Solutions, complete:true, scannedAt: ISO, items:[{orderId,buyerName,receivedAt,deadline,text,overSla}], resolved:[...]}. Complete pagination of both folders; malformed/partial scans are rejected. The hub reconciles open and closed threads.",
   write: true,
   input_schema: {
     type: "object",
