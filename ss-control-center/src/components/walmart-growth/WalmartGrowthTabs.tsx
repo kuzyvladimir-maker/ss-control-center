@@ -12,7 +12,7 @@ import type { ListingIntegrityShadowData } from "@/lib/walmart/listing-integrity
 export function WalmartGrowthTabs({
   integrityData,
 }: {
-  integrityData: ListingIntegrityShadowData;
+  integrityData: ListingIntegrityShadowData | null;
 }) {
   // The old "Listing Quality" tab is folded into the Optimizer: its
   // seller score + 6 component gauges live in the health strip, and Walmart's
@@ -35,7 +35,11 @@ export function WalmartGrowthTabs({
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
         <TabsContent value="integrity" className="mt-4">
-          <ListingIntegrityPanel data={integrityData} />
+          {integrityData ? <ListingIntegrityPanel data={integrityData} /> : (
+            <p className="rounded-lg border border-rule bg-surface p-6">
+              Listing Integrity evidence is unavailable in this deployment. Review and execution remain locked.
+            </p>
+          )}
         </TabsContent>
         <TabsContent value="optimizer" className="mt-4">
           <ListingOptimizer />
