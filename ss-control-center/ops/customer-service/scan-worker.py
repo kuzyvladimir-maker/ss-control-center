@@ -39,6 +39,11 @@ def main():
     ps="""
 $ProgressPreference='SilentlyContinue'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
+# Recover a stopped scanner task; never restart the Telegram listener or Chrome.
+if ((Get-ScheduledTask -TaskName SalutemCsScanBridge).State -ne 'Running') {
+  Start-ScheduledTask -TaskName SalutemCsScanBridge
+  Start-Sleep -Seconds 2
+}
 $expr=[IO.File]::ReadAllText('C:\\ProgramData\\SalutemCsScan\\scan.js')
 $b=@{id=20;method='Runtime.evaluate';params=@{expression=$expr;returnByValue=$true;awaitPromise=$true}} | ConvertTo-Json -Compress -Depth 10
 (Invoke-WebRequest -UseBasicParsing -Method POST -ContentType application/json -Body $b http://127.0.0.1:9230/ -TimeoutSec 125).Content
@@ -57,5 +62,7 @@ $b=@{id=20;method='Runtime.evaluate';params=@{expression=$expr;returnByValue=$tr
         raise
     # Outside the exception handler: an uncertain completion is never overwritten as FAILED.
     mcp('cs_task_complete', {'task_id':task['id'],'outcome':'DONE','result':snapshot})
+    # Explicitly reconcile even if the MCP after() callback did not finish.
+    mcp('cs_inbox_status', {'reconcile':True})
     print(json.dumps({'state':'DONE','taskId':task['id'],'scannedAt':snapshot['scannedAt'],'responseNeeded':len(snapshot['items']),'resolved':len(snapshot['resolved'])}))
 if __name__=='__main__': main()

@@ -39,15 +39,19 @@ export async function closeAnsweredByReply(
   for (const m of open) {
     if (!replyAnswers(m.receivedAt || m.createdAt, sentAt)) continue;
     if (opts.skip && (await opts.skip(m.id))) continue;
-    await prisma.buyerMessage.update({
+    await prisma.$transaction(async (tx) => {
+    if (await tx.csTask.findFirst({ where: { buyerMessageId: m.id, kind: "SEND", status: "CLAIMED" } })) return;
+    await tx.buyerMessage.update({
       where: { id: m.id },
-      data: { status: "SENT", responseSentVia: via, responseSentAt: sentAt, caseStage: "SENT" },
+      data: { status: "SENT", responseSentVia: via, responseSentAt: sentAt, caseStage: "SENT", resolution: `Ответ продавца; source=${via}; sentAt=${sentAt.toISOString()}` },
     });
-    await prisma.csCard.updateMany({
-      where: { buyerMessageId: m.id, status: { in: ["PENDING", "PUBLISHED", "WRONG", "REWORK"] } },
-      data: { status: "SUPERSEDED" },
+    await tx.csCard.updateMany({
+      where: { buyerMessageId: m.id, status: { in: ["PENDING", "PUBLISHED", "WRONG", "REWORK", "APPROVED", "SEND_FAILED"] } },
+      data: { status: "SENT", ownerComment: `Ответ продавца; source=${via}; sentAt=${sentAt.toISOString()}` },
     });
+    await tx.csTask.updateMany({ where: { buyerMessageId: m.id, status: "QUEUED" }, data: { status: "CANCELLED", error: `Already answered via ${via} at ${sentAt.toISOString()}` } });
     closed.push(m.id);
+    });
   }
   return closed;
 }

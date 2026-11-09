@@ -54,7 +54,8 @@ try {
   }
   $bytes=[Text.Encoding]::UTF8.GetBytes($result)
   $ctx.Response.ContentType='application/json'
-  $ctx.Response.OutputStream.Write($bytes,0,$bytes.Length)
-  $ctx.Response.Close()
+  # A timed-out/disconnected HTTP caller must not kill the persistent bridge.
+  try {$ctx.Response.OutputStream.Write($bytes,0,$bytes.Length)} catch {}
+  try {$ctx.Response.Close()} catch {}
  }
 } finally {if ($ws) {$ws.Dispose()};$listener.Close();$cts.Dispose()}

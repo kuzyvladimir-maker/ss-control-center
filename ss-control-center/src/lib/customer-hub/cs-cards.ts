@@ -17,7 +17,7 @@ import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
  * ok), its Amazon deadline and hours left (owner, 2026-11-01).
  */
 export async function pendingCards(limit = 10) {
-  const allowed = await prisma.buyerMessage.findMany({ where: { storeIndex: { in: ACTIVE_CS_STORES } }, select: { id: true } });
+  const allowed = await prisma.buyerMessage.findMany({ where: { storeIndex: { in: ACTIVE_CS_STORES } }, select: { id: true, status: true, responseSentAt: true } });
   const rows = await prisma.csCard.findMany({
     where: { status: "PENDING", buyerMessageId: { in: allowed.map((m) => m.id) } },
     orderBy: { createdAt: "asc" },
@@ -28,6 +28,8 @@ export async function pendingCards(limit = 10) {
     rows.map(async (r) => {
       const card = JSON.parse(r.cardJson);
       if (r.buyerMessageId === ALERT_CARD_MESSAGE_ID || card.kind === "info") return card;
+      const message = allowed.find((m) => m.id === r.buyerMessageId);
+      if (!message || message.responseSentAt || ["SENT", "RESOLVED", "CLOSED"].includes(message.status)) return null;
       const u = await cardUrgency(r, now);
       return {
         ...card,
@@ -38,7 +40,7 @@ export async function pendingCards(limit = 10) {
       };
     })
   );
-  return out.filter((c) => c.kind !== "alert");
+  return out.filter((c) => c && c.kind !== "alert");
 }
 
 export async function markPublished(cardId: string, telegramMessageId: string) {

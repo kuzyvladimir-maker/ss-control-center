@@ -23,8 +23,9 @@
  *  6. inboxStatus() — the one-call metric for cs_inbox_status.
  */
 import { prisma } from "@/lib/prisma";
+import { closeAnsweredByReply } from "./answered";
 import { processCase } from "./cs-pipeline";
-import { validateInboxScan, urgencyOf, type InboxItem, type Urgency, type UrgencyLevel } from "./inbox-rules";
+import { needsOwnerDecision, validateInboxScan, urgencyOf, type InboxItem, type Urgency, type UrgencyLevel } from "./inbox-rules";
 export { closeAnsweredByReply } from "./answered";
 export * from "./inbox-rules";
 
@@ -288,6 +289,13 @@ async function applyInboxScans(
   const reopened: string[] = [];
   const created: string[] = [];
   const mismatches: string[] = [];
+  // Repair cards left live by older send paths even if the scan is unavailable.
+  const answered = await prisma.buyerMessage.findMany({ where: {
+    channel: "Amazon", storeIndex: { in: WATCHED_STORES }, direction: "incoming",
+    OR: [{ responseSentAt: { not: null } }, { status: { in: ["SENT", "RESOLVED", "CLOSED"] } }],
+  }, select: { id: true } });
+  await prisma.csCard.updateMany({ where: { buyerMessageId: { in: answered.map((m) => m.id) }, status: { in: LIVE_CARD } },
+    data: { status: "SENT", ownerComment: `Сверено с закрытым сообщением хаба; checkedAt=${now.toISOString()}` } });
   for (const scan of scans.values()) {
     if (!scan.fresh || !scan.scannedAt) continue;
     const scannedAt = new Date(scan.scannedAt);
@@ -308,12 +316,16 @@ async function applyInboxScans(
           resolution: `Закрыто в Amazon; source=SELLER_CENTRAL_INBOX_SCAN; scannedAt=${scan.scannedAt}`,
         } });
         if (!closed.count) return;
-        await tx.csCard.updateMany({ where: { buyerMessageId: m.id, status: { in: LIVE_CARD } }, data: { status: "SUPERSEDED" } });
+        await tx.csCard.updateMany({ where: { buyerMessageId: m.id, status: { in: LIVE_CARD } }, data: { status: "SENT", ownerComment: `По инбоксу Seller Central, ${scan.scannedAt}; отсутствует в Response Needed (время отправки не установлено)` } });
         await tx.csTask.updateMany({ where: { buyerMessageId: m.id, status: "QUEUED" }, data: { status: "CANCELLED", error: `Closed in Amazon by scan ${scan.scannedAt}` } });
       });
     }
     for (const item of scan.items) {
       if (!item.orderId) continue;
+      if (item.sellerReplyAt && new Date(item.sellerReplyAt) <= scannedAt && item.receivedAt && new Date(item.sellerReplyAt) > new Date(item.receivedAt)) {
+        await closeAnsweredByReply(scan.storeIndex, item.orderId, new Date(item.sellerReplyAt), "SELLER_CENTRAL");
+        continue;
+      }
       const msgs = await prisma.buyerMessage.findMany({
         where: { storeIndex: scan.storeIndex, amazonOrderId: item.orderId, direction: "incoming" },
         orderBy: { createdAt: "desc" },
@@ -439,8 +451,8 @@ export async function reconcileInbox(
 export async function inboxStatus(now: Date = new Date()) {
   const scans = await latestInboxScans(now);
   const allCases = await loadOpenCases(now, scans);
-  const cases = allCases.filter((c) => c.inbox === "response_needed");
   const confirmed = await openThreads(now);
+  const cases = allCases.filter((c) => c.inbox === "response_needed" && confirmed.threads.some((t) => t.order === c.orderId));
   const count = (l: UrgencyLevel) => cases.filter((c) => c.urgency.flags.includes(l)).length;
   const awaiting = await prisma.csCard.findMany({
     where: { status: "PUBLISHED", NOT: { buyerMessageId: ALERT_CARD_MESSAGE_ID } },
@@ -538,14 +550,19 @@ export async function inboxStillNeedsReply(storeIndex: number, orderId: string, 
 export async function openThreads(now = new Date()) {
   const scans = await latestInboxScans(now);
   const scan = scans.get(1)!;
+  // Do not expose stale rows even if a consumer ignores the stale flag.
+  if (!scan.fresh) return { storeIndex: 1, lastScanAt: scan.scannedAt, stale: true, scanState: scan.state, threads: [] };
   const threads = await Promise.all(scan.items.map(async (item) => {
+    if (item.sellerReplyAt && item.receivedAt && new Date(item.sellerReplyAt) > new Date(item.receivedAt) && new Date(item.sellerReplyAt) <= new Date(scan.scannedAt!)) return null;
     const messages = await prisma.buyerMessage.findMany({ where: { storeIndex: 1, amazonOrderId: item.orderId, direction: "incoming" }, orderBy: { receivedAt: "desc" } });
-    const card = await prisma.csCard.findFirst({ where: { buyerMessageId: { in: messages.map((m) => m.id) }, NOT: { buyerMessageId: ALERT_CARD_MESSAGE_ID } }, orderBy: { createdAt: "desc" } });
+    const newest = messages[0];
+    const card = newest ? await prisma.csCard.findFirst({ where: { buyerMessageId: newest.id }, orderBy: { createdAt: "desc" } }) : null;
+    if (!needsOwnerDecision({ fresh: scan.fresh, cardStatus: card?.status, messageStatus: newest?.status, responseSentAt: newest?.responseSentAt })) return null;
     const received = item.receivedAt ? new Date(item.receivedAt) : messages[0]?.receivedAt;
     return { order: item.orderId, buyer: item.buyerName, storeIndex: 1,
       deadline: item.deadline || (received && Number.isFinite(received.getTime()) ? new Date(received.getTime() + 86400_000).toISOString() : null),
       overSla: item.overSla, cardStatus: card?.status ?? null,
       telegramLink: telegramLink(card?.telegramMessageId), lastScanAt: scan.scannedAt, stale: !scan.fresh };
   }));
-  return { storeIndex: 1, lastScanAt: scan.scannedAt, stale: !scan.fresh, scanState: scan.state, threads };
+  return { storeIndex: 1, lastScanAt: scan.scannedAt, stale: !scan.fresh, scanState: scan.state, threads: threads.filter((t) => t !== null) };
 }

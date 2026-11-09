@@ -16,6 +16,16 @@ export function replyAnswers(receivedAt: Date, replySentAt: Date): boolean {
   return replySentAt.getTime() > receivedAt.getTime();
 }
 
+/** Closed cards and answers must never become owner decisions again. */
+export function needsOwnerDecision(input: {
+  fresh: boolean; cardStatus?: string | null; messageStatus?: string | null;
+  responseSentAt?: Date | null;
+}): boolean {
+  return input.fresh && !input.responseSentAt &&
+    !["SENT", "SUPERSEDED", "CLOSED", "RESOLVED"].includes(input.cardStatus || "") &&
+    !["SENT", "CLOSED", "RESOLVED"].includes(input.messageStatus || "");
+}
+
 export type UrgencyLevel = "overdue" | "due_soon" | "card_stale" | "no_card" | "send_stuck" | "ok";
 
 export interface Urgency {
@@ -68,6 +78,7 @@ export interface InboxItem {
   text: string | null;
   overSla: boolean;
   deadline?: string | null;
+  sellerReplyAt?: string | null;
 }
 
 /** INBOX_SCAN result → items. Accepts {items:[…]} or {responseNeeded:[…]}. */
@@ -88,6 +99,7 @@ export function parseInboxResult(result: unknown): InboxItem[] {
       receivedAt: str(x.receivedAt) || str(x.received_at) || str(x.date),
       text: str(x.text) || str(x.message),
       deadline: str(x.deadline),
+      sellerReplyAt: str(x.sellerReplyAt),
       overSla: x.overSla === true || x.over_sla === true || /over\s*sla/i.test(String(x.status || "")),
     };
   });

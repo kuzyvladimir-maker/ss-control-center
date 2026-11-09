@@ -38,6 +38,7 @@ export function unreadMessagesWhere(channels: string[]): Prisma.BuyerMessageWher
   return {
     direction: "incoming",
     status: { in: ["NEW", "ANALYZED"] },
+    responseSentAt: null,
     channel: { in: channels },
   };
 }

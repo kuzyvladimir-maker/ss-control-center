@@ -74,6 +74,17 @@ test("INBOX_SCAN result parsing: order id from text, Over SLA from status", () =
 });
 
 import { validateInboxScan } from '../inbox-rules';
+import { needsOwnerDecision } from '../inbox-rules';
+test('answered cards and stale snapshots never enter decision digests', () => {
+  for (const cardStatus of ['SENT', 'SUPERSEDED', 'CLOSED', 'RESOLVED']) {
+    assert.equal(needsOwnerDecision({fresh:true, cardStatus}), false);
+  }
+  assert.equal(needsOwnerDecision({fresh:false, cardStatus:'PUBLISHED'}), false);
+  assert.equal(needsOwnerDecision({fresh:true, cardStatus:'PUBLISHED', responseSentAt:new Date()}), false);
+  assert.equal(needsOwnerDecision({fresh:true, cardStatus:'PUBLISHED', messageStatus:'SENT'}), false);
+  assert.equal(needsOwnerDecision({fresh:true, cardStatus:'PUBLISHED', messageStatus:'ANALYZED'}), true);
+  assert.equal(needsOwnerDecision({fresh:true, cardStatus:null}), true);
+});
 test('absence is only authoritative for a complete, fresh, exact-account two-folder scan', () => {
   const now = t('2026-11-06T14:00:00Z');
   const good = {storeIndex:1, accountName:'Salutem Solutions', complete:true, scannedAt:now.toISOString(), items:[], resolved:[]};

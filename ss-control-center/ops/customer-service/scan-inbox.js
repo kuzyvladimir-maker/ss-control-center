@@ -37,9 +37,11 @@
     const detail = await get('/messaging/api/global/cases/' + encodeURIComponent(row.caseId) + '?marketplaceId=' + encodeURIComponent(row.marketplaceId));
     if (detail.partyCase?.merchantId !== 'A3A7A0RDFUSGBS') throw Error('Thread account mismatch');
     const latest = (detail.partyCase.caseArtifacts || []).filter(x=>x.creator?.partyRole === 'BUYER' && x.message?.messageBody).sort((a,b)=>b.createdDate-a.createdDate)[0];
+    const reply = (detail.partyCase.caseArtifacts || []).filter(x=>x.creator?.partyRole === 'SELLER' && x.message?.messageBody).sort((a,b)=>b.createdDate-a.createdDate)[0];
     const item=map(row);
     if (!item.orderId || !latest) throw Error('Missing order or buyer message');
-    items.push({...item, text:latest.message.messageBody, receivedAt:new Date(latest.createdDate).toISOString()});
+    items.push({...item, text:latest.message.messageBody, receivedAt:new Date(latest.createdDate).toISOString(),
+      sellerReplyAt:reply && reply.createdDate > latest.createdDate ? new Date(reply.createdDate).toISOString() : null});
   }
   const check = await folder(neededQuery);
   const fingerprint = rows => JSON.stringify(rows.map(x=>[x.caseId,x.lastUpdatedDate]).sort());
