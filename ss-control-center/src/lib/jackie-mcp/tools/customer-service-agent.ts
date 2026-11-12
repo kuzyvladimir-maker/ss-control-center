@@ -238,7 +238,7 @@ const cardSetReply: JackieTool = {
 const inboxStatusTool: JackieTool = {
   name: "cs_inbox_status",
   description:
-    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, for active store 1 (Salutem Solutions), with the latest Seller Central inbox scan per store (Response Needed / Over SLA counts) and every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing reply cards; never posts alerts).",
+    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, for active store 1 (Salutem Solutions). stores[] lists store 1 with its latest Seller Central scan (Response Needed / Over SLA counts); stores 2-5 appear with blocked=true and sellerCentralInbox.state 'blocked' (Amazon-blocked accounts — not scanned, not an error). Plus every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing reply cards, closes blocked-store tasks as SKIPPED; never posts alerts).",
   // reconcile=true writes (cards, alerts); the plain call only reads.
   write: true,
   input_schema: { type: "object", properties: { reconcile: { type: "boolean" } }, additionalProperties: false },

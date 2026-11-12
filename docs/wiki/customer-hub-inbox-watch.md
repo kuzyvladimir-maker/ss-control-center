@@ -63,3 +63,22 @@ while `cs_cards_pending` and `cs_tasks_list` were empty.
 ## Cancellation requests (2026-11-02)
 
 Buyer cancellation notices and the before-shipment refund rule: [[customer-hub-cancel-requests]].
+
+## Active store only — 2-5 blocked by Amazon (owner, topic 42, 2026-11-04)
+
+Customer Service runs for store 1 (Salutem Solutions) only; stores 2-5 are
+Amazon-blocked. The single config list `ACTIVE_CS_STORES = [1]`
+(`src/lib/customer-hub/config.ts`, with derived `ALL_CS_STORES` /
+`BLOCKED_CS_STORES`) drives every CS path — add an index back the moment Amazon
+unblocks that account.
+
+- `WATCHED_STORES` = `ACTIVE_CS_STORES`, so INBOX_SCAN tasks, scan reads, open
+  cases and status are built for store 1 only.
+- `reconcileInbox` now runs `skipBlockedStoreTasks` first: any QUEUED/CLAIMED
+  task for a blocked store is closed `status=SKIPPED` with the "store blocked"
+  reason (it can never run — the account is disabled). Reported as
+  `blockedTasksSkipped`.
+- `inboxStatus` / `cs_inbox_status` counts unanswered + overdue for store 1 only;
+  `stores[]` lists stores 2-5 with `blocked:true` and
+  `sellerCentralInbox.state:"blocked"` — never "inbox not checked", never an
+  error. Topic alert cards stay retired (f7e7c490d).

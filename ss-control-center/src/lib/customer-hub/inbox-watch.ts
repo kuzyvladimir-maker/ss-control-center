@@ -48,7 +48,7 @@ export const ALERT_CARD_MESSAGE_ID = "cs-alert";
 export const INBOX_SCAN_MESSAGE_ID = "cs-inbox-scan";
 /** Only stores explicitly enabled by the owner. */
 export { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
-import { ACTIVE_CS_STORES as WATCHED_STORES } from "./config";
+import { ACTIVE_CS_STORES as WATCHED_STORES, BLOCKED_CS_STORES } from "./config";
 /** Project Telegram group (topic 42 lives there) — for message links only. */
 const TG_GROUP_LINK_ID = "3924739153";
 
@@ -240,6 +240,24 @@ async function latestInboxScans(now: Date): Promise<Map<number, InboxScanView>> 
   return map;
 }
 
+/**
+ * Close any task still waiting for a blocked store (owner, topic 42,
+ * 2026-11-04): the Amazon account is disabled, so a QUEUED/CLAIMED INBOX_SCAN
+ * (or any leftover task) can never run — mark it SKIPPED with the reason so it
+ * drops out of the VPS task lists instead of hanging forever.
+ */
+async function skipBlockedStoreTasks(now: Date): Promise<number> {
+  if (BLOCKED_CS_STORES.length === 0) return 0;
+  const res = await prisma.csTask.updateMany({
+    where: { storeIndex: { in: BLOCKED_CS_STORES }, status: { in: ["QUEUED", "CLAIMED"] } },
+    data: {
+      status: "SKIPPED",
+      error: `store blocked by Amazon — Customer Service disabled (owner 2026-11-04); skipped ${now.toISOString()}`,
+    },
+  });
+  return res.count;
+}
+
 /** One INBOX_SCAN per store at a time, every INBOX_SCAN_EVERY_MIN. */
 async function queueInboxScans(now: Date): Promise<number> {
   let queued = 0;
@@ -386,6 +404,8 @@ export interface ReconcileResult {
   createdFromInbox: string[];
   mismatches: string[];
   scansQueued: number;
+  /** Hanging tasks closed because their store is blocked by Amazon. */
+  blockedTasksSkipped: number;
   alertCardId: string | null;
   errors: string[];
 }
@@ -396,6 +416,7 @@ export async function reconcileInbox(
   const now = opts.now ?? new Date();
   const started = Date.now();
   const errors: string[] = [];
+  const blockedTasksSkipped = opts.dryRun ? 0 : await skipBlockedStoreTasks(now);
   const scansQueued = opts.dryRun ? 0 : await queueInboxScans(now);
   const scans = await latestInboxScans(now);
   const applied = opts.dryRun
@@ -443,6 +464,7 @@ export async function reconcileInbox(
     createdFromInbox: applied.created,
     mismatches: applied.mismatches,
     scansQueued,
+    blockedTasksSkipped,
     alertCardId: null,
     errors,
   };
@@ -471,22 +493,40 @@ export async function inboxStatus(now: Date = new Date()) {
       sendStuck: count("send_stuck"),
       cardsAwaitingOwner: awaiting.filter((c) => cases.some((x) => x.messageIds.includes(c.buyerMessageId))).length,
     },
-    stores: WATCHED_STORES.map((s) => {
-      const mine = cases.filter((c) => c.storeIndex === s);
-      const scan = scans.get(s) as InboxScanView;
-      return {
+    // Active stores carry real counts; blocked stores (2-5) are reported as
+    // "blocked" — never an error, never "inbox not checked" (owner 2026-11-04).
+    stores: [
+      ...WATCHED_STORES.map((s) => {
+        const mine = cases.filter((c) => c.storeIndex === s);
+        const scan = scans.get(s) as InboxScanView;
+        return {
+          storeIndex: s,
+          blocked: false,
+          unanswered: scan.fresh ? scan.items.length : null,
+          overdue: mine.filter((c) => c.urgency.flags.includes("overdue")).length,
+          sellerCentralInbox: {
+            state: scan.state,
+            scannedAt: scan.scannedAt,
+            responseNeeded: scan.fresh ? scan.items.length : null,
+            overSla: scan.fresh ? scan.items.filter((i) => i.overSla).length : null,
+            error: scan.error,
+          },
+        };
+      }),
+      ...BLOCKED_CS_STORES.map((s) => ({
         storeIndex: s,
-        unanswered: scan.fresh ? scan.items.length : null,
-        overdue: mine.filter((c) => c.urgency.flags.includes("overdue")).length,
+        blocked: true,
+        unanswered: null,
+        overdue: null,
         sellerCentralInbox: {
-          state: scan.state,
-          scannedAt: scan.scannedAt,
-          responseNeeded: scan.fresh ? scan.items.length : null,
-          overSla: scan.fresh ? scan.items.filter((i) => i.overSla).length : null,
-          error: scan.error,
+          state: "blocked" as const,
+          scannedAt: null,
+          responseNeeded: null,
+          overSla: null,
+          error: null,
         },
-      };
-    }),
+      })),
+    ].sort((a, b) => a.storeIndex - b.storeIndex),
     cases: cases.map((c) => ({
       orderId: c.orderId,
       buyer: c.buyer,
