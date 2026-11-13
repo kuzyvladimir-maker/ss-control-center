@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { processCase } from "@/lib/customer-hub/cs-pipeline";
 
+export const maxDuration = 300;
+
 // GET — single message with conversation history
 export async function GET(
   _req: NextRequest,

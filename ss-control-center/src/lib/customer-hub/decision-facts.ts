@@ -35,13 +35,14 @@ export function decideFromFacts(input: {
   // Carrier timestamps lack UTC offsets. Compare calendar days only, never
   // invent an exact UTC ordering for scans from different time zones.
   if (tf.firstCarrierScan && e.label.at && tf.firstCarrierScan.slice(0, 10) < e.label.at.slice(0, 10)) issues.push("скан перевозчика датирован раньше этикетки; нужны точные часовые пояса");
-  if (!Number.isFinite(Date.parse(e.receivedAt))) issues.push("нет времени входящего обращения");
+  if (!Number.isFinite(Date.parse(e.receivedAt)) || Date.parse(e.receivedAt) > now + 60_000) issues.push("нет достоверного времени входящего обращения");
   const plan = (pattern: DecisionPlan["pattern"], action: DecisionPlan["action"], rule: string): DecisionPlan => ({ ready: issues.length === 0 && pattern !== "POLICY_CONFLICT", pattern, action, rule, issues, threadMode: e.threadMode });
   if (tf.delivered && /\b(hasn.t arrived|not (?:been )?delivered|never received|did not receive)\b/i.test(input.customerMessage)) issues.push("покупатель сообщает о неполучении, API подтверждает доставку — нужно уточнение");
   if (issues.length) return plan("MISSING_FACTS", null, "Нет решения до подтверждения фактов (ТЗ 13.11, п.6)");
   const text = input.customerMessage;
   const cancellation = /\bcancel(?:lation|ation)?\b/i.test(text);
-  const spoilage = /\b(spoil\w*|rotten|mold\w*|leak\w*|thaw\w*|melt\w*|damaged|unsafe)\b/i.test(text);
+  const qualityClaim = text.replace(/\b(?:not|isn.t|wasn.t|no) (?:damaged|spoiled|thawed|melted|leaking|rotten)\b/gi, "");
+  const spoilage = /\b(spoil\w*|rotten|mold\w*|leak\w*|thaw\w*|melt\w*|damaged|unsafe)\b/i.test(qualityClaim);
   const returnRequest = /\b(return|unopened|changed my mind|no longer (?:want|need)|ordered by mistake)\b/i.test(text);
   const c = input.cancelRequest;
   if (!cancellation && c?.kind === "REQUEST" && c.beforeShipment === true) {

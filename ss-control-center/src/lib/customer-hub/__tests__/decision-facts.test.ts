@@ -58,3 +58,11 @@ test("a policy mentioning refund is not an owner refund authorization", async ()
   assert.equal(refundBasis({ customerMessage: "changed my mind", extraInstruction: "Never refund without our-fault basis" }).ownerOrderedRefund, false);
   assert.equal(refundBasis({ customerMessage: "changed my mind", ownerRefundAuthorized: true }).ownerOrderedRefund, true);
 });
+
+test("same-day scan without timezone cannot prove pre-shipment cancellation", () => {
+  const e = evidence(); e.receivedAt = "2026-11-09T01:00:00Z"; e.label.at = "2026-11-09T02:00:00Z";
+  assert.equal(decide(e, { customerMessage: "Please cancel" }).ready, false);
+});
+test("explicit absence of damage is not a spoilage complaint", () => {
+  assert.equal(decide(evidence(), { customerMessage: "Not damaged. I want to return this unopened item." }).action, "no_refund");
+});
