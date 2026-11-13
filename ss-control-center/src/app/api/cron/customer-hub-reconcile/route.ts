@@ -18,7 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { inboxStatus, reconcileInbox } from "@/lib/customer-hub/inbox-watch";
 
-export const maxDuration = 300;
+export const maxDuration = 800;
 
 export async function GET(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
   const dryRun = request.nextUrl.searchParams.get("dry") === "1";
   const startedAt = new Date();
-  const result = await reconcileInbox({ budgetMs: 220_000, dryRun });
+  const result = await reconcileInbox({ budgetMs: 120_000, dryRun });
   const status = await inboxStatus();
 
   if (!dryRun) {

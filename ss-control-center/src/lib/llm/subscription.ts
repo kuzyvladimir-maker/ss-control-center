@@ -134,7 +134,7 @@ async function askLane(
 ): Promise<SubscriptionCompletion> {
   const doFetch = input.fetchImpl ?? fetch;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), input.effort === "max" ? 650_000 : REQUEST_TIMEOUT_MS);
   let response: Response;
   try {
     response = await doFetch(completionEndpoint(base, lane), {

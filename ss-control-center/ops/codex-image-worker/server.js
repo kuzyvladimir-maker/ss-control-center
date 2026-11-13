@@ -614,13 +614,14 @@ function runClaudeText(prompt, model, systemPrompt, effort) {
       "-p", prompt,
       "--output-format", "json",
       "--tools", "",
+      "--setting-sources", "",
       "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
       "--permission-mode", "bypassPermissions",
       "--model", model,
       "--max-turns", "1",
     ];
     if (effort) args.push("--effort", effort);
-    if (systemPrompt) args.push("--append-system-prompt", systemPrompt);
+    if (systemPrompt) args.push("--system-prompt", systemPrompt);
     const child = spawn(CLAUDE_BIN, args, { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "", stderr = "";
     const cap = (s, d) => { s += d.toString(); return s.length > 400000 ? s.slice(-400000) : s; };
@@ -629,7 +630,7 @@ function runClaudeText(prompt, model, systemPrompt, effort) {
     const timer = setTimeout(() => {
       try { child.kill("SIGKILL"); } catch {}
       resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude text timed out" });
-    }, TEXT_TIMEOUT_MS);
+    }, effort === "max" ? 600_000 : TEXT_TIMEOUT_MS);
     child.on("error", (e) => {
       clearTimeout(timer);
       resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude spawn error: " + e.message });

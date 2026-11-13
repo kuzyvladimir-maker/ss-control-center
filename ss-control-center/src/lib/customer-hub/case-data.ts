@@ -37,7 +37,7 @@ export interface CollectResult {
   snapshot: CaseDataSnapshot;
   thread: ThreadEntry[];
   /** Fields worth persisting on the message (fresh tracking, product type). */
-  patch: { trackingEvents?: string; productType?: string; trackingNumber?: string; carrier?: string; service?: string; orderTotal?: number; promisedEdd?: string; actualDelivery?: string | null; trackingStatus?: string };
+  patch: { trackingEvents?: string; productType?: string; trackingNumber?: string; carrier?: string; service?: string; orderTotal?: number; orderDate?: string; product?: string; promisedEdd?: string; actualDelivery?: string | null; trackingStatus?: string };
 }
 
 // Minimal shape of a Veeqo order line, enough to resolve product id + SKU for
@@ -245,6 +245,8 @@ export async function collectCaseData(
   );
 
   if (total && Number.isFinite(Number(total.replace("$", "")))) patch.orderTotal = Number(total.replace("$", ""));
+  if (purchased) patch.orderDate = purchased;
+  if (itemsLine) patch.product = itemsLine;
   if (deliverBy) patch.promisedEdd = deliverBy;
   const checkedAt = new Date().toISOString();
   const evidence: DecisionEvidence = {
@@ -335,8 +337,8 @@ export async function collectCaseData(
     let factEn: string;
     let factRu: string;
     if (!tf.firstCarrierScan) {
-      factEn = "Carrier tracking: NO carrier acceptance scan — label only, the carrier never received the package.";
-      factRu = "скана приёмки нет — посылку перевозчику не передали";
+      factEn = "Live carrier API: label only; no carrier acceptance scan is recorded.";
+      factRu = "API перевозчика: только этикетка, скан приёмки не найден";
     } else if (tf.delivered) {
       factEn = `Carrier tracking (${carrierEn}): DELIVERED ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; accepted ${tf.firstCarrierScan}${tf.transitHours !== null ? `; ~${tf.transitHours} h in transit` : ""}.`;
       factRu = `${carrierRu}: ДОСТАВЛЕНО ${tf.delivered}${tf.deliveryDetail ? ` (${tf.deliveryDetail})` : ""}; принят ${tf.firstCarrierScan}.`;

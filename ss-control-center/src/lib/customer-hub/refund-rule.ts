@@ -27,6 +27,21 @@ export const SPOILAGE_RE =
 export const REFUND_OFFER_RE =
   /\b((we|i)( will|'ll| have| can| would be (happy|glad) to| are happy to)? (issue|process|arrange|provide|initiate|give)( you)?( a)?( full| partial)? refund|refund (has been|will be|was) (issued|processed|initiated)|(issued|processed)( you)?( a)?( full| partial)? refund|(a|your) (full|partial) refund|refund (you|your order|the (full|shipping))|refund for (this|your) order)\b/i;
 
+/** Detect an offer, not "unable to ... issue a refund for this order".
+ * Contrasts start a new clause: a refusal followed by "but we will refund"
+ * must still be treated as a money promise. */
+export function offersRefund(text: string): boolean {
+  const clauses = text.split(/[.!?;\n]+|\b(?:but|however|instead|nevertheless)\b/i);
+  return clauses.some(clause => {
+    for (const match of clause.matchAll(new RegExp(REFUND_OFFER_RE.source, "gi"))) {
+      const prefix = clause.slice(0, match.index);
+      if (/\b(?:unable|cannot|can.t|won.t|will not|not able|no|not eligible)\b/i.test(prefix) && !/^(?:we|i)\b/i.test(match[0])) continue;
+      return true;
+    }
+    return false;
+  });
+}
+
 /** Telling the buyer to refuse the delivery (owner ban). */
 export const REFUSE_DELIVERY_RE =
   /\b(refus(e|ing) (the |your )?(delivery|package|shipment|parcel|order)|decline (the )?delivery|return(ed)? to sender)\b/i;

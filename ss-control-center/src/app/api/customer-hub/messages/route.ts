@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { liveChannels } from "@/lib/customer-hub/live-counts";
 import { syncBuyerMessagesFromGmail } from "@/lib/customer-hub/sync-messages";
 
+export const maxDuration = 800;
+
 // GET — list messages from DB.
 // Default behaviour: only "active" (NEW + ANALYZED) incoming messages, so
 // the Messages tab shows only what still needs a reply. Pass
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    const result = await syncBuyerMessagesFromGmail();
+    const result = await syncBuyerMessagesFromGmail({ budgetMs: 120_000 });
     return NextResponse.json(result);
   } catch (error) {
     console.error("Messages sync error:", error);

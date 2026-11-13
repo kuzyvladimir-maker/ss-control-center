@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { transitFacts } from "./transit";
 import { decisionPrompt } from "./decision-facts";
 import { learnOwnerReply } from "./owner-learning";
 import { assertActiveCsStore } from "./config";
@@ -54,6 +56,7 @@ function analysisInput(m: Msg, history: ThreadEntry[], caseFacts: string, extra?
   } catch {
     events = [];
   }
+  const transit = transitFacts(events);
   return {
     customerMessage: m.customerMessage || "",
     customerName: m.customerName,
@@ -69,10 +72,10 @@ function analysisInput(m: Msg, history: ThreadEntry[], caseFacts: string, extra?
     service: m.service,
     trackingNumber: m.trackingNumber,
     trackingStatus: m.trackingStatus,
-    shipDate: m.shipDate,
+    shipDate: transit.firstCarrierScan?.slice(0, 10) || null,
     promisedEdd: m.promisedEdd,
-    actualDelivery: m.actualDelivery,
-    daysInTransit: m.daysInTransit,
+    actualDelivery: transit.delivered?.slice(0, 10) || null,
+    daysInTransit: transit.daysInTransit,
     daysLate: m.daysLate,
     requestedShippingService: m.requestedShippingService,
     actualShippingService: m.actualShippingService,
@@ -132,6 +135,7 @@ function deadlineRu(m: Msg): string {
 
 export interface CardPayload {
   promptAuditId?: string | null;
+  evidenceHash?: string;
   draftSource?: string;
   cardId: string;
   version: number;
@@ -207,10 +211,12 @@ export async function createCard(
   const facts = snap.items
     .filter((i) => i.present && i.factRu && i.key !== "M1")
     .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: `${i.factRu} [источник: ${i.tried.filter(t => t.ok).map(t => t.source).join("; ")}; ${snap.collectedAt}]` }));
+  if (snap.evidence) facts.unshift({ what: "Обращение", value: `${snap.evidence.receivedAt}; ${snap.evidence.threadMode}; предыдущих сообщений покупателя: ${snap.evidence.previousBuyerMessages} [источник: Gmail receivedAt / подтверждённая история хаба]` });
   if (snap.cancelRequest) facts.push({ what: "Отмена", value: cancelFactRu(snap.cancelRequest) });
   if (snap.decision) facts.push({ what: "Правило", value: `${snap.decision.pattern}: ${snap.decision.rule}; обращение: ${snap.decision.threadMode}` });
   const payload: CardPayload = {
     cardId: card.id,
+    evidenceHash: createHash("sha256").update(JSON.stringify(snap)).digest("hex"),
     promptAuditId: a?.promptAuditId ?? null,
     draftSource: m.editedResponse ? "owner_verbatim" : opts.infoOnly ? "information" : "analysis",
     version,
@@ -243,7 +249,7 @@ export async function createCard(
   payload.draftRu = opts.infoOnly || missingRu
     ? null
     : (m.editedResponse ? m.editedResponseRu : m.suggestedResponseRu) ||
-      (payload.draftEn ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
+      (payload.draftEn && !a?.promptAuditId ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
   payload.textRu = renderCardText({
     orderId: payload.orderId,
     store: payload.store,
@@ -332,6 +338,10 @@ export async function processCase(
   assertActiveCsStore(m.storeIndex);
   if (m.responseSentAt || m.status === "RESOLVED") return { stage: "SENT" };
 
+  // Re-analysis invalidates the previous generated decision immediately,
+  // including when collection/model execution fails or the request times out.
+  await prisma.csCard.updateMany({ where: { buyerMessageId: m.id, status: { in: ["PENDING", "PUBLISHED", "WRONG", "REWORK"] } }, data: { status: "SUPERSEDED" } });
+  m = await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "COLLECTING", suggestedResponse: null, suggestedResponseRu: null, action: "investigate" } });
   const prevSnap = parseSnapshot(m.caseDataJson);
   const { snapshot, thread, patch } = await collectCaseData(m, prevSnap);
   m = await prisma.buyerMessage.update({
@@ -389,9 +399,7 @@ export async function processCase(
     const cardId = await createCard(m, snapshot, { ownerBriefRu: m.ownerBrief }, m.ownerBrief);
     return { stage: "NEEDS_OWNER_DATA", cardId };
   }
-  const suggestedRu = a.suggestedResponse
-    ? await translateText(a.suggestedResponse, "en-ru").catch(() => null)
-    : null;
+  const suggestedRu = a.draftRu || null;
   m = await prisma.buyerMessage.update({
     where: { id: m.id },
     data: {

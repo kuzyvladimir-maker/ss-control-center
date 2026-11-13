@@ -27,7 +27,7 @@ import { ensureRegistered } from "@/lib/jackie-mcp/tools";
 import { getTool, listTools, verifyJackieAuth } from "@/lib/jackie-mcp/registry";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 800;
 
 const PROTOCOL_VERSION = "2025-03-26"; // MCP spec version we conform to
 const SERVER_NAME = "sscc-mcp";

@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { syncBuyerMessagesFromGmail } from "@/lib/customer-hub/sync-messages";
 import { WATCHED_STORES } from "@/lib/customer-hub/inbox-watch";
 
-export const maxDuration = 300;
+export const maxDuration = 800;
 
 export async function GET(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   const startedAt = new Date();
   // ~3.5 min of new-message work, leaving room for the confirmation sweep +
   // stale re-check before maxDuration (300s).
-  const result = await syncBuyerMessagesFromGmail({ window, storeIndexes, budgetMs: 210_000 });
+  const result = await syncBuyerMessagesFromGmail({ window, storeIndexes, budgetMs: 120_000 });
 
   await prisma.syncLog
     .create({

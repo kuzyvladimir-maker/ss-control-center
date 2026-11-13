@@ -104,8 +104,8 @@ export async function cardAction(
     }
     const finalReply = m.editedResponse || m.suggestedResponse || "";
     assertSendPolicy(finalReply, m.orderTotal, ownerRefundAuthorized);
-    await learnOwnerReply(m, finalReply, cardId, comment, Boolean(overrideText));
     const task = await enqueueSendTask(m, { approvedBy: `owner via ${actor}`, cardId, ownerRefundAuthorized });
+    await learnOwnerReply(m, finalReply, cardId, comment, Boolean(overrideText));
     await prisma.csCard.update({
       where: { id: cardId },
       data: { status: "APPROVED", decision: "approve", decidedAt: new Date(), ownerComment: comment },

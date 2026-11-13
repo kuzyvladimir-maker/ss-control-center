@@ -66,3 +66,15 @@ test("same-day scan without timezone cannot prove pre-shipment cancellation", ()
 test("explicit absence of damage is not a spoilage complaint", () => {
   assert.equal(decide(evidence(), { customerMessage: "Not damaged. I want to return this unopened item." }).action, "no_refund");
 });
+
+test("actual food refusal is not a refund promise; a contrasting offer still is", async () => {
+  const { offersRefund } = await import("../refund-rule");
+  assert.equal(offersRefund("We are unable to provide a return label, accept the item back or issue a refund for this order."), false);
+  assert.equal(offersRefund("We cannot provide a partial refund, but we will issue a full refund."), true);
+  assert.equal(offersRefund("No need to return it: we will issue a full refund."), true);
+});
+
+test("model receives the actual incoming request timestamp, separately from label and notices", () => {
+  const e = evidence(); e.receivedAt = "2026-11-07T12:00:00Z";
+  assert.match(factsForPrompt({ collectedAt: new Date(now).toISOString(), items: [], evidence: e }), /Incoming request received at 2026-11-07T12:00:00Z/);
+});
