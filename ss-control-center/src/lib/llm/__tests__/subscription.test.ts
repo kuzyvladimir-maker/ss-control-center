@@ -161,3 +161,17 @@ test("an answer with no JSON object is refused, not guessed at", async () => {
     /did not return a JSON object/,
   );
 });
+
+test("CS Opus/max reaches worker and rejects silent model or effort downgrades", async () => {
+  const calls: Record<string, unknown>[] = [];
+  const worker = (model: string, effort?: string) => (async (_url: unknown, init: RequestInit) => {
+    calls.push(JSON.parse(String(init.body)));
+    return new Response(JSON.stringify({ text: "ready", model, effort }), { status: 200 });
+  }) as typeof fetch;
+  const input = { prompt: "CS decision", lanes: ["claude"] as ("claude")[], model: "opus", effort: "max" as const };
+  await assert.rejects(() => withWorker(() => completeWithSubscription({ ...input, fetchImpl: worker("sonnet", "max") })), /Opus/);
+  await assert.rejects(() => withWorker(() => completeWithSubscription({ ...input, fetchImpl: worker("claude-opus-5-5") })), /effort/);
+  const result = await withWorker(() => completeWithSubscription({ ...input, fetchImpl: worker("claude-opus-5-5", "max") }));
+  assert.equal(result.model, "claude-opus-5-5"); assert.equal(calls.length, 3);
+  assert.equal(calls[2].model, "opus"); assert.equal(calls[2].effort, "max");
+});

@@ -1,15 +1,12 @@
+import type { DecisionPlan } from "./decision-facts";
 import { CUSTOMER_SIGN_OFF, OWNER_REPLY_RULES, removeApologies, salutemClosing, APOLOGY_RE } from "./reply-policy";
 import { createPromptAudit, updatePromptAudit } from "./prompt-audit";
-/**
- * Customer Hub Decision Engine — AI analysis of buyer messages with
- * automatic fallback between Claude (primary) and OpenAI (fallback).
- * If the primary provider fails (missing key, API error, rate limit), the
- * next provider in the list is tried. Only when all providers have failed
- * do we return the safe heuristic fallback.
+/** Evidence-first Customer Hub decisions. Opus/max on subscription only.
+ * Missing facts, model failures and invalid outputs remain unsendable.
  */
 
 import { completeWithSubscription } from "@/lib/llm/subscription";
-import { getAIConfig, type ProviderName } from "@/lib/ai-config";
+import { type ProviderName } from "@/lib/ai-config";
 import { findRelevantCases, loadVoiceGuide } from "./knowledge-base";
 import { ownerStatedDates, transitFacts } from "./transit";
 import { FAULT_ADMISSION_RE } from "./autosend-policy";
@@ -33,15 +30,7 @@ const SYSTEM_PROMPT = OWNER_REPLY_RULES + "\n\n" + `You are a senior Amazon-sell
 SOURCE-OF-TRUTH HIERARCHY — read this before anything else
 ═══════════════════════════════════════════════════════════════
 
-When the customer's account of what happened conflicts with our internal data, the CUSTOMER'S MESSAGE wins. Tracking systems lag behind reality, internal statuses are imperfect, our DB might have stale fields. The customer is in their kitchen looking at the package right now.
-
-Concrete examples of "trust the customer over the data":
-  • Customer says "got crushed" / "arrived damaged" / "opened the box" / "received it" → treat the package as DELIVERED, regardless of trackingStatus = in_transit
-  • Customer says "still hasn't arrived" / "where is it" → treat as in transit, even if tracking marks delivered (carrier scan errors are common)
-  • Customer says "smells bad" / "leaked" / "thawed" → treat as a real spoilage complaint, no matter what our shipping data shows
-  • Customer says "I didn't order this" → treat as wrong item / unauthorized, do not lecture them about the order data
-
-Tracking data is for FACT-CHECKING dates and choosing follow-up actions, not for overriding what the customer says they have in their hands.
+The evidence-selected decision plan is mandatory and takes precedence over historical examples below. Customer claims and carrier observations are distinct facts: record both with sources. A contradiction is a missing-facts case, never permission to fabricate delivery or shipment dates. A prior cancellation notice is historical evidence, not a standing instruction for every later message. Do not infer that a label was absent from an Amazon status. Never treat cached tracking or an API error as proof that the carrier did not receive a package.
 
 ═══════════════════════════════════════════════════════════════
 HARD-CODED OPERATING RULES (always true for Salutem Solutions)
@@ -719,6 +708,7 @@ should record:
 The "suggestedResponse" field MUST start with "Hello" (Spanish: "Estimado/a").`;
 
 export interface AnalysisInput {
+  decisionPlan?: DecisionPlan;
   customerMessage: string;
   customerName: string | null;
   language: string;
@@ -788,7 +778,7 @@ export interface AnalysisInput {
 function cancelBasis(input: AnalysisInput) {
   const c = input.cancelRequest;
   return {
-    cancelBeforeShipment: Boolean(c && c.kind === "REQUEST" && c.beforeShipment === true),
+    cancelBeforeShipment: input.decisionPlan?.pattern === "CANCEL_BEFORE_LABEL",
     orderTotal: c?.orderTotal ?? input.orderTotal ?? null,
   };
 }
@@ -1403,13 +1393,9 @@ MANDATORY RULES FOR REWRITE:
 Return ONLY the rewritten response text, no JSON, no explanation.`;
 
   try {
-    const config = await getAIConfig();
-    for (const provider of config.providerChain) {
+    for (const provider of ["claude"] as const) {
       try {
-        const fixedText =
-          provider === "claude"
-            ? await callClaudeRaw(fixPrompt)
-            : await callOpenAIRaw(fixPrompt);
+        const fixedText = await callClaudeRaw(fixPrompt);
         const trimmed = scrubBuyerReply(
           fixedText.trim(),
           hasVerifiedCarrierScan(input.trackingEvents),
@@ -1445,63 +1431,42 @@ Return ONLY the rewritten response text, no JSON, no explanation.`;
 // Provider call returns the raw text from the model. Parsing + greeting
 // fallback happens in tryParseAnalysis, which is shared between providers
 // since both models return the same JSON schema.
-async function callClaude(userMessage: string): Promise<string> {
-  const { text } = await completeWithSubscription({
+async function callClaude(userMessage: string) {
+  return completeWithSubscription({
     prompt: userMessage,
     system: SYSTEM_PROMPT,
     lanes: ["claude"],
+    model: "opus",
+    effort: "max",
   });
-  return text;
-}
-
-async function callOpenAI(userMessage: string): Promise<string> {
-  const { text } = await completeWithSubscription({
-    prompt: userMessage,
-    system: SYSTEM_PROMPT,
-    lanes: ["codex"],
-  });
-  return text;
 }
 
 // Raw text-only provider calls for the validator. Unlike the analysis
 // calls above these DO NOT send SYSTEM_PROMPT — the validator passes its
 // own constrained prompt and expects plain-text output, not JSON.
 async function callClaudeRaw(prompt: string): Promise<string> {
-  const { text } = await completeWithSubscription({ prompt, lanes: ["claude"] });
-  return text;
-}
-
-async function callOpenAIRaw(prompt: string): Promise<string> {
-  const { text } = await completeWithSubscription({ prompt, lanes: ["codex"] });
+  const { text } = await completeWithSubscription({ prompt, lanes: ["claude"], model: "opus", effort: "max" });
   return text;
 }
 
 export async function analyzeMessage(
   input: AnalysisInput
 ): Promise<AnalysisResult> {
-  // Runtime-configurable: operator picks primary provider + model per
-  // provider from the Settings UI (Setting table). Providers without a
-  // valid .env key are stripped from the chain automatically.
-  const config = await getAIConfig();
+  // Owner 13.11: never downgrade a decision to Sonnet or a heuristic.
+  if (!input.decisionPlan?.ready) return { ...fallbackResult(input), suggestedResponse: "", isFallback: true, ownerBriefRu: "Не хватает проверенных фактов: сначала collectCaseData/processCase." };
   const context = await prepareAnalysisPrompt(input);
   const { userMessage, kbTopScore } = context;
   const promptAuditId = await createPromptAudit({ ...context, orderId: input.amazonOrderId });
-  const attempts: { provider: string; at: string; status: string }[] = [];
-  if (!config.providerChain.length) {
-    await updatePromptAudit(promptAuditId, { status: "fallback", error: "No configured provider; prompt not submitted" });
-    return { ...fallbackResult(input), promptAuditId };
-  }
+  const attempts: { provider: string; model: string; effort: string; at: string; status: string }[] = [];
   let lastError = "";
 
-  for (const provider of config.providerChain) {
+  for (const provider of ["claude"] as const) {
     try {
-      attempts.push({ provider, at: new Date().toISOString(), status: "started" });
+      attempts.push({ provider, model: "opus", effort: "max", at: new Date().toISOString(), status: "started" });
       await updatePromptAudit(promptAuditId, { attempts, status: "submitted" });
       console.log(`[Analyzer] Trying ${provider} on its subscription…`);
-      const text =
-        provider === "claude"
-          ? await callClaude(userMessage)
-          : await callOpenAI(userMessage);
+      const { text, model } = await callClaude(userMessage);
+      attempts[attempts.length - 1].model = model;
 
       const parsed = tryParseAnalysis(text, input);
       if (parsed) {
@@ -1631,6 +1596,12 @@ export async function analyzeMessage(
           parsed.suggestedResponse = fallbackResult(input).suggestedResponse;
           parsed.isFallback = true;
         }
+        if (input.decisionPlan.action && parsed.action !== input.decisionPlan.action) {
+          throw new Error(`Decision mismatch: expected ${input.decisionPlan.action}, got ${parsed.action}`);
+        }
+        if (input.decisionPlan.action === "no_refund" && REFUND_OFFER_RE.test(parsed.suggestedResponse)) throw new Error("Refund promise contradicts no_refund pattern");
+        if (FAULT_ADMISSION_RE.test(parsed.suggestedResponse) || parsed.factCheck?.passed === false) throw new Error("Draft failed factual/policy validation");
+        parsed.ownerBriefRu = `${parsed.ownerBriefRu || ""}\nПравило: ${input.decisionPlan.pattern} — ${input.decisionPlan.rule}`;
         parsed.kbTopScore = kbTopScore;
         parsed.promptAuditId = promptAuditId;
         attempts[attempts.length - 1].status = "completed";

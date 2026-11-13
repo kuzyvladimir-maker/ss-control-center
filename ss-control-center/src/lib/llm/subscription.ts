@@ -48,6 +48,7 @@ export interface SubscriptionCompletionInput {
   system?: string;
   /** `sonnet`, `opus`, `haiku` — CLI aliases, not API model IDs. */
   model?: string;
+  effort?: "high" | "max";
   /** Restrict to one subscription. Default: try both, Claude first. */
   lanes?: readonly SubscriptionLane[];
   /** Overrides the test seam; production never sets this. */
@@ -147,6 +148,7 @@ async function askLane(
         ...(input.system ? { system: input.system } : {}),
         // The model alias is Claude's; Codex picks its own.
         ...(input.model && lane === "claude" ? { model: input.model } : {}),
+        ...(input.effort && lane === "claude" ? { effort: input.effort } : {}),
       }),
       signal: controller.signal,
     });
@@ -159,13 +161,15 @@ async function askLane(
   }
 
   const body = (await response.json().catch(() => null)) as
-    | { ok?: boolean; text?: string; model?: string; error?: string }
+    | { ok?: boolean; text?: string; model?: string; effort?: string; error?: string }
     | null;
   if (!response.ok || !body?.text) {
     throw new SubscriptionLlmUnavailable(
       `HTTP ${response.status}${body?.error ? `: ${body.error}` : ""}`,
     );
   }
+  if (input.effort && body.effort !== input.effort) throw new SubscriptionLlmUnavailable("Worker did not confirm requested reasoning effort");
+  if (input.model === "opus" && !body.model?.includes("opus")) throw new SubscriptionLlmUnavailable("Worker did not confirm Opus");
   return {
     text: body.text,
     model: body.model ?? (lane === "claude" ? "sonnet" : "codex"),

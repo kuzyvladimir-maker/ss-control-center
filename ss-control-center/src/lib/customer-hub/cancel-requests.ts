@@ -136,9 +136,9 @@ const RESOLVE_RETRY_MS = 6 * 3600_000;
  * when Amazon sent none. Resolves (and caches) the label time while the
  * verdict is still unknown.
  */
-export async function cancelFactForOrder(orderId: string): Promise<CancelRequestFact | null> {
+export async function cancelFactForOrder(orderId: string, storeIndex?: number): Promise<CancelRequestFact | null> {
   const rows = await prisma.amazonCancelRequest.findMany({
-    where: { amazonOrderId: orderId },
+    where: { amazonOrderId: orderId, ...(storeIndex === undefined ? {} : { storeIndex }) },
     orderBy: { requestedAt: "asc" },
   });
   if (!rows.length) return null;

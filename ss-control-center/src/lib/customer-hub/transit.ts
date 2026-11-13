@@ -62,7 +62,7 @@ function isCarrierScan(e: TransitEvent): boolean {
 }
 
 function isDelivered(e: TransitEvent): boolean {
-  return (e.status || "").toUpperCase() === "D" || /\bdelivered\b/i.test(e.description || "");
+  return (e.status || "").toUpperCase() === "D" || (/\bdelivered\b/i.test(e.description || "") && !/not (?:be )?delivered|undelivered|delivery attempt/i.test(e.description || ""));
 }
 
 function label(e: TransitEvent): string {

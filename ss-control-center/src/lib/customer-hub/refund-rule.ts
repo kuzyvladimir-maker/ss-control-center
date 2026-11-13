@@ -53,6 +53,8 @@ export interface RefundBasisInput {
   trackingEvents?: TransitEvent[] | null;
   /** Owner's correction for this case (an explicit refund decision wins). */
   extraInstruction?: string | null;
+  /** Explicit trusted owner action, never inferred from words in a prompt. */
+  ownerRefundAuthorized?: boolean;
   conversationHistory?: Array<{ direction: string; text: string }>;
   /** Buyer's official cancellation request came before we bought the label. */
   cancelBeforeShipment?: boolean;
@@ -77,7 +79,7 @@ export function refundBasis(i: RefundBasisInput): RefundBasis {
   const spoilageClaimed = SPOILAGE_RE.test(i.customerMessage || "");
   const events = i.trackingEvents || [];
   const noFirstScan = events.length > 0 && transitFacts(events).firstCarrierScan === null;
-  const ownerOrderedRefund = /\b(refund|возврат денег|верни(те)? деньги|рефанд)\b/i.test(i.extraInstruction || "");
+  const ownerOrderedRefund = i.ownerRefundAuthorized === true;
   const replacementOffered = (i.conversationHistory || []).some(
     (h) => h.direction === "outgoing" && /\b(replacement|resend|re-ship|send (you )?(a new|another|it again))\b/i.test(h.text)
   );

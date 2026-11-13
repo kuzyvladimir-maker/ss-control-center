@@ -1,3 +1,4 @@
+import { decisionPrompt } from "./decision-facts";
 import { learnOwnerReply } from "./owner-learning";
 import { assertActiveCsStore } from "./config";
 /**
@@ -32,7 +33,7 @@ import {
 } from "./case-data-gate";
 import { runAutosend } from "./autosend-runner";
 import { FACT_LABEL_RU, renderCardText, verdictFromBrief } from "./card-format";
-import { cancelAlertRu, cancelFactRu, cancelInstruction, easternDay } from "./cancel-rules";
+import { cancelAlertRu, cancelFactRu, easternDay } from "./cancel-rules";
 export { enqueueSendTask } from "./cs-tasks";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
@@ -202,11 +203,12 @@ export async function createCard(
   const card = await prisma.csCard.create({
     data: { buyerMessageId: m.id, version, cardJson: "{}" },
   });
-  const alertRu = snap.cancelRequest ? cancelAlertRu(snap.cancelRequest) : null;
+  const alertRu = snap.decision?.pattern === "CANCEL_BEFORE_LABEL" && snap.cancelRequest ? cancelAlertRu(snap.cancelRequest) : null;
   const facts = snap.items
     .filter((i) => i.present && i.factRu && i.key !== "M1")
-    .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: i.factRu }));
+    .map((i) => ({ what: FACT_LABEL_RU[i.key] || i.key, value: `${i.factRu} [источник: ${i.tried.filter(t => t.ok).map(t => t.source).join("; ")}; ${snap.collectedAt}]` }));
   if (snap.cancelRequest) facts.push({ what: "Отмена", value: cancelFactRu(snap.cancelRequest) });
+  if (snap.decision) facts.push({ what: "Правило", value: `${snap.decision.pattern}: ${snap.decision.rule}; обращение: ${snap.decision.threadMode}` });
   const payload: CardPayload = {
     cardId: card.id,
     promptAuditId: a?.promptAuditId ?? null,
@@ -227,9 +229,9 @@ export async function createCard(
     missingRu,
     decisionRu: a?.ownerBriefRu || (missingRu ? "Решения нет: не хватает данных (см. выше)." : "—"),
     draftRu: null,
-    draftEn: opts.infoOnly ? "" : (m.editedResponse || m.suggestedResponse || "").trim(),
+    draftEn: opts.infoOnly || missingRu ? "" : (m.editedResponse || m.suggestedResponse || "").trim(),
     attachments: [],
-    buttons: opts.infoOnly
+    buttons: opts.infoOnly || missingRu
       ? []
       : [
           { action: "approve", label: "Утвердить и отправить", callbackData: `cs:${card.id}:approve` },
@@ -238,7 +240,7 @@ export async function createCard(
         ],
     textRu: "",
   };
-  payload.draftRu = opts.infoOnly
+  payload.draftRu = opts.infoOnly || missingRu
     ? null
     : (m.editedResponse ? m.editedResponseRu : m.suggestedResponseRu) ||
       (payload.draftEn ? await translateText(payload.draftEn, "en-ru").catch(() => null) : null);
@@ -254,18 +256,18 @@ export async function createCard(
     facts,
     verdictRu: a?.verdictRu || verdictFromBrief(a?.ownerBriefRu),
     pointsRu: a?.pointsRu || [],
-    missing: snap.items
+    missing: [...(snap.decision?.issues || []), ...snap.items
       .filter((i) => !i.present)
       .map((i) => {
         const tried = i.tried.map((t) => `${t.source}${t.note ? ` (${t.note})` : ""}`).join(" → ");
         return `${MINIMUM[i.key].labelRu}${tried ? ` — искали: ${tried}` : ""}`;
-      }),
+      })],
     draftRu: payload.draftRu,
     draftEn: payload.draftEn,
     attachments: payload.attachments,
   });
   await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify(payload) } });
-  if (!opts.infoOnly) await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: "CARD_PENDING" } });
+  if (!opts.infoOnly) await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: missingRu ? "NEEDS_OWNER_DATA" : "CARD_PENDING" } });
   return card.id;
 }
 
@@ -363,23 +365,30 @@ export async function processCase(
       .join("\n") || undefined;
 
   const missingRu = step === "OWNER" ? exhaustedNoteRu(snapshot) : null;
-  const cancelRule = snapshot.cancelRequest ? cancelInstruction(snapshot.cancelRequest) : null;
+  if (missingRu) {
+    m = await prisma.buyerMessage.update({ where: { id: m.id }, data: { action: "investigate", suggestedResponse: null, suggestedResponseRu: null, editedResponse: null, editedResponseRu: null, ownerBrief: "Не хватает фактов / конфликт правил: " + missingRu } });
+    const cardId = await createCard(m, snapshot, { ownerBriefRu: m.ownerBrief }, missingRu);
+    return { stage: "NEEDS_OWNER_DATA", cardId, missing: missingKeys(snapshot) };
+  }
   const input = analysisInput(
       m,
       thread,
       factsForPrompt(snapshot),
       [
-        cancelRule,
-        missingRu
-          ? "Some minimum case data could not be found (see the note below). If a playbook rule fully determines the decision regardless of the missing items — e.g. NOT HANDED OVER (no carrier acceptance scan) — follow that rule and write the final reply. Otherwise draft a safe reply without a money decision. Either way, mention the gaps in ownerBriefRu.\nMissing: " + missingRu.replace(/\n/g, " ")
-          : null,
+        snapshot.decision ? decisionPrompt(snapshot.decision) : null,
         ownerInstruction ? `OWNER'S CORRECTIONS FOR THIS CASE (follow them, they are facts from the owner): ${ownerInstruction}` : null,
       ]
         .filter(Boolean)
         .join("\n") || undefined
     );
   input.cancelRequest = snapshot.cancelRequest ?? null;
+  input.decisionPlan = snapshot.decision;
   const a = await analyzeMessage(input);
+  if (a.isFallback) {
+    m = await prisma.buyerMessage.update({ where: { id: m.id }, data: { action: "investigate", suggestedResponse: null, suggestedResponseRu: null, editedResponse: null, editedResponseRu: null, ownerBrief: "Решение не подготовлено: Opus недоступен или результат не прошёл проверку." } });
+    const cardId = await createCard(m, snapshot, { ownerBriefRu: m.ownerBrief }, m.ownerBrief);
+    return { stage: "NEEDS_OWNER_DATA", cardId };
+  }
   const suggestedRu = a.suggestedResponse
     ? await translateText(a.suggestedResponse, "en-ru").catch(() => null)
     : null;
@@ -412,8 +421,8 @@ export async function processCase(
   });
 
   try {
-    // A cancellation requested before shipment is always the owner's call.
-    await runAutosend(m.id, { kbTopScore: a.kbTopScore, isFallback: a.isFallback, neverSend: Boolean(missingRu || cancelRule) });
+    // Owner 13.11: no customer sends without an explicit approval.
+    await runAutosend(m.id, { kbTopScore: a.kbTopScore, isFallback: a.isFallback, neverSend: true });
   } catch (e) {
     console.warn("[cs-pipeline] autosend verdict failed:", e);
   }

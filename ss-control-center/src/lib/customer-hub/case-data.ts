@@ -6,6 +6,8 @@
 import { prisma } from "@/lib/prisma";
 import { spApiGet } from "@/lib/amazon-sp-api/client";
 import { getOrderFinancialEvents } from "@/lib/amazon-sp-api/finances";
+import { veeqoShipments } from "@/lib/veeqo/tracking";
+import { decideFromFacts, type DecisionEvidence } from "./decision-facts";
 import { veeqoFetch, getProduct } from "@/lib/veeqo/client";
 import { parseTempClass } from "@/lib/shipping/temp-class/classes";
 import { getUpsTracking } from "@/lib/carriers/ups-tracking";
@@ -35,7 +37,7 @@ export interface CollectResult {
   snapshot: CaseDataSnapshot;
   thread: ThreadEntry[];
   /** Fields worth persisting on the message (fresh tracking, product type). */
-  patch: { trackingEvents?: string; productType?: string };
+  patch: { trackingEvents?: string; productType?: string; trackingNumber?: string; carrier?: string; service?: string; orderTotal?: number; promisedEdd?: string; actualDelivery?: string | null; trackingStatus?: string };
 }
 
 // Minimal shape of a Veeqo order line, enough to resolve product id + SKU for
@@ -52,7 +54,7 @@ type VeeqoLine = {
 type VeeqoOrder = { number?: string; line_items?: VeeqoLine[] };
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 120);
-const UNSHIPPED = /unshipped|pending|partiallyshipped/i;
+
 
 function item(
   key: CaseDataKey,
@@ -118,7 +120,7 @@ export async function collectCaseData(
   try {
     const rows = orderId
       ? await prisma.buyerMessage.findMany({
-          where: { amazonOrderId: orderId, id: { not: m.id } },
+          where: { amazonOrderId: orderId, storeIndex: m.storeIndex, id: { not: m.id }, createdAt: { lte: m.createdAt } },
           orderBy: { createdAt: "asc" },
         })
       : [];
@@ -131,22 +133,19 @@ export async function collectCaseData(
       });
     }
     m2tried.push({ source: "база хаба", ok: true, note: `${rows.length} сообщ.` });
-    const ownerReplies = orderId
-      ? await prisma.knowledgeBaseEntry.findMany({
-          where: { source: "owner_edit", tags: { contains: `orderId:${orderId}` } },
-        })
-      : [];
-    for (const k of ownerReplies) {
-      const date = /date:(\d{4}-\d{2}-\d{2})/.exec(k.tags || "")?.[1] || "";
-      if (!thread.some((t) => t.who === "us" && t.text.slice(0, 80) === k.correctResponse.slice(0, 80)))
-        thread.push({ at: date ? `${date}T12:00:00.000Z` : "", who: "us", text: k.correctResponse });
+    // An owner-edit KB example is not proof of sending. Only completed
+    // sends / outgoing rows can turn a new request into a follow-up reply.
+    for (const r of rows) {
+      if (r.direction !== "incoming" || !r.responseSentAt || r.responseSentAt > (m.receivedAt || m.createdAt)) continue;
+      const sent = r.editedResponse || r.suggestedResponse;
+      if (sent && !thread.some(t => t.who === "us" && t.text === sent)) thread.push({ at: r.responseSentAt.toISOString(), who: "us", text: sent });
     }
-    m2tried.push({ source: "ваши ответы из писем-подтверждений Amazon", ok: true, note: `${ownerReplies.length}` });
+    m2tried.push({ source: "подтверждённые отправки хаба / outgoing", ok: true, note: `${thread.filter(t => t.who === "us").length}` });
     // Amazon's cancellation notice is part of the order's history (owner,
     // 2026-11-02 — brenda's 17.10 request never reached the hub).
     if (orderId) {
       try {
-        cancelRequest = await cancelFactForOrder(orderId);
+        cancelRequest = await cancelFactForOrder(orderId, m.storeIndex);
       } catch (e) {
         m2tried.push({ source: "уведомления Amazon об отмене", ok: false, note: errText(e) });
       }
@@ -165,7 +164,7 @@ export async function collectCaseData(
   } catch (e) {
     m2tried.push({ source: "база хаба", ok: false, note: errText(e) });
   }
-  const m2ok = m2tried.some((t) => t.ok);
+  const m2ok = m2tried.length > 0 && m2tried.every((t) => t.ok);
   items.push(
     item(
       "M2",
@@ -175,7 +174,7 @@ export async function collectCaseData(
             .map((t) => `[${t.at.slice(0, 10)}] ${t.who.toUpperCase()}: ${t.text.replace(/\s+/g, " ").slice(0, 160)}`)
             .join(" | ")}`
         : "No earlier messages on this order.",
-      thread.length ? `по заказу уже было ${thread.length} сообщ.` : "раньше по заказу не переписывались",
+      `по доступной истории: ${thread.filter(t => !t.notice).length} сообщ., ${thread.filter(t => t.notice).length} уведомлений Amazon; ${thread.some(t => t.who === "us") ? "ответ после нашего сообщения" : "новое обращение"}`,
       m2tried
     )
   );
@@ -225,7 +224,7 @@ export async function collectCaseData(
   } else {
     m3tried.push({ source: "номер заказа", ok: false, note: "в письме нет номера заказа" });
   }
-  const m3ok = Boolean(status && itemsLine && total);
+  const m3ok = Boolean(status && itemsLine && total && purchased);
   items.push(
     item(
       "M3",
@@ -245,35 +244,59 @@ export async function collectCaseData(
     )
   );
 
-  const unshipped = Boolean(status && UNSHIPPED.test(status));
-
-  // ── M5 shipment ─────────────────────────────────────────────────────
-  if (unshipped) {
-    items.push(item("M5", true, "Not shipped yet (order status).", "ещё не отгружен", [{ source: "SP-API Orders", ok: true }]));
-  } else {
-    const ok = Boolean(m.carrier && m.trackingNumber);
-    items.push(
-      item(
-        "M5",
-        ok,
-        `Shipment: ${m.carrier} ${m.service || ""}, tracking ${m.trackingNumber}, label ${m.shipDate}, Amazon Buy Shipping: ${m.boughtThroughVeeqo ? "yes" : "no"}`,
-        `${m.carrier} ${m.service || ""}, трек \`${m.trackingNumber}\`, этикетка ${m.shipDate}${m.boughtThroughVeeqo ? ", Buy Shipping" : ""}`,
-        [{ source: "Veeqo", ok, note: ok ? undefined : "отгрузка не найдена" }]
-      )
-    );
-  }
+  if (total && Number.isFinite(Number(total.replace("$", "")))) patch.orderTotal = Number(total.replace("$", ""));
+  if (deliverBy) patch.promisedEdd = deliverBy;
+  const checkedAt = new Date().toISOString();
+  const evidence: DecisionEvidence = {
+    receivedAt: (m.receivedAt || m.createdAt).toISOString(),
+    threadMode: thread.some(t => t.who === "us" && !t.notice) ? "reply" : "new",
+    previousBuyerMessages: thread.filter(t => t.who === "buyer" && !t.notice).length,
+    label: { state: "unknown", at: null, checkedAt, source: "Veeqo live exact order / allocations / shipment.created_at" },
+    tracking: { live: false, checkedAt, events: [], source: "carrier API" },
+    issues: [],
+  };
+  let tracking = m.trackingNumber;
+  let carrier = m.carrier;
+  const m5tried: SourceAttempt[] = [];
+  try {
+    const orders = orderId ? await veeqoFetch(`/orders?query=${encodeURIComponent(orderId)}&page_size=100`) : [];
+    const order = Array.isArray(orders) ? orders.find(o => String(o?.number || "") === orderId) : null;
+    if (order && Array.isArray(order.allocations)) {
+      const shipments = veeqoShipments(order);
+      if (shipments.length > 1) evidence.issues.push("несколько отгрузок: требуется сверка всех треков");
+      const sh = shipments[0];
+      if (sh) {
+        evidence.label = { ...evidence.label, state: "purchased", at: sh.createdAt };
+        tracking = sh.tracking || tracking;
+        carrier = sh.carrier || carrier;
+        if (tracking) patch.trackingNumber = tracking;
+        if (carrier) patch.carrier = carrier;
+        if (sh.service) patch.service = sh.service;
+      } else if (!tracking) {
+        evidence.label.state = "absent";
+      } else evidence.issues.push("Veeqo не показывает отгрузку, но в хабе есть трек");
+    }
+    m5tried.push({ source: evidence.label.source, ok: evidence.label.state !== "unknown" });
+  } catch (e) { m5tried.push({ source: evidence.label.source, ok: false, note: errText(e) }); }
+  items.push(item("M5", evidence.label.state !== "unknown",
+    `Label: ${evidence.label.state}, purchased ${evidence.label.at || "not applicable/unknown"}; carrier ${carrier}, tracking ${tracking}; checked ${checkedAt}`,
+    `Этикетка: ${evidence.label.state}, время ${evidence.label.at || "нет"}; ${carrier || "—"}, трек ${tracking || "нет"}; проверено ${checkedAt}`, m5tried));
 
   // ── M6 carrier tracking ─────────────────────────────────────────────
   const m6tried: SourceAttempt[] = [];
   let events: TransitEvent[] | null = null;
-  if (unshipped) {
-    items.push(item("M6", true, "No tracking: not shipped yet.", "трекинга нет — не отгружен", [{ source: "SP-API Orders", ok: true }]));
+  if (evidence.label.state === "absent") {
+    items.push(item("M6", true, "Live Veeqo: no label or tracking; carrier lookup not applicable.", "Veeqo: этикетки и трека нет; запрос перевозчику неприменим", [{ source: evidence.label.source, ok: true }]));
   } else {
     // Fresh carrier data first — the stored events can be days old (a
     // reprinted label may have been scanned since the buyer wrote).
-    if (m.trackingNumber) {
+    if (tracking) {
       try {
-        events = await carrierEvents(m.carrier, m.trackingNumber);
+        events = await carrierEvents(carrier, tracking);
+        evidence.tracking.live = Boolean(events?.length);
+        evidence.tracking.events = events || [];
+        evidence.tracking.checkedAt = new Date().toISOString();
+        evidence.tracking.source = `${inferCarrier(carrier, tracking).toUpperCase()} API (${tracking})`;
         if (events?.length) patch.trackingEvents = JSON.stringify(events);
         m6tried.push({ source: "API перевозчика (UPS/FedEx/USPS)", ok: Boolean(events?.length) });
       } catch (e) {
@@ -289,14 +312,18 @@ export async function collectCaseData(
       m6tried.push({ source: "сохранённый трекинг", ok: Boolean(events?.length) });
     }
     const tf = transitFacts(events);
-    const ok = Boolean(events?.length);
+    if (evidence.tracking.live) {
+      patch.actualDelivery = tf.delivered;
+      patch.trackingStatus = tf.delivered ? "delivered" : tf.firstCarrierScan ? "in_transit" : "label_created";
+    }
+    const ok = evidence.tracking.live;
     // Owner rule (2026-10-25, topic 42, Diana): the card's tracking fact must
     // ALWAYS state the delivery verdict (delivered or NOT), the last scan date
     // + location, and whether the carrier flagged a delay — this is the
     // mandatory minimum a decision is built on. A circling, undelivered,
     // past-window package is a carrier delay, never a reason to offer a cancel.
-    const carrierEn = m.carrier || "carrier";
-    const carrierRu = m.carrier || "перевозчик";
+    const carrierEn = carrier || "carrier";
+    const carrierRu = carrier || "перевозчик";
     const last = tf.lastScan
       ? `; last scan ${tf.lastScan}${tf.lastLocation ? ` at ${tf.lastLocation}` : ""}${tf.lastStatus ? ` ("${tf.lastStatus}")` : ""}`
       : "";
@@ -339,7 +366,7 @@ export async function collectCaseData(
       const orders = await veeqoFetch(`/orders?query=${encodeURIComponent(orderId)}&page_size=5`);
       const list: VeeqoOrder[] = Array.isArray(orders) ? (orders as VeeqoOrder[]) : [];
       // Prefer the order whose number matches exactly; otherwise the first hit.
-      const order = list.find((o) => String(o?.number || "") === orderId) || list[0] || null;
+      const order = list.find((o) => String(o?.number || "") === orderId) || null;
       const lines: VeeqoLine[] = order?.line_items || [];
       const productIds = [
         ...new Set(
@@ -449,7 +476,7 @@ export async function collectCaseData(
   items.push(
     item(
       "M8",
-      financesOk,
+      financesOk && m8tried.every(t => t.ok),
       `Already done on this order: ${done.length ? done.join("; ") : "nothing (no refunds, claims or replies)"}`,
       done.length ? `уже было: ${done.join("; ")}` : "возвратов, претензий и ответов не было",
       m8tried
@@ -461,7 +488,7 @@ export async function collectCaseData(
   const vr = (vpsLookup?.result || {}) as Record<string, unknown>;
   for (const it of items) {
     const v = vr[it.key];
-    if (!it.present && typeof v === "string" && v.trim()) {
+    if (!["M5", "M6"].includes(it.key) && vpsLookup?.status === "DONE" && Date.now() - Date.parse(vpsLookup.at) < 2 * 3600_000 && !it.present && typeof v === "string" && v.trim()) {
       it.present = true;
       it.fact = `${it.key} (Seller Central): ${v.trim().slice(0, 400)}`;
       it.factRu = v.trim().slice(0, 200);
@@ -471,8 +498,9 @@ export async function collectCaseData(
     }
   }
 
+  const decision = decideFromFacts({ customerMessage: text, productType, orderTotal: patch.orderTotal ?? m.orderTotal, evidence, cancelRequest });
   return {
-    snapshot: { collectedAt: new Date().toISOString(), items, vpsLookup, cancelRequest },
+    snapshot: { collectedAt: new Date().toISOString(), items, vpsLookup, cancelRequest, evidence, decision },
     thread,
     patch,
   };

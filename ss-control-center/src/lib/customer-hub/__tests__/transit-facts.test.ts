@@ -53,3 +53,8 @@ test("label only: no carrier scan, no days-in-transit, not delayed", () => {
   assert.equal(tf.daysInTransit, null);
   assert.equal(tf.delayed, false);
 });
+
+test("not delivered is not a delivery event", () => {
+  const facts = transitFacts([{ date: "2026-11-12", time: "12:17", status: "X", description: "Package could not be delivered" }]);
+  assert.equal(facts.delivered, null);
+});

@@ -607,17 +607,19 @@ function runClaudeVision(imgFiles, prompt) {
 const TEXT_TIMEOUT_MS = Number(process.env.CLAUDE_TEXT_TIMEOUT_MS || 240000);
 const TEXT_MODEL_DEFAULT = process.env.CLAUDE_TEXT_MODEL || "sonnet";
 
-function runClaudeText(prompt, model, systemPrompt) {
+function runClaudeText(prompt, model, systemPrompt, effort) {
   return new Promise((resolve) => {
     const env = buildClaudeSubscriptionEnv(process.env);
     const args = [
       "-p", prompt,
       "--output-format", "json",
-      "--allowedTools", "",
+      "--tools", "",
+      "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
       "--permission-mode", "bypassPermissions",
       "--model", model,
       "--max-turns", "1",
     ];
+    if (effort) args.push("--effort", effort);
     if (systemPrompt) args.push("--append-system-prompt", systemPrompt);
     const child = spawn(CLAUDE_BIN, args, { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "", stderr = "";
@@ -691,7 +693,9 @@ async function handleComplete(body) {
   const model = String((body && body.model) || TEXT_MODEL_DEFAULT).trim() || TEXT_MODEL_DEFAULT;
   const systemPrompt = body && body.system ? String(body.system) : "";
 
-  const { code, stdout, stderr } = await runClaudeText(prompt, model, systemPrompt);
+  const effort = body?.effort;
+  if (effort && !["high", "max"].includes(effort)) return { status: 400, json: { error: "invalid effort" } };
+  const { code, stdout, stderr } = await runClaudeText(prompt, model, systemPrompt, effort);
   if (code !== 0) {
     return {
       status: 502,
@@ -700,8 +704,10 @@ async function handleComplete(body) {
   }
   // `--output-format json` wraps the answer: { result: "<text>", ... }
   let text = "";
+  let actualModel = model;
   try {
     const parsed = JSON.parse(stdout);
+    actualModel = Object.keys(parsed.modelUsage || {})[0] || model;
     text = typeof parsed.result === "string" ? parsed.result : "";
   } catch {
     text = "";
@@ -709,7 +715,7 @@ async function handleComplete(body) {
   if (!text.trim()) {
     return { status: 502, json: { error: "claude produced no text", stderr: stderr.slice(-2000) } };
   }
-  return { status: 200, json: { ok: true, text, model } };
+  return { status: 200, json: { ok: true, text, model: actualModel, effort: effort || null } };
 }
 
 async function handleAnalyzeClaude(body) {

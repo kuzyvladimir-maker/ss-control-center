@@ -1,3 +1,4 @@
+import { nextStep, type CaseDataSnapshot } from "./case-data-gate";
 import { assertSendPolicy } from "./reply-policy";
 import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
 import { validateInboxScan } from "./inbox-rules";
@@ -21,6 +22,20 @@ export async function enqueueSendTask(
   opts: { approvedBy: string; cardId?: string | null; attachments?: string[]; ownerRefundAuthorized?: boolean }
 ) {
   assertActiveCsStore(m.storeIndex);
+  if (opts.cardId) {
+    const card = await prisma.csCard.findUnique({ where: { id: opts.cardId } });
+    if (!card || card.buyerMessageId !== m.id || !["PENDING", "PUBLISHED", "WRONG", "REWORK", "APPROVED"].includes(card.status)) throw new Error("Card is no longer actionable");
+    const payload = JSON.parse(card.cardJson);
+    if (payload.missingRu || payload.kind === "info" || !payload.draftEn) throw new Error("Card has no verified decision to send");
+    if (payload.draftSource !== "owner_verbatim") {
+      const snapshot = m.caseDataJson ? JSON.parse(m.caseDataJson) as CaseDataSnapshot : null;
+      if (!snapshot?.decision?.ready || nextStep(snapshot) !== "READY" || Date.now() - Date.parse(snapshot.collectedAt) > 2 * 3600_000) throw new Error("Recollect facts before approving this card");
+    }
+  }
+  if (!m.editedResponse) {
+    const snapshot = m.caseDataJson ? JSON.parse(m.caseDataJson) as CaseDataSnapshot : null;
+    if (!snapshot?.decision?.ready || nextStep(snapshot) !== "READY" || !Number.isFinite(Date.parse(snapshot.collectedAt)) || Date.now() - Date.parse(snapshot.collectedAt) > 2 * 3600_000) throw new Error("Generated replies require fresh verified decision facts");
+  }
   const body = (m.editedResponse || m.suggestedResponse || "").trim();
   if (!body) throw new Error("No reply text to send");
   if (!opts.approvedBy.startsWith("owner")) throw new Error("Explicit owner send instruction required");
