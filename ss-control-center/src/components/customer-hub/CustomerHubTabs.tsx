@@ -4,7 +4,7 @@ import { MessageSquare, Scale, CreditCard, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CustomerHubTabsProps {
-  counts: { messages: number; atoz: number; chargebacks: number; feedback: number };
+  counts: { messages: number | null; atoz: number; chargebacks: number; feedback: number };
   messagesContent: React.ReactNode;
   atozContent: React.ReactNode;
   chargebacksContent: React.ReactNode;
@@ -18,7 +18,7 @@ interface TabDef {
   title: string;
   meta: string;
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
-  count: number;
+  count: number | null;
   urgent?: boolean;
 }
 
@@ -38,7 +38,7 @@ export default function CustomerHubTabs({
       meta: "GMAIL · T1–T20",
       icon: MessageSquare,
       count: counts.messages,
-      urgent: counts.messages > 0,
+      urgent: (counts.messages ?? 0) > 0,
     },
     {
       key: "atoz",
@@ -105,7 +105,7 @@ export default function CustomerHubTabs({
                   {t.meta}
                 </div>
               </div>
-              {t.count > 0 && (
+              {(t.count === null || t.count > 0) && (
                 <span
                   className={cn(
                     "inline-flex h-[20px] min-w-[20px] shrink-0 items-center justify-center rounded-full px-1.5 text-[10.5px] font-semibold tabular",
@@ -116,7 +116,7 @@ export default function CustomerHubTabs({
                         : "bg-bg-elev text-ink-2"
                   )}
                 >
-                  {t.count}
+                  {t.count ?? "?"}
                 </span>
               )}
             </button>

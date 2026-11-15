@@ -104,7 +104,7 @@ const cardActionTool: JackieTool = {
 const tasksList: JackieTool = {
   name: "cs_tasks_list",
   description:
-    "QUEUED Customer Service tasks for ONE Amazon account (store_index). Run only on that account's VPS. kind SEND = post the approved reply in Seller Central Buyer-Seller Messaging; LOOKUP = read-only data search; INBOX_SCAN = read-only list of the Seller Central Buyer Messages inbox filtered by Response needed (incl. Over SLA), report complete store 1 snapshot with accountName, scannedAt, items and resolved arrays. Queued every 30 min; INBOX_SCAN also returns CLAIMED tasks for read-only crash recovery. Payload has instructionsRu.",
+    "QUEUED Customer Service tasks for one Amazon account. SEND requires explicit owner authorization. LOOKUP is a data search. INBOX_SCAN is permanently disabled and returns no tasks; never use Chrome/CDP for inbox monitoring.",
   write: false,
   input_schema: {
     type: "object",
@@ -136,7 +136,7 @@ const taskClaim: JackieTool = {
 const taskComplete: JackieTool = {
   name: "cs_task_complete",
   description:
-    "Report a claimed task. outcome DONE / FAILED / UNKNOWN (UNKNOWN = not sure the message went out; it is never re-sent — read the thread and report). SEND: pass screenshot_url of the sent message. LOOKUP: pass result {\"M6\": \"found text\", …} keyed by the requested items. INBOX_SCAN requires result {storeIndex:1, accountName: Salutem Solutions, complete:true, scannedAt: ISO, items:[{orderId,buyerName,receivedAt,deadline,text,overSla}], resolved:[...]}. Complete pagination of both folders; malformed/partial scans are rejected. The hub reconciles open and closed threads.",
+    "Report a claimed SEND or LOOKUP task: DONE / FAILED / UNKNOWN. Unknown sends are never retried. INBOX_SCAN completions are rejected; inbox monitoring uses the Amazon mail source.",
   write: true,
   input_schema: {
     type: "object",
@@ -238,8 +238,8 @@ const cardSetReply: JackieTool = {
 const inboxStatusTool: JackieTool = {
   name: "cs_inbox_status",
   description:
-    "One-call Customer Service check (owner, 2026-11-01): how many buyer messages are still unanswered and how many are overdue, for active store 1 (Salutem Solutions). stores[] lists store 1 with its latest Seller Central scan (Response Needed / Over SLA counts); stores 2-5 appear with blocked=true and sellerCentralInbox.state 'blocked' (Amazon-blocked accounts — not scanned, not an error). Plus every open case: order, buyer, deadline, hours left, urgency (overdue | due_soon | no_card | send_stuck | card_stale | ok), card state + Telegram link. Read-only. reconcile=true also runs the reconciliation now (builds missing reply cards, closes blocked-store tasks as SKIPPED; never posts alerts).",
-  // reconcile=true writes (cards, alerts); the plain call only reads.
+    "Customer Service unanswered Amazon-mail threads from cs_mail_unanswered.py: mailbox coverage, source errors, lastSuccessfulCheckAt, stale and thread/card links. Counts are null when incomplete or older than 60 minutes. Walmart/eBay/TikTok are not covered. reconcile=true only retires disabled Chrome inbox tasks; no browser scans, buyer sends or alert cards.",
+  // reconcile=true retires disabled tasks; the plain call only reads.
   write: true,
   input_schema: { type: "object", properties: { reconcile: { type: "boolean" } }, additionalProperties: false },
   handler: async (args) => {
@@ -331,7 +331,7 @@ const cardAuditTool: JackieTool = {
 
 const openThreadsTool: JackieTool = {
   name: "cs_open_threads",
-  description: "Confirmed Response Needed threads for active store 1 (Salutem Solutions), order, buyer, deadline, card status, Telegram link and last scan time. stale=true if no complete scan within 60 minutes. A stale empty list does not prove an empty inbox.",
+  description: "Amazon-mail unanswered threads, account/buyer/date/subject/thread, matched hub cards and links, lastSuccessfulCheckAt, errors and coverage. Partial results never imply a complete total. stale=true on failed or old checks. No Seller Central or Chrome access.",
   write: false,
   input_schema: { type: "object", properties: {}, additionalProperties: false },
   handler: async () => openThreads(),

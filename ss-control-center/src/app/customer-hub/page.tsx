@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, RefreshCw } from "lucide-react";
+import MailInboxPanel from "@/components/customer-hub/MailInboxPanel";
 import HubStatsCards from "@/components/customer-hub/HubStatsCards";
 import StoreFilter from "@/components/customer-hub/StoreFilter";
 import PeriodFilter from "@/components/customer-hub/PeriodFilter";
@@ -13,10 +14,10 @@ import ChargebacksTab from "@/components/customer-hub/ChargebacksTab";
 import FeedbackTab from "@/components/customer-hub/FeedbackTab";
 import WalmartCaseModal from "@/components/customer-hub/WalmartCaseModal";
 import WalmartSyncButton from "@/components/customer-hub/WalmartSyncButton";
-import { Btn, PageHead, Sep, SyncChip } from "@/components/kit";
+import { Btn, PageHead, Sep } from "@/components/kit";
 
 interface HubStats {
-  unreadMessages: number;
+  unreadMessages: number | null;
   urgentMessages: number;
   activeAtoz: number;
   activeChargebacks: number;
@@ -33,7 +34,7 @@ export default function CustomerHubPage() {
     if (t && ["messages", "atoz", "chargebacks", "feedback"].includes(t)) setActiveTab(t);
   }, []);
   const [stats, setStats] = useState<HubStats>({
-    unreadMessages: 0,
+    unreadMessages: null,
     urgentMessages: 0,
     activeAtoz: 0,
     activeChargebacks: 0,
@@ -47,22 +48,25 @@ export default function CustomerHubPage() {
       period: String(period),
       store: storeFilter,
     });
-    fetch(`/api/customer-hub/stats?${params.toString()}`)
+    const refresh = () => fetch(`/api/customer-hub/stats?${params.toString()}`)
       .then((r) => r.json())
       .then((data) =>
         setStats({
-          unreadMessages: data.unreadMessages ?? 0,
+          unreadMessages: data.unreadMessages ?? null,
           urgentMessages: data.urgentMessages ?? 0,
           activeAtoz: data.activeAtoz ?? 0,
           activeChargebacks: data.activeChargebacks ?? 0,
           newFeedback: data.newFeedback ?? 0,
         })
       )
-      .catch(() => undefined);
+      .catch(() => setStats(s => ({ ...s, unreadMessages: null })));
+    void refresh();
+    const timer = setInterval(refresh, 60_000);
+    return () => clearInterval(timer);
   }, [period, storeFilter, syncedAt]);
 
   const totalAttention =
-    stats.unreadMessages +
+    (stats.unreadMessages ?? 0) +
     stats.activeAtoz +
     stats.activeChargebacks +
     stats.newFeedback;
@@ -70,11 +74,8 @@ export default function CustomerHubPage() {
   async function syncNow() {
     setSyncing(true);
     try {
-      await fetch("/api/customer-hub/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync" }),
-      }).catch(() => undefined);
+      await fetch("/api/customer-hub/mail-inbox", { cache: "no-store" });
+      window.dispatchEvent(new Event("cs-mail-refresh"));
       setSyncedAt(new Date().toISOString());
     } finally {
       setSyncing(false);
@@ -85,16 +86,16 @@ export default function CustomerHubPage() {
     <div className="space-y-5">
       <PageHead
         title="Customer Hub"
-        syncChip={<SyncChip when={syncedAt} />}
+        
         subtitle={
           <>
             <span>
               <strong className="text-ink tabular">{totalAttention}</strong>{" "}
-              {totalAttention === 1 ? "item" : "items"} need your attention
+              {totalAttention === 1 ? "item" : "items"} need your attention{stats.unreadMessages === null ? " · mail count unknown" : ""}
             </span>
             <Sep />
             <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
-              Gmail × 2 · SP-API × 5
+              Amazon mail · Coverage below
             </span>
           </>
         }
@@ -107,7 +108,7 @@ export default function CustomerHubPage() {
               onClick={syncNow}
               loading={syncing}
             >
-              {syncing ? "Syncing…" : "Sync now"}
+              {syncing ? "Refreshing…" : "Refresh view"}
             </Btn>
             <WalmartSyncButton />
             <WalmartCaseModal />
@@ -117,6 +118,8 @@ export default function CustomerHubPage() {
           </>
         }
       />
+
+      <MailInboxPanel showQueue={false} />
 
       {/* KPI row */}
       <HubStatsCards

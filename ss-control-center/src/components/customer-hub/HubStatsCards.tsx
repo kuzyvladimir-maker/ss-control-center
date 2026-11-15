@@ -12,8 +12,8 @@ interface HubStatsCardsProps {
 }
 
 interface HubStats {
-  unreadMessages: number;
-  urgentMessages: number;
+  unreadMessages: number | null;
+  urgentMessages: number | null;
   activeAtoz: number;
   activeChargebacks: number;
   newFeedback: number;
@@ -25,7 +25,7 @@ export default function HubStatsCards({
   onCardClick,
 }: HubStatsCardsProps) {
   const [stats, setStats] = useState<HubStats>({
-    unreadMessages: 0,
+    unreadMessages: null,
     urgentMessages: 0,
     activeAtoz: 0,
     activeChargebacks: 0,
@@ -37,29 +37,32 @@ export default function HubStatsCards({
       period: String(period),
       store,
     });
-    fetch(`/api/customer-hub/stats?${params.toString()}`)
+    const refresh = () => fetch(`/api/customer-hub/stats?${params.toString()}`)
       .then((r) => r.json())
       .then((data) =>
         setStats({
-          unreadMessages: data.unreadMessages ?? 0,
+          unreadMessages: data.unreadMessages ?? null,
           urgentMessages: data.urgentMessages ?? 0,
           activeAtoz: data.activeAtoz ?? 0,
           activeChargebacks: data.activeChargebacks ?? 0,
           newFeedback: data.newFeedback ?? 0,
         })
       )
-      .catch(() => {});
+      .catch(() => setStats(s => ({ ...s, unreadMessages: null })));
+    void refresh();
+    const timer = setInterval(refresh, 60_000);
+    return () => clearInterval(timer);
   }, [period, store]);
 
   const cards = [
     {
       key: "messages",
-      label: "Unread messages",
-      value: stats.unreadMessages,
+      label: "Awaiting reply (Amazon mail)",
+      value: stats.unreadMessages ?? "Unknown",
       icon: <MessageSquare size={14} />,
       iconVariant: "default" as const,
       chips:
-        stats.urgentMessages > 0
+        (stats.urgentMessages ?? 0) > 0
           ? [{ label: `${stats.urgentMessages} urgent`, variant: "urgent" as const }]
           : undefined,
     },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, RefreshCw, Mail } from "lucide-react";
+import MailInboxPanel from "./MailInboxPanel";
 import MessageDetail from "./MessageDetail";
 import ResponseDeadline from "./ResponseDeadline";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +65,7 @@ interface Message {
 type StatusFilter = "active" | "sent" | "resolved" | "all";
 
 const STATUS_FILTERS: Array<{ key: StatusFilter; label: string }> = [
-  { key: "active", label: "Active" },
+  { key: "active", label: "Awaiting reply (mail)" },
   { key: "sent", label: "Sent" },
   { key: "resolved", label: "Resolved" },
   { key: "all", label: "All" },
@@ -107,6 +108,12 @@ export default function MessagesTab() {
     setSyncing(true);
     setSyncResult(null);
     try {
+      if (statusFilter === "active") {
+        await fetchMessages(statusFilter);
+        window.dispatchEvent(new Event("cs-mail-refresh"));
+        setSyncResult("Mail status refreshed. Source checks run every 30 minutes.");
+        return;
+      }
       const res = await fetch("/api/customer-hub/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -185,12 +192,12 @@ export default function MessagesTab() {
               ) : (
                 <RefreshCw size={12} className="mr-1" />
               )}
-              Sync Gmail
+              {statusFilter === "active" ? "Refresh mail status" : "Sync Gmail"}
             </Button>
           </div>
         </div>
 
-        {messages.length === 0 ? (
+        {statusFilter === "active" ? <MailInboxPanel /> : messages.length === 0 ? (
           <div className="py-12 text-center">
             <Mail size={32} className="mx-auto text-ink-4 mb-3" />
             <p className="text-sm font-medium text-ink-2">

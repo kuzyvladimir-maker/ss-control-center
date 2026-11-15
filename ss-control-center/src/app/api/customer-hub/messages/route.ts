@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { mailOpenThreads } from "@/lib/customer-hub/mail-inbox";
 import { prisma } from "@/lib/prisma";
 import { liveChannels } from "@/lib/customer-hub/live-counts";
 import { syncBuyerMessagesFromGmail } from "@/lib/customer-hub/sync-messages";
@@ -17,6 +18,11 @@ export async function GET(request: NextRequest) {
     const store = sp.get("store");
     const status = (sp.get("status") || "active").toLowerCase();
     const orderId = sp.get("orderId");
+    if (!orderId && status === "active") {
+      const inbox = await mailOpenThreads();
+      return NextResponse.json({ messages: inbox.threads.map(t => ({ ...t, id: t.messageId ?? `mail:${t.account}:${t.thread}`, customerName: t.buyer, storeName: t.account, status: "AWAITING_REPLY", channel: "Amazon", source: "amazon_mail", readOnly: true })), total: inbox.stale ? null : inbox.threads.length, mailInbox: inbox,
+        source: "amazon_mail", threads: inbox.threads });
+    }
     const limit = parseInt(sp.get("limit") || "50");
     const offset = parseInt(sp.get("offset") || "0");
 

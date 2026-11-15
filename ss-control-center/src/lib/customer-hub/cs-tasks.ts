@@ -1,7 +1,6 @@
 import { assertCardDecisionEvidence, assertGeneratedDecisionEvidence } from "./decision-send-gate";
 import { assertSendPolicy } from "./reply-policy";
 import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
-import { validateInboxScan } from "./inbox-rules";
 /**
  * Customer Hub VPS agent tasks (SEND / LOOKUP / INBOX_SCAN) — queue, claim, complete.
  * One task = one attempt. An UNKNOWN send result is never re-queued; the
@@ -57,9 +56,10 @@ export async function enqueueSendTask(
 }
 
 export async function listTasks(storeIndex: number, kind?: string) {
+  if (kind === "INBOX_SCAN") return [];
   assertActiveCsStore(storeIndex);
   return prisma.csTask.findMany({
-    where: { storeIndex, status: kind === "INBOX_SCAN" ? { in: ["QUEUED", "CLAIMED"] } : "QUEUED", ...(kind ? { kind } : {}) },
+    where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : { kind: { not: "INBOX_SCAN" } }) },
     orderBy: { createdAt: "asc" },
     take: 20,
   });
@@ -67,7 +67,7 @@ export async function listTasks(storeIndex: number, kind?: string) {
 
 export async function claimTask(taskId: string, vps: string) {
   const res = await prisma.csTask.updateMany({
-    where: { id: taskId, status: "QUEUED", storeIndex: { in: ACTIVE_CS_STORES } },
+    where: { id: taskId, kind: { not: "INBOX_SCAN" }, status: "QUEUED", storeIndex: { in: ACTIVE_CS_STORES } },
     data: { status: "CLAIMED", claimedBy: vps, claimedAt: new Date() },
   });
   if (res.count !== 1) throw new Error(`Task ${taskId} is not QUEUED (already claimed or finished)`);
@@ -84,7 +84,7 @@ export async function completeTask(
   if (task.status !== "CLAIMED") throw new Error(`Task ${taskId} is ${task.status}, expected CLAIMED`);
   assertActiveCsStore(task.storeIndex);
   const now = new Date();
-  if (task.kind === "INBOX_SCAN" && outcome === "DONE") validateInboxScan(opts.result, now);
+  if (task.kind === "INBOX_SCAN") throw new Error("Chrome inbox scanning permanently disabled; use Amazon mail source");
   await prisma.csTask.update({
     where: { id: taskId },
     data: {
@@ -97,7 +97,7 @@ export async function completeTask(
 
   // Seller Central inbox scan (inbox-watch.ts): the caller reconciles the hub
   // against it in the background.
-  if (task.kind === "INBOX_SCAN") return { ok: true, reconcile: outcome === "DONE" };
+
 
   const m = await prisma.buyerMessage.findUnique({ where: { id: task.buyerMessageId } });
   if (!m) return { ok: true };
