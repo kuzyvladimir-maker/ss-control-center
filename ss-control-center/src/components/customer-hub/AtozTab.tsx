@@ -94,6 +94,7 @@ export default function AtozTab({
   store?: string;
 }) {
   const [claims, setClaims] = useState<Claim[]>([]);
+  const [loadError,setLoadError]=useState<string|null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -138,7 +139,7 @@ export default function AtozTab({
   };
 
   const fetchClaims = () => {
-    setLoading(true);
+    setLoading(true); setLoadError(null);
     const params = new URLSearchParams({
       type: claimType,
       limit: "50",
@@ -146,15 +147,12 @@ export default function AtozTab({
     });
     if (effectiveStore !== "all") params.set("store", effectiveStore);
     fetch(`/api/customer-hub/atoz?${params}`)
-      .then((r) => r.json())
+      .then(async r => {const d=await r.json();if(!r.ok)throw Error(d.error||`HTTP ${r.status}`);return d;})
       .then((data) => {
         setClaims(data.claims || []);
         setTotal(data.total || 0);
       })
-      .catch(() => {
-        setClaims([]);
-        setTotal(0);
-      })
+      .catch(e => {setLoadError(e.message || "Claims unavailable");})
       .finally(() => setLoading(false));
   };
 
@@ -217,6 +215,7 @@ export default function AtozTab({
     <>
       <Card>
         <CardContent className="p-0">
+          {loadError && <p role="alert" className="p-4 text-danger">{loadError}</p>}
           <div className="flex items-center justify-between px-4 py-2 border-b border-rule">
             <span className="text-xs text-ink-3">
               {total} {label.toLowerCase()}{total !== 1 ? "s" : ""}

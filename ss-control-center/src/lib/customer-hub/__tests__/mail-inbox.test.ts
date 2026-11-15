@@ -44,10 +44,10 @@ import { prisma } from '@/lib/prisma';
 import { mailOpenThreads } from '../mail-inbox';
 test('source threads survive local SENT state and join only their own mailbox/thread', async () => {
  const state=mergeMailSnapshot(null,snapshot({unanswered:[item,{...item,account:MAIL_ACCOUNTS[1]}]}));
- const queries: {storeEmail:string;gmailThreadId:string}[]=[];
+ const queries: {storeEmail:string;gmailThreadId:{in:string[]}}[]=[];
  const db={
    setting:{findUnique:async()=>({value:JSON.stringify(state)})},
-   buyerMessage:{findFirst:async(args:{where:{storeEmail:string;gmailThreadId:string}})=>{
+   buyerMessage:{findFirst:async(args:{where:{storeEmail:string;gmailThreadId:{in:string[]}}})=>{
      queries.push(args.where);
      return args.where.storeEmail===item.account ? {id:'existing-case',status:'SENT',storeIndex:1,amazonOrderId:'111-1234567-1234567'} : null;
    }},
@@ -58,5 +58,18 @@ test('source threads survive local SENT state and join only their own mailbox/th
  assert.equal(view.threads[0].cardStatus,'SENT');
  assert.equal(view.threads[0].status,'awaiting_reply');
  assert.equal(view.threads[1].messageId,null);
- assert.deepEqual(queries.map(q=>[q.storeEmail,q.gmailThreadId]),[[item.account,item.thread],[MAIL_ACCOUNTS[1],item.thread]]);
+ assert.deepEqual(queries.map(q=>[q.storeEmail,q.gmailThreadId.in]),[[item.account,[item.thread]],[MAIL_ACCOUNTS[1],[item.thread]]]);
+});
+
+import { mailHistory } from '../mail-inbox';
+test('answered history is retained even with zero awaiting replies and stale checks', async () => {
+ const thread={...item,order:'112-0621311-3138660',status:'sent' as const,lastSender:'seller' as const,lastMessageAt:'2026-11-15T14:00:00Z',threadIds:[item.thread],messages:[{id:'mail1',thread:item.thread,date:'2026-11-15T14:00:00Z',sender:'seller' as const,buyer:'Buyer',subject:'reply',order:'112-0621311-3138660',text:'Actual reply',truncated:false,bodyAvailable:true}]};
+ const input=validateMailSnapshot(snapshot({schemaVersion:2,lookbackDays:30,threads:[thread],unanswered:[]}),now);
+ const state=mergeMailSnapshot(null,input);
+ assert.equal(mailView(state,now).items.length,0);
+ assert.equal(mailView(state,now).historyItems.length,1);
+ const db={setting:{findUnique:async()=>({value:JSON.stringify(state)})},buyerMessage:{findFirst:async()=>null}} as unknown as typeof prisma;
+ const view=await mailHistory(new Date('2026-11-15T17:00:00Z'),db);
+ assert.equal(view.stale,true);assert.equal(view.threads[0].messages?.[0].text,'Actual reply');assert.equal(view.threads[0].status,'sent');
+ assert.throws(()=>validateMailSnapshot({...input,unanswered:[thread]},now),/mismatch/);
 });

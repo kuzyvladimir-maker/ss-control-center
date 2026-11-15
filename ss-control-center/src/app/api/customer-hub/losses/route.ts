@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
       where: {
         claimType: "A_TO_Z",
         amazonDecision: "AGAINST_US",
+        ...storeFilter,
         createdAt: { gte: dateFrom },
       },
       select: { amountCharged: true },
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
       where: {
         claimType: "CHARGEBACK",
         amazonDecision: "AGAINST_US",
+        ...storeFilter,
         createdAt: { gte: dateFrom },
       },
       select: { amountCharged: true },
@@ -117,6 +119,7 @@ export async function GET(request: NextRequest) {
     const saved = await prisma.atozzClaim.findMany({
       where: {
         amazonDecision: { in: ["IN_OUR_FAVOR", "AMAZON_FUNDED"] },
+        ...storeFilter,
         createdAt: { gte: dateFrom },
       },
       select: { amountSaved: true },

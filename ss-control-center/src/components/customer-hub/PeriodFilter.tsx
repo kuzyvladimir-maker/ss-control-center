@@ -12,6 +12,7 @@ const options: Array<{ label: string; value: number }> = [
   { label: "7 days", value: 7 },
   { label: "30 days", value: 30 },
   { label: "90 days", value: 90 },
+  { label: "365 days (claims history)", value: 365 },
 ];
 
 export default function PeriodFilter({ value, onChange }: PeriodFilterProps) {

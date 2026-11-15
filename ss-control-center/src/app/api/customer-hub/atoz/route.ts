@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ claims, total });
   } catch (err) {
     console.error("[customer-hub/atoz] GET failed:", err);
-    return NextResponse.json({ claims: [], total: 0 });
+    return NextResponse.json({ error: "Stored claims unavailable; retry refresh", claims: [], total: null }, { status: 500 });
   }
 }
 

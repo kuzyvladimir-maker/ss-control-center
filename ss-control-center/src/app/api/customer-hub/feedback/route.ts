@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ feedbacks, total });
   } catch (err) {
     console.error("[customer-hub/feedback] GET failed:", err);
-    return NextResponse.json({ feedbacks: [], total: 0 });
+    return NextResponse.json({ error: "Stored feedbacks unavailable; retry refresh", feedbacks: [], total: null }, { status: 500 });
   }
 }
 

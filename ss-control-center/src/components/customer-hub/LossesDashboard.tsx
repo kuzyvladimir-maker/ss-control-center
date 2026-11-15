@@ -133,7 +133,7 @@ export default function LossesDashboard({
             </div>
             <div className="text-left">
               <p className="text-[10px] text-ink-3">
-                Total losses · last {period} day{period !== 1 ? "s" : ""}
+                Estimated case costs · last {period} day{period !== 1 ? "s" : ""}
               </p>
               <p className="text-xl font-bold text-danger">{fmtMoney(total)}</p>
             </div>
@@ -160,6 +160,7 @@ export default function LossesDashboard({
           </div>
         </button>
 
+        <p className="px-4 pb-3 text-xs text-ink-3">{breakdown.refunds.count} stored refund actions ({fmtMoney(breakdown.refunds.amount)}), {breakdown.replacements.count} estimated replacements ({fmtMoney(breakdown.replacements.amount)}). These historical action costs are separate from active claims and are not a verified payment ledger.</p>
         {expanded && (
           <div className="border-t border-rule px-4 py-3 space-y-0">
             <BreakdownRow

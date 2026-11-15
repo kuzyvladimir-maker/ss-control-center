@@ -1,7 +1,7 @@
 import { verifyJackieAuth } from '@/lib/jackie-mcp/registry';
-import { acceptMailSnapshot, mailOpenThreads } from '@/lib/customer-hub/mail-inbox';
-export async function GET() {
-  return Response.json(await mailOpenThreads(), { headers: { 'Cache-Control': 'no-store' } });
+import { acceptMailSnapshot, mailOpenThreads, mailHistory } from '@/lib/customer-hub/mail-inbox';
+export async function GET(request: Request) {
+  return Response.json(await (new URL(request.url).searchParams.get("view") === "all" ? mailHistory() : mailOpenThreads()), { headers: { 'Cache-Control': 'no-store' } });
 }
 export async function POST(request: Request) {
   const error = verifyJackieAuth(request.headers.get('authorization'));

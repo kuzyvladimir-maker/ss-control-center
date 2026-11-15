@@ -17,6 +17,6 @@ export async function GET() {
     return NextResponse.json({ claims, total });
   } catch (err) {
     console.error("[customer-hub/chargebacks] GET failed:", err);
-    return NextResponse.json({ claims: [], total: 0 });
+    return NextResponse.json({ error: "Stored claims unavailable; retry refresh", claims: [], total: null }, { status: 500 });
   }
 }

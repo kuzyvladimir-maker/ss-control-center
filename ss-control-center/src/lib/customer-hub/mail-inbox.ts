@@ -16,19 +16,22 @@ export async function mailInbox(now = new Date(), db = prisma) {
   return mailView(row ? JSON.parse(row.value) as MailState : null, now);
 }
 /** Keep source membership even when a local card says SENT. Only exact account/thread joins. */
-export async function mailOpenThreads(now = new Date(), db = prisma) {
+async function mailThreads(history: boolean, now = new Date(), db = prisma) {
   const view = await mailInbox(now, db);
-  const threads = await Promise.all(view.items.map(async item => {
-    const message = await db.buyerMessage.findFirst({ where: { channel: 'Amazon', direction: 'incoming', storeEmail: item.account, gmailThreadId: item.thread }, orderBy: { receivedAt: 'desc' } });
+  const threads = await Promise.all((history ? view.historyItems : view.items).map(async item => {
+    const message = await db.buyerMessage.findFirst({ where: { channel: 'Amazon', direction: 'incoming', storeEmail: item.account, gmailThreadId: { in: item.threadIds ?? [item.thread] } }, orderBy: { receivedAt: 'desc' } });
     const card = message ? await db.csCard.findFirst({ where: { buyerMessageId: message.id }, orderBy: { createdAt: 'desc' } }) : null;
-    return { ...item, order: message?.amazonOrderId ?? null, storeIndex: message?.storeIndex ?? null, messageId: message?.id ?? null,
-      status: 'awaiting_reply', cardStatus: card?.status ?? null,
+    return { ...item, order: item.order ?? message?.amazonOrderId ?? null, storeIndex: message?.storeIndex ?? null, messageId: message?.id ?? null,
+      status: item.status ?? 'awaiting_reply', cardStatus: card?.status ?? null,
       telegramLink: card?.telegramMessageId ? `https://t.me/c/3924739153/${card.telegramMessageId}` : null,
       mailLink: `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(item.account)}#all/${item.thread}`,
       // Source dates lack a timezone; do not invent an Amazon response deadline.
-      deadline: null, lastScanAt: view.accounts.find(a => a.account === item.account)!.lastSuccessfulCheckAt, stale: false };
+      deadline: null, lastScanAt: view.accounts.find(a => a.account === item.account)!.lastSuccessfulCheckAt, stale: view.accounts.find(a => a.account === item.account)!.stale };
   }));
-  const { items: _items, ...meta } = view;
-  void _items;
+  const { items: _items, historyItems: _history, ...meta } = view;
+  void _items; void _history;
   return { ...meta, threads };
 }
+
+export const mailOpenThreads = (now = new Date(), db = prisma) => mailThreads(false, now, db);
+export const mailHistory = (now = new Date(), db = prisma) => mailThreads(true, now, db);

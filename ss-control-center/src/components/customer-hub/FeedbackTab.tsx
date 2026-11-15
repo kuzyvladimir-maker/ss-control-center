@@ -64,6 +64,7 @@ function Stars({ rating }: { rating: number }) {
 
 export default function FeedbackTab() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loadError,setLoadError]=useState<string|null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   // Sync UI is disabled until SP-API Feedback Reports auto-sync is
@@ -108,14 +109,15 @@ export default function FeedbackTab() {
   };
 
   const fetchFeedbacks = async () => {
+    setLoadError(null);
     try {
       const res = await fetch("/api/customer-hub/feedback?limit=50");
       const data = await res.json();
+      if(!res.ok) throw Error(data.error||`HTTP ${res.status}`);
       setFeedbacks(data.feedbacks || []);
       setTotal(data.total || 0);
-    } catch {
-      setFeedbacks([]);
-      setTotal(0);
+    } catch(e) {
+      setLoadError(e instanceof Error ? e.message : "Feedback unavailable");
     } finally {
       setLoading(false);
     }
@@ -165,6 +167,7 @@ export default function FeedbackTab() {
     <>
       <Card>
         <CardContent className="p-0">
+          {loadError && <p role="alert" className="p-4 text-danger">{loadError}</p>}
           <div className="flex items-center justify-between px-4 py-2 border-b border-rule">
             <span className="text-xs text-ink-3">
               {total} feedback{total !== 1 ? "s" : ""}

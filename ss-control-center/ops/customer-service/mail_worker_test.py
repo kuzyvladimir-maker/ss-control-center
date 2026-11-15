@@ -9,7 +9,7 @@ class MailWorkerTest(unittest.TestCase):
     def test_actual_contract(self):
         def run(command, **kwargs):
             self.assertEqual(command[-2:], ['cs_mail_unanswered.py','--json'] if command[-2]=='cs_mail_unanswered.py' else [str(worker.ROOT/'scripts/cs_mail_unanswered.py'),'--json'])
-            return SimpleNamespace(returncode=0,stdout='{"unanswered":[],"errors":[]}')
+            return SimpleNamespace(returncode=0,stdout='{"schemaVersion":2,"threads":[],"unanswered":[],"errors":[]}')
         result=worker.collect({},run)
         self.assertEqual(result['errors'],[])
         self.assertIn('checkedAt',result)

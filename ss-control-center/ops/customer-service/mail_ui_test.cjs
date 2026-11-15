@@ -1,0 +1,37 @@
+// Run against the esbuild bundle with React/react-test-renderer 19 installed in its directory.
+const assert=require('node:assert/strict');
+const {createRequire}=require('node:module');
+const req=createRequire(process.argv[2]);
+const React=req('react'); const {act,create}=req('react-test-renderer');
+const Panel=req(process.argv[2]).default;
+global.IS_REACT_ACT_ENVIRONMENT=true;
+global.window=new EventTarget();
+const date=new Date().toISOString();
+const thread=(buyer,status)=>({account:'test@example.com',buyer,thread:buyer,date,lastMessageAt:date,lastSender:status==='sent'?'seller':'buyer',status,stale:false,messages:[{id:buyer,date,sender:'buyer',text:'Test buyer message'}]});
+let data={stale:false,historyAvailable:true,lookbackDays:30,lastSuccessfulCheckAt:date,accounts:[],threads:[thread('Answered','sent'),thread('Ignored','resolved')]};
+let fail=false; let reads=0;
+global.fetch=async(url,options)=>{if(url.includes('mail-refresh'))return {ok:!fail,status:fail?503:200,json:async()=>fail?{error:'Worker unavailable'}:{id:'job',status:options?.method==='POST'?'pending':'completed'}};reads++;return {ok:true,json:async()=>data};};
+const text=node=>typeof node==='string'?node:node?.children?.map(text).join('')||'';
+(async()=>{
+ let ui; await act(async()=>{ui=create(React.createElement(Panel));});
+ const button=prefix=>ui.root.findAllByType('button').find(b=>text(b).startsWith(prefix));
+ assert.match(text(ui.toJSON()),/All \(2\)/);
+ await act(async()=>button('Sent (').props.onClick());
+ assert.equal(ui.root.findAllByType('tbody')[0].findAllByType('tr').length,1);
+ await act(async()=>button('View messages').props.onClick());
+ assert.match(text(ui.toJSON()),/Test buyer message/);
+ await act(async()=>button('Resolved (').props.onClick());
+ assert.match(text(ui.root.findAllByType('tbody')[0]),/Ignored/);
+ await act(async()=>ui.update(React.createElement(Panel,{processRequest:1})));
+ assert.match(text(ui.toJSON()),/No messages awaiting reply/);
+ fail=true; await act(async()=>button('Refresh mail status').props.onClick());
+ assert.match(text(ui.toJSON()),/Worker unavailable/);
+ fail=false; const before=reads; await act(async()=>button('Refresh mail status').props.onClick());
+ assert.ok(reads>before); assert.match(text(ui.toJSON()),/Mail checked successfully/);
+ data={...data,threads:[thread('Next','awaiting_reply')]};
+ await act(async()=>window.dispatchEvent(new Event('cs-mail-refresh')));
+ await act(async()=>ui.update(React.createElement(Panel,{processRequest:2})));
+ assert.match(text(ui.toJSON()),/Opened Next/);
+ await act(async()=>ui.unmount());
+ console.log('PASS: All/Sent/Resolved, body display, empty and active Process next, refresh failure and completed refresh');
+})().catch(e=>{console.error(e);process.exit(1);});

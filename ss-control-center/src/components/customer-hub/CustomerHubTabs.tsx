@@ -4,7 +4,7 @@ import { MessageSquare, Scale, CreditCard, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CustomerHubTabsProps {
-  counts: { messages: number | null; atoz: number; chargebacks: number; feedback: number };
+  counts: { messages: number | null; atoz: number | null; chargebacks: number | null; feedback: number | null };
   messagesContent: React.ReactNode;
   atozContent: React.ReactNode;
   chargebacksContent: React.ReactNode;
@@ -35,7 +35,7 @@ export default function CustomerHubTabs({
     {
       key: "messages",
       title: "Messages",
-      meta: "GMAIL · T1–T20",
+      meta: "AMAZON MAIL · FULL HISTORY",
       icon: MessageSquare,
       count: counts.messages,
       urgent: (counts.messages ?? 0) > 0,

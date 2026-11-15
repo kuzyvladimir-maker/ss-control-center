@@ -19,9 +19,10 @@ import { Btn, PageHead, Sep } from "@/components/kit";
 interface HubStats {
   unreadMessages: number | null;
   urgentMessages: number;
-  activeAtoz: number;
-  activeChargebacks: number;
-  newFeedback: number;
+  activeAtoz: number | null;
+  activeChargebacks: number | null;
+  newFeedback: number | null;
+  totalConversations: number | null;
 }
 
 export default function CustomerHubPage() {
@@ -36,11 +37,14 @@ export default function CustomerHubPage() {
   const [stats, setStats] = useState<HubStats>({
     unreadMessages: null,
     urgentMessages: 0,
-    activeAtoz: 0,
-    activeChargebacks: 0,
-    newFeedback: 0,
+    activeAtoz: null,
+    activeChargebacks: null,
+    newFeedback: null, totalConversations: null,
   });
   const [syncedAt, setSyncedAt] = useState<string>(new Date().toISOString());
+  const [refreshError,setRefreshError]=useState<string|null>(null);
+  const [refreshNotice,setRefreshNotice]=useState<string|null>(null);
+  const [processRequest,setProcessRequest]=useState(0);
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
@@ -49,35 +53,38 @@ export default function CustomerHubPage() {
       store: storeFilter,
     });
     const refresh = () => fetch(`/api/customer-hub/stats?${params.toString()}`)
-      .then((r) => r.json())
+      .then(async r => { if(!r.ok) throw Error(`HTTP ${r.status}`); return r.json(); })
       .then((data) =>
         setStats({
           unreadMessages: data.unreadMessages ?? null,
           urgentMessages: data.urgentMessages ?? 0,
-          activeAtoz: data.activeAtoz ?? 0,
-          activeChargebacks: data.activeChargebacks ?? 0,
-          newFeedback: data.newFeedback ?? 0,
+          activeAtoz: data.activeAtoz ?? null,
+          activeChargebacks: data.activeChargebacks ?? null,
+          newFeedback: data.newFeedback ?? null, totalConversations: data.totalConversations ?? null,
         })
       )
-      .catch(() => setStats(s => ({ ...s, unreadMessages: null })));
+      .catch(() => setStats(s => ({ ...s, unreadMessages: null, activeAtoz: null, activeChargebacks: null, newFeedback: null, totalConversations: null })));
+    window.addEventListener("cs-mail-refresh",refresh);
     void refresh();
     const timer = setInterval(refresh, 60_000);
-    return () => clearInterval(timer);
+    return () => {clearInterval(timer);window.removeEventListener("cs-mail-refresh",refresh);};
   }, [period, storeFilter, syncedAt]);
 
   const totalAttention =
     (stats.unreadMessages ?? 0) +
-    stats.activeAtoz +
-    stats.activeChargebacks +
-    stats.newFeedback;
+    (stats.activeAtoz ?? 0) +
+    (stats.activeChargebacks ?? 0) +
+    (stats.newFeedback ?? 0);
 
   async function syncNow() {
-    setSyncing(true);
+    setSyncing(true); setRefreshError(null); setRefreshNotice(null);
     try {
-      await fetch("/api/customer-hub/mail-inbox", { cache: "no-store" });
+      const results=await Promise.all(['/api/customer-hub/mail-inbox?view=all','/api/customer-hub/stats'].map(url=>fetch(url,{cache:'no-store'})));
+      for(const r of results) {const d=await r.json();if(!r.ok)throw Error(d.error||`HTTP ${r.status}`);if(d.errors && !Array.isArray(d.errors) && Object.keys(d.errors).length)throw Error(Object.values(d.errors).join('; '));}
       window.dispatchEvent(new Event("cs-mail-refresh"));
       setSyncedAt(new Date().toISOString());
-    } finally {
+      setRefreshNotice("View refreshed from saved data. Use Refresh mail status to request a new mail check.");
+    } catch(e) {setRefreshError(e instanceof Error ? e.message : "Refresh failed");} finally {
       setSyncing(false);
     }
   }
@@ -91,7 +98,7 @@ export default function CustomerHubPage() {
           <>
             <span>
               <strong className="text-ink tabular">{totalAttention}</strong>{" "}
-              {totalAttention === 1 ? "item" : "items"} need your attention{stats.unreadMessages === null ? " · mail count unknown" : ""}
+              {totalAttention === 1 ? "item" : "items"} need your attention{[stats.unreadMessages,stats.activeAtoz,stats.activeChargebacks,stats.newFeedback].some(v=>v===null) ? " · some counts unavailable" : ""}
             </span>
             <Sep />
             <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
@@ -112,25 +119,27 @@ export default function CustomerHubPage() {
             </Btn>
             <WalmartSyncButton />
             <WalmartCaseModal />
-            <Btn variant="primary" icon={<ArrowRight size={13} />}>
+            <Btn variant="primary" icon={<ArrowRight size={13} />} onClick={()=>{setActiveTab("messages");setProcessRequest(n=>n+1);}}>
               Process next
             </Btn>
           </>
         }
       />
 
-      <MailInboxPanel showQueue={false} />
+      {refreshError && <p role="alert" className="text-danger">{refreshError}</p>}
+      {refreshNotice && <p role="status" className="text-sm text-ink-2">{refreshNotice}</p>}
+      <MailInboxPanel showQueue={false} period={period} />
 
       {/* KPI row */}
       <HubStatsCards
         period={period}
         store={storeFilter}
-        onCardClick={(tab: string) => setActiveTab(tab)}
+        onCardClick={(tab: string, history?: boolean) => {setActiveTab(tab); if(history)setPeriod(365);}}
       />
 
       {/* Losses dashboard — collapsible */}
       <LossesDashboard
-        key={`${period}-${storeFilter}`}
+        key={`${period}-${storeFilter}-${syncedAt}`}
         period={period}
         store={storeFilter}
       />
@@ -140,27 +149,27 @@ export default function CustomerHubPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         counts={{
-          messages: stats.unreadMessages,
+          messages: stats.totalConversations,
           atoz: stats.activeAtoz,
           chargebacks: stats.activeChargebacks,
           feedback: stats.newFeedback,
         }}
-        messagesContent={<MessagesTab />}
+        messagesContent={<MessagesTab period={period} processRequest={processRequest} />}
         atozContent={
           <AtozTab
-            key={`atoz-${period}-${storeFilter}`}
+            key={`atoz-${period}-${storeFilter}-${syncedAt}`}
             period={period}
             store={storeFilter}
           />
         }
         chargebacksContent={
           <ChargebacksTab
-            key={`cb-${period}-${storeFilter}`}
+            key={`cb-${period}-${storeFilter}-${syncedAt}`}
             period={period}
             store={storeFilter}
           />
         }
-        feedbackContent={<FeedbackTab />}
+        feedbackContent={<FeedbackTab key={syncedAt} />}
       />
     </div>
   );
