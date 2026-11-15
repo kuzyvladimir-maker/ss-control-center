@@ -70,12 +70,6 @@ export default function CustomerHubPage() {
     return () => {clearInterval(timer);window.removeEventListener("cs-mail-refresh",refresh);};
   }, [period, storeFilter, syncedAt]);
 
-  const totalAttention =
-    (stats.unreadMessages ?? 0) +
-    (stats.activeAtoz ?? 0) +
-    (stats.activeChargebacks ?? 0) +
-    (stats.newFeedback ?? 0);
-
   async function syncNow() {
     setSyncing(true); setRefreshError(null); setRefreshNotice(null);
     try {
@@ -92,14 +86,11 @@ export default function CustomerHubPage() {
   return (
     <div className="space-y-5">
       <PageHead
-        title="Customer Hub"
+        title={`Ждут ответа: ${stats.unreadMessages ?? "неизвестно"}`}
         
         subtitle={
           <>
-            <span>
-              <strong className="text-ink tabular">{totalAttention}</strong>{" "}
-              {totalAttention === 1 ? "item" : "items"} need your attention{[stats.unreadMessages,stats.activeAtoz,stats.activeChargebacks,stats.newFeedback].some(v=>v===null) ? " · some counts unavailable" : ""}
-            </span>
+            <span>Customer Hub · Amazon mail</span>
             <Sep />
             <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
               Amazon mail · Coverage below
@@ -149,7 +140,7 @@ export default function CustomerHubPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         counts={{
-          messages: stats.totalConversations,
+          messages: stats.unreadMessages,
           atoz: stats.activeAtoz,
           chargebacks: stats.activeChargebacks,
           feedback: stats.newFeedback,

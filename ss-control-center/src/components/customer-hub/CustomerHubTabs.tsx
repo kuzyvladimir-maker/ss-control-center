@@ -34,8 +34,8 @@ export default function CustomerHubTabs({
   const tabs: TabDef[] = [
     {
       key: "messages",
-      title: "Messages",
-      meta: "AMAZON MAIL · FULL HISTORY",
+      title: "Переписки",
+      meta: "Число рядом — ждут ответа",
       icon: MessageSquare,
       count: counts.messages,
       urgent: (counts.messages ?? 0) > 0,
