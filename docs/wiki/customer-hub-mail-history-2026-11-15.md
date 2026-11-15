@@ -64,3 +64,30 @@ verified payment ledger. Store filtering is applied consistently to cost queries
   seller-last evidence; Diane is buyer-last and explicitly ignored.
 
 Deployment and live verification are recorded in the topic 42 completion report.
+
+## Production verification
+
+The production alias `salutemsolutions.info` resolves to the Ready deployment
+`ss-control-center-bt3be73lv-kuzyvladimir-makers-projects.vercel.app`.
+Authenticated live API checks returned All 27 / Sent 21 / Resolved 1 /
+Needs review 5 / Awaiting 0. All four requested orders have nonempty message
+bodies; their buyer and seller roles match the source evidence. Latest stored
+claim records are from April 12, 2026 — the UI explicitly shows this age.
+
+Read-only publication succeeded at 22:26:06 UTC with no mailbox errors. A real
+POST to mail-refresh returned 202/pending; the cron completion evidence lives
+in the project runtime folder `data/customer-hub-mail/refresh-proof-*.json`.
+`live-history-proof.json` stores the bounded API verification results there.
+No real buyer data was added to git.
+
+Visual browser QA was blocked by the browser-control tool failing navigation;
+no live button clicks are claimed. React component interaction tests and live
+HTTP/worker checks are separate evidence, not a substitute screenshot.
+
+Reproduce source tests on the Linux worker with
+`python3 -m unittest mail_history_test mail_worker_test` from the ops directory.
+For the UI harness, bundle MailInboxPanel.tsx with esbuild (platform=node,
+jsx=automatic, external react/react-jsx-runtime), then run
+`node ops/customer-service/mail_ui_test.cjs /absolute/path/to/panel.cjs`.
+Install matching React 19 and react-test-renderer in that temporary bundle
+folder; production dependencies are not changed by this harness.
