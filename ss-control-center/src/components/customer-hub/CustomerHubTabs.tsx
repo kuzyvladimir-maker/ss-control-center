@@ -43,7 +43,7 @@ export default function CustomerHubTabs({
     {
       key: "atoz",
       title: "A-to-Z claims",
-      meta: "SP-API reports",
+      meta: "Manual records · import unavailable",
       icon: Scale,
       count: counts.atoz,
     },
@@ -57,7 +57,7 @@ export default function CustomerHubTabs({
     {
       key: "feedback",
       title: "Feedback",
-      meta: "SP-API reports",
+      meta: "Manual records · import unavailable",
       icon: Star,
       count: counts.feedback,
     },
