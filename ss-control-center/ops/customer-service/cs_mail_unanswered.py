@@ -35,12 +35,12 @@ def parse_message(message, thread):
     payload = message.get('payload', {})
     headers = {h['name'].lower(): h['value'] for h in payload.get('headers', [])}
     subject, sender = headers.get('subject', ''), headers.get('from', '')
-    recipient = re.match(r'Your e-mail to\s+(.+)', subject, re.I)
+    recipient = re.match(r'Your e-mail to(?:\s+(.*))?$', subject, re.I)
     if '@marketplace.amazon.com' in sender.lower():
         role = 'buyer'
         buyer = re.sub(r'\s*<.*', '', sender).strip().strip('"')
     elif recipient and re.search(r'@(?:[\w.-]+\.)?amazon\.com\b', sender, re.I):
-        role, buyer = 'seller', recipient.group(1).strip()
+        role, buyer = 'seller', (recipient.group(1) or 'Unknown buyer').strip()
     else:
         return None
     full = decode_body(payload)
@@ -96,7 +96,7 @@ def collect_account(account, days):
     cache.mkdir(parents=True, exist_ok=True)
     def read(summary):
         # Search date/messageCount invalidates cache when Gmail thread gains a message.
-        key = hashlib.sha256(json.dumps([account, summary['id'], summary.get('date'), summary.get('messageCount')]).encode()).hexdigest()
+        key = hashlib.sha256(json.dumps(['parser-v3', account, summary['id'], summary.get('date'), summary.get('messageCount')]).encode()).hexdigest()
         path = cache / (key + '.json')
         if path.exists(): return json.loads(path.read_text())
         raw = gog(account, 'thread', 'get', summary['id'])

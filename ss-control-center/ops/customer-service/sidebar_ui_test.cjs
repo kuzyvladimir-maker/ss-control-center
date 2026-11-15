@@ -1,0 +1,9 @@
+// Render the bundled SidebarContent with isolated framework/auth stubs. No live requests.
+const assert=require('node:assert/strict');const req=require('node:module').createRequire(process.argv[2]);const React=req('react');const {act,create}=req('react-test-renderer');const Module=require('module');const old=Module._load;
+const mocks={'next/link':p=>React.createElement('a',p),'next/navigation':{usePathname:()=>'/customer-hub'},'lucide-react':new Proxy({},{get:()=>()=>null}),'@/lib/utils':{cn:(...x)=>x.filter(Boolean).join(' ')},'@/components/layout/StoreFilterSelector':{StoreFilterSelector:()=>null},'@/lib/auth/use-me':{useMe:()=>({user:{role:'ADMIN',isAdmin:true,modules:[]}})},'@/lib/rbac/access':{canAccessModule:()=>true},'@/lib/rbac/modules':{moduleForPath:()=>null}};
+Module._load=function(id,...args){return mocks[id]||old.call(this,id,...args)};
+const Sidebar=req(process.argv[2]).default;
+global.IS_REACT_ACT_ENVIRONMENT=true;global.fetch=async()=>({ok:true,json:async()=>({})});
+// Any attempted read of legacy collapsed state must fail this check.
+global.localStorage={getItem(){throw Error('Unexpected localStorage read')},setItem(){throw Error('Unexpected localStorage write')}};
+(async()=>{let ui;await act(async()=>{ui=create(React.createElement(Sidebar))});const groups=()=>ui.root.findAllByType('button').filter(b=>'aria-expanded'in b.props);assert.equal(groups().length,7);assert.ok(groups().every(b=>b.props['aria-expanded']));await act(async()=>groups()[1].props.onClick());assert.equal(groups()[1].props['aria-expanded'],false);await act(async()=>ui.unmount());await act(async()=>{ui=create(React.createElement(Sidebar))});assert.ok(groups().every(b=>b.props['aria-expanded']));await act(async()=>ui.unmount());console.log('PASS: seven groups expanded; manual collapse works; reload resets all; localStorage never accessed');})().catch(e=>{console.error(e);process.exit(1)});

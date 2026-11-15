@@ -317,7 +317,8 @@ export default function SidebarContent({
   const pathname = usePathname();
   const { user } = useMe();
   const [summary, setSummary] = useState<DashboardSummary>({});
-  // Which division numbers are collapsed. Empty = all expanded. Kept in memory:
+  // All seven divisions default to expanded. Never hydrate from localStorage:
+  // legacy saved collapsed groups must not override this default. Kept in memory:
   // it survives client-side navigation (this component stays mounted in the
   // layout) and resets only on a full page reload.
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());

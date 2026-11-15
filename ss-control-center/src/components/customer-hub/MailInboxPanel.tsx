@@ -59,7 +59,7 @@ export default function MailInboxPanel({ showQueue = true, period = 30, processR
   return <section className="space-y-3 rounded-lg border border-rule bg-surface p-4" aria-label="Amazon mail history">
     <div className="flex flex-wrap items-center justify-between gap-2"><strong>Amazon customer conversations</strong><span>{!data?'Loading…':!data.historyAvailable?'Full history not available yet':`${threads.length} conversations · ${threads.filter(t=>t.status==='awaiting_reply').length} awaiting reply`}{data?.stale?' · Last known data (check incomplete or stale)':''}</span></div>
     <p className="text-sm">Last successful mail check: <strong>{when(data?.lastSuccessfulCheckAt ?? null)}</strong></p>
-    <p className="text-xs text-ink-3">History: last {days} days. Awaiting reply: last 7 days; older mail without a reply needs review. Mail evidence, not Seller Central status. Walmart, eBay and TikTok: Not covered.</p>
+    <p className="text-xs text-ink-3">History: last {days} days. Awaiting reply: last 7 days; older mail without a reply needs review. Only mail delivered to the four configured Amazon mailboxes is covered. Messages without an email notification, other mailboxes, attachments and older history are not covered. This is not a complete Seller Central inbox. Walmart, eBay and TikTok: Not covered.</p>
     {error && <p role="alert" className="text-sm text-danger">{error}</p>}
     {notice && <p role="status" className="text-sm text-ink-2">{notice}</p>}
     {data?.stale && <ul className="text-xs space-y-1">{data.accounts.map(a=><li key={a.account}>{a.account}: {a.state} · Last success: {when(a.lastSuccessfulCheckAt)}{a.error?` · ${a.error}`:''}</li>)}</ul>}

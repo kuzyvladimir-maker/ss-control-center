@@ -25,6 +25,13 @@ class HistoryTest(unittest.TestCase):
             payload={'mimeType':mime,'body':{'data':base64.urlsafe_b64encode(body.encode()).decode()},'headers':[{'name':'From','value':'Amazon <donotreply@amazon.com>' if mime=='text/html' else 'Buyer <abc@marketplace.amazon.com>'},{'name':'Subject','value':'Your e-mail to Buyer' if mime=='text/html' else 'Question'}]}
             parsed=m.parse_message({'id':'one','internalDate':'1794668859000','payload':payload},'abcd0011')
             self.assertEqual(parsed['order'],ORDER);self.assertNotIn('hide me',parsed['text']);self.assertNotIn('tracking-token',parsed['text']);self.assertNotIn('End message',parsed['text'])
+    def test_seller_confirmation_without_recipient_name(self):
+        body=f'Order: {ORDER} --- Begin message --- Final answer --- End message ---'
+        payload={'mimeType':'text/plain','body':{'data':base64.urlsafe_b64encode(body.encode()).decode()},'headers':[{'name':'From','value':'Amazon <donotreply@amazon.com>'},{'name':'Subject','value':'Your e-mail to'}]}
+        parsed=m.parse_message({'id':'reply','internalDate':'1794668859000','payload':payload},'abcd0022')
+        self.assertIsNotNone(parsed);self.assertEqual(parsed['sender'],'seller');self.assertEqual(parsed['order'],ORDER)
+        row=m.build_threads('a',[msg(),parsed],set())[0]
+        self.assertEqual(row['buyer'],'Buyer');self.assertEqual(row['status'],'sent')
     def test_missing_order_never_joins_different_threads_by_name(self):
         rows=m.build_threads('a',[msg(order=None),msg('seller',order=None,thread='abcd0022',id='two')],set())
         self.assertEqual(len(rows),2)
