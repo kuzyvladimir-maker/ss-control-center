@@ -53,3 +53,23 @@ Validation: six Python parser tests; sidebar component lifecycle check;
 changed-file lint; production deployment and mail snapshot checks in topic 42.
 Browser navigation tool remains unavailable; no visual production click-through
 is claimed. Production alias/assets/API checks are separate evidence.
+
+## Additional notification evidence
+
+A broader Amazon.com sender search (excluding buyer addresses and send
+confirmations) found 312/14/20/0 threads across the configured accounts. Among
+Salutem support-related subjects were five generic buyer-response reminders,
+two return-authorisation notifications, and claim-received/claim-decision mail
+for order 111-2262010-4233846. These service notifications are not buyer-message
+bodies and are not imported as conversations by the current mail parser.
+
+The five reminder dates are Oct 17, Oct 25, Nov 1, Nov 7 and Nov 8 UTC. Their
+bodies contain no order IDs or buyer text and explicitly allow that the seller
+may already have replied. They cannot reconstruct a missing conversation or
+establish the current unanswered count. The newest reminder is Nov 8, not today.
+Claims/returns notification ingestion is a separate uncovered workflow; the hub
+must not equate the old stored claim counters with a live Amazon check.
+
+Production mail API after parser deployment: HTTP 200, 27 conversations,
+75 messages, fresh=true (stale=false), successful scan 22:31:17 UTC. No mail
+errors. Parser backup remains in the runtime project evidence folder.
