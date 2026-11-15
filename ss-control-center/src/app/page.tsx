@@ -525,7 +525,7 @@ export default function DashboardPage() {
         <KpiCard
           href="/customer-hub"
           label="Cases open"
-          value={data?.customerService.openCases ?? 0}
+          value={data?.customerService.openCases ?? "Unknown"}
           icon={<MessageSquare size={14} />}
           iconVariant={(data?.customerService.openCases ?? 0) > 0 ? "warn" : "default"}
           chips={

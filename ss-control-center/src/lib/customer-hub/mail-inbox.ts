@@ -11,16 +11,16 @@ export async function acceptMailSnapshot(input: unknown) {
   });
   return mailInbox();
 }
-export async function mailInbox(now = new Date()) {
-  const row = await prisma.setting.findUnique({ where: { key: KEY } });
+export async function mailInbox(now = new Date(), db = prisma) {
+  const row = await db.setting.findUnique({ where: { key: KEY } });
   return mailView(row ? JSON.parse(row.value) as MailState : null, now);
 }
 /** Keep source membership even when a local card says SENT. Only exact account/thread joins. */
-export async function mailOpenThreads(now = new Date()) {
-  const view = await mailInbox(now);
+export async function mailOpenThreads(now = new Date(), db = prisma) {
+  const view = await mailInbox(now, db);
   const threads = await Promise.all(view.items.map(async item => {
-    const message = await prisma.buyerMessage.findFirst({ where: { channel: 'Amazon', direction: 'incoming', storeEmail: item.account, gmailThreadId: item.thread }, orderBy: { receivedAt: 'desc' } });
-    const card = message ? await prisma.csCard.findFirst({ where: { buyerMessageId: message.id }, orderBy: { createdAt: 'desc' } }) : null;
+    const message = await db.buyerMessage.findFirst({ where: { channel: 'Amazon', direction: 'incoming', storeEmail: item.account, gmailThreadId: item.thread }, orderBy: { receivedAt: 'desc' } });
+    const card = message ? await db.csCard.findFirst({ where: { buyerMessageId: message.id }, orderBy: { createdAt: 'desc' } }) : null;
     return { ...item, order: message?.amazonOrderId ?? null, storeIndex: message?.storeIndex ?? null, messageId: message?.id ?? null,
       status: 'awaiting_reply', cardStatus: card?.status ?? null,
       telegramLink: card?.telegramMessageId ? `https://t.me/c/3924739153/${card.telegramMessageId}` : null,

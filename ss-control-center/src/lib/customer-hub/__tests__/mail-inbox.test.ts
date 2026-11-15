@@ -39,3 +39,24 @@ test('reject malformed, stale, unknown accounts and duplicate account/thread sna
 test('disabled INBOX_SCAN cannot be handed to any browser worker', async () => {
  assert.deepEqual(await listTasks(1,'INBOX_SCAN'),[]);
 });
+
+import { prisma } from '@/lib/prisma';
+import { mailOpenThreads } from '../mail-inbox';
+test('source threads survive local SENT state and join only their own mailbox/thread', async () => {
+ const state=mergeMailSnapshot(null,snapshot({unanswered:[item,{...item,account:MAIL_ACCOUNTS[1]}]}));
+ const queries: {storeEmail:string;gmailThreadId:string}[]=[];
+ const db={
+   setting:{findUnique:async()=>({value:JSON.stringify(state)})},
+   buyerMessage:{findFirst:async(args:{where:{storeEmail:string;gmailThreadId:string}})=>{
+     queries.push(args.where);
+     return args.where.storeEmail===item.account ? {id:'existing-case',status:'SENT',storeIndex:1,amazonOrderId:'111-1234567-1234567'} : null;
+   }},
+   csCard:{findFirst:async()=>({status:'SENT',telegramMessageId:'123'})},
+ } as unknown as typeof prisma;
+ const view=await mailOpenThreads(now,db);
+ assert.equal(view.threads.length,2);
+ assert.equal(view.threads[0].cardStatus,'SENT');
+ assert.equal(view.threads[0].status,'awaiting_reply');
+ assert.equal(view.threads[1].messageId,null);
+ assert.deepEqual(queries.map(q=>[q.storeEmail,q.gmailThreadId]),[[item.account,item.thread],[MAIL_ACCOUNTS[1],item.thread]]);
+});

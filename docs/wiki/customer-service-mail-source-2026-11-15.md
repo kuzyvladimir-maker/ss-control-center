@@ -59,7 +59,7 @@ Credentials are loaded only from existing `.secrets/gog_cron.env` and
 Real source check on 2026-11-15: `unanswered=[]`, `errors=[]` when run with the
 configured cron environment. Without that environment all four accounts return
 access errors; this verified why errors must never become an empty success.
-92 Customer Service tests and two Python worker tests pass, including empty
+93 Customer Service tests and two Python worker tests pass, including empty
 success, partial and full failure, stale evidence, repeat/out-of-order snapshots,
 account/thread identity and disabled browser task listing. TypeScript and ESLint
 checks pass. Deployment and live ingestion readback are recorded in the final
