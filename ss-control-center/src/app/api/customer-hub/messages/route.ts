@@ -6,12 +6,7 @@ import { syncBuyerMessagesFromGmail } from "@/lib/customer-hub/sync-messages";
 
 export const maxDuration = 800;
 
-// GET — list messages from DB.
-// Default behaviour: only "active" (NEW + ANALYZED) incoming messages, so
-// the Messages tab shows only what still needs a reply. Pass
-// ?status=sent|resolved|all to override, or ?orderId=... to load the full
-// conversation history for a single order (both incoming + outgoing, all
-// statuses).
+// GET — mail history by default; explicit legacy/order queries retain local case history.
 export async function GET(request: NextRequest) {
   try {
     const sp = request.nextUrl.searchParams;
@@ -77,7 +72,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ messages, total });
   } catch (error) {
     console.error("Messages GET error:", error);
-    return NextResponse.json({ messages: [], total: 0 });
+    return NextResponse.json({ error: "Mail history unavailable; retry refresh", messages: [], total: null }, { status: 500 });
   }
 }
 
