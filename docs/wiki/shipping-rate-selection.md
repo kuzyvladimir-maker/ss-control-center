@@ -39,9 +39,28 @@
 - **Связан с:** [Carrier selection rules](carrier-selection-rules.md), [Budget check](budget-check-algorithm.md)
 - **См. также:** [Veeqo API](veeqo-api.md) (GET /shipping/rates/)
 
+## Переключатель профиля (owner one-click)
+
+Температурный движок выбора тарифа (frozen/chilled/dry, погода, лёд) управляется
+одной строкой Setting `shipping_rate_profile` со значениями:
+
+- `summer` — движок ВЫКЛ, чистый Master Prompt v3.5 (это и есть откат);
+- `shadow` — движок считает свою ставку и показывает её/экономию на карточке, но
+  покупка идёт по summer;
+- `live` — боевой режим: покупается ставка движка (только Amazon frozen/chilled;
+  Walmart исключён; при `noForecast` падаем на summer).
+
+Владельцу доступен переключатель `Summer / Shadow / Live` прямо в закреплённой
+командной строке модуля Shipping Labels (рядом с Refresh) — он читает/пишет
+`GET|PUT /api/shipping/rate-profile`. `Summer` = откат в один клик. Код движка —
+`src/lib/shipping/temp-class/`, пины-детали — `frozen-weather-rate-selection-plan-2026-10-23.md`.
+
 ## История
 - 2026-04-10: Wiki-статья создана при полной индексации проекта
 - 2026-05-14: Dry — удалены правила "12:00 ET USPS" и "≤10% UPS"
   (решение Владимира). Frozen — Ship Date Trick реализован полностью
   (раньше был "Handle manually"); триггерится не только при отсутствии
   ставок, но и при Saturday-surcharge в лучшей ставке.
+- 2026-10-25: Добавлен owner-переключатель профиля Summer/Shadow/Live в
+  командной строке Shipping Labels (commit 3ee2d0197); прод переведён в `live`,
+  откат на `summer` в один клик.
