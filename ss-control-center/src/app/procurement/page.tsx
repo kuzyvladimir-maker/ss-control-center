@@ -162,8 +162,15 @@ export default function ProcurementPage() {
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `HTTP ${res.status}`);
       }
-      const data = await res.json();
-      const newCards: ProcurementOrderCard[] = data.cards ?? [];
+      const data = await res.json().catch(() => null);
+      // A malformed answer gets a readable error instead of a crash deep in
+      // the card list.
+      if (!data || !Array.isArray(data.cards)) {
+        throw new Error(
+          data?.error ?? "Procurement returned an unexpected answer — try again",
+        );
+      }
+      const newCards: ProcurementOrderCard[] = data.cards;
       setCards(newCards);
       setLastSync(new Date());
 

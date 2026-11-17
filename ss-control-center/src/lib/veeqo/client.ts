@@ -5,6 +5,7 @@ import {
   utcToPacificYMD,
 } from "@/lib/shipping/dates";
 import { withoutHiddenOrders } from "./hidden-orders";
+import { normalizeVeeqoResponse } from "./normalize";
 
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
@@ -117,11 +118,15 @@ export async function veeqoFetch(
     if (res.status === 204) return null;
     const text = await res.text();
     if (!text) return null;
+    let parsed: unknown;
     try {
-      return JSON.parse(text);
+      parsed = JSON.parse(text);
     } catch {
       return text;
     }
+    // One order with a non-array line_items took down every order screen
+    // (2026-11-17) — see normalize.ts.
+    return normalizeVeeqoResponse(path, parsed);
   }
   // Exhausted all attempts on a transient condition.
   throw lastErr ?? new Error("Veeqo API error: request failed");
