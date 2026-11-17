@@ -378,6 +378,29 @@ const match = liveRates.find(r => r.name === item.serviceType);
 
 ---
 
+## 14. `line_items` может прийти объектом, а не списком (2026-11-17)
+
+**Инцидент.** 17.11 в 06:58 ET одновременно упали `/api/procurement/items`,
+`/api/shipping/dashboard`, `/api/dashboard/summary` и `/api/shipping/search`
+с ошибкой «object is not iterable (cannot read property Symbol(Symbol.iterator))».
+Это точный текст V8 для `for (const li of order.line_items ?? [])`, когда
+`line_items` — объект. Код заказов не менялся 10 дней: виноват один заказ из
+списка «awaiting fulfillment» — **113-4365835-6488256**. Veeqo вернул у него
+`line_items` объектом, похожим на заказ (ключи `id, cancel_reason, cancelled_at,
+number, …`), и внутри него был настоящий список товаров. Один такой заказ ронял
+все экраны, которые показывают список заказов.
+
+**Правило.** Все ответы `/orders…` проходят через
+`src/lib/veeqo/normalize.ts`, его вызывает `veeqoFetch`:
+- списки остаются как есть;
+- если `line_items`, `allocations`, `tags` или `line_items` внутри allocation
+  пришли не списком, они приводятся к списку: из обёртки (`data`, `items`,
+  `line_items`), из одной записи или из объекта с ключами;
+- заказ один раз попадает в лог: `[veeqo] order <номер>: line_items is object keys=[…]`.
+
+Коммит `37894195b`. Прямые вызовы Veeqo в обход `veeqoFetch` (PDF этикеток,
+Customer Hub A-to-Z и enricher) через нормализатор не идут.
+
 ## История правок страницы
 - 2026-05-04: §1-6 — оригинал (tags, notes, pagination, rate limit, id types)
 - 2026-05-14: §7-12 добавлены после массовой отладки покупки этикеток.
