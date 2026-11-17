@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
+import { procurementCardKey } from "@/lib/procurement/card-key";
 import {
   ProcurementCard,
   type ProcurementCardData,
@@ -53,10 +54,11 @@ interface ProcurementListProps {
   ) => Promise<ActionResult>;
   /** SKU → ordered store names. Empty/missing entry means "not configured". */
   prioritiesBySku?: Readonly<Record<string, ReadonlyArray<string>>>;
-  /** Set of currently bulk-selected lineItemIds. */
+  /** Set of currently bulk-selected card keys (procurementCardKey —
+   *  "orderId:lineItemId", never the line id alone). */
   selected?: ReadonlySet<string>;
-  /** Toggle bulk-selection of a single line. */
-  onToggleSelect?: (lineItemId: string) => void;
+  /** Toggle bulk-selection of a single card, by card key. */
+  onToggleSelect?: (cardKey: string) => void;
   /** Bubble up new store priorities from the popup so the page can refresh
    *  its cache and every card showing this SKU updates instantly. */
   onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
@@ -360,7 +362,7 @@ export function ProcurementList({
             <div>
               {items.map((c) => (
                 <ProcurementCard
-                  key={c.lineItemId}
+                  key={procurementCardKey(c)}
                   card={c}
                   channel={c.channel}
                   orderId={c.orderId}
@@ -372,11 +374,16 @@ export function ProcurementList({
                   inquiryFlag={inquiryFlags?.[c.orderNumber]}
                   onInquirySent={onInquirySent}
                   storePriorities={prioritiesBySku?.[c.sku] ?? []}
-                  selected={selected?.has(c.lineItemId) ?? false}
-                  onToggleSelect={onToggleSelect}
+                  selected={selected?.has(procurementCardKey(c)) ?? false}
+                  onToggleSelect={
+                    onToggleSelect
+                      ? () => onToggleSelect(procurementCardKey(c))
+                      : undefined
+                  }
                   onPrioritiesSaved={onPrioritiesSaved}
-                  onAction={(lineItemId, action) =>
-                    onAction(lineItemId, c.orderId, action)
+                  onAction={(_lineItemId, action) =>
+                    // Always this card's own (order, line) pair.
+                    onAction(c.lineItemId, c.orderId, action)
                   }
                 />
               ))}

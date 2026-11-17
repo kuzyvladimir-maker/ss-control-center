@@ -14,6 +14,11 @@ import { Btn, FilterTabs, PageHead, type FilterTab } from "@/components/kit";
 import { cn } from "@/lib/utils";
 import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
+  findCardByKey,
+  isSameCard,
+  patchCard,
+} from "@/lib/procurement/card-key";
+import {
   ProcurementList,
   type ProcurementOrderCard,
   type CancellationFlag,
@@ -25,6 +30,13 @@ import type {
 } from "./components/ProcurementCard";
 
 type SortKey = "shipBy" | "title";
+
+interface ProcurementWarning {
+  orderId: string;
+  orderNumber: string;
+  customerName: string | null;
+  message: string;
+}
 
 const SORT_TABS: FilterTab<SortKey>[] = [
   { id: "shipBy", label: "By urgency" },
@@ -98,6 +110,10 @@ export default function ProcurementPage() {
   >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Orders Veeqo sent in a shape we can't read safely (broken item list,
+  // a line id shared by two orders). Their items are NOT shown as cards —
+  // a guessed product once got bought for the wrong order (2026-11-17).
+  const [warnings, setWarnings] = useState<ProcurementWarning[]>([]);
   const [sort, setSort] = useState<SortKey>("shipBy");
   const [lastSync, setLastSync] = useState<Date | null>(null);
   // Live Walmart-side cancellation flags keyed by Veeqo order number
@@ -140,11 +156,13 @@ export default function ProcurementPage() {
     errors: number;
   } | null>(null);
 
-  const toggleSelect = useCallback((lineItemId: string) => {
+  // Keys are procurementCardKey(card) = "orderId:lineItemId" — never the line
+  // id alone (two orders once came back sharing a line id, 2026-11-17).
+  const toggleSelect = useCallback((cardKey: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(lineItemId)) next.delete(lineItemId);
-      else next.add(lineItemId);
+      if (next.has(cardKey)) next.delete(cardKey);
+      else next.add(cardKey);
       return next;
     });
   }, []);
@@ -172,6 +190,7 @@ export default function ProcurementPage() {
       }
       const newCards: ProcurementOrderCard[] = data.cards;
       setCards(newCards);
+      setWarnings(Array.isArray(data.warnings) ? data.warnings : []);
       setLastSync(new Date());
 
       // Background-load store priorities for the SKUs we just received.
@@ -330,36 +349,37 @@ export default function ProcurementPage() {
 
     let errors = 0;
     for (let i = 0; i < ids.length; i++) {
-      const lineItemId = ids[i]!;
-      const card = cards.find((c) => c.lineItemId === lineItemId);
+      const key = ids[i]!;
+      const card = findCardByKey(cards, key);
       if (!card) {
         errors++;
         setBulkProgress({ done: i + 1, total: ids.length, errors });
         continue;
       }
+      const { lineItemId, orderId } = card;
       try {
         const r = await fetch(
           `/api/procurement/items/${encodeURIComponent(lineItemId)}/bought`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: card.orderId }),
+            body: JSON.stringify({ orderId }),
           }
         );
         if (!r.ok) {
           errors++;
         } else {
-          // Mark this card as bought in local state immediately
+          // Mark this card (this order's line only) as bought immediately
           setCards((prev) =>
-            prev.map((c) =>
-              c.lineItemId === lineItemId
-                ? { ...c, status: { kind: "bought" }, remaining: 0 }
-                : c
-            )
+            patchCard(prev, orderId, lineItemId, (c) => ({
+              ...c,
+              status: { kind: "bought" },
+              remaining: 0,
+            }))
           );
           setSelected((prev) => {
             const next = new Set(prev);
-            next.delete(lineItemId);
+            next.delete(key);
             return next;
           });
         }
@@ -421,7 +441,7 @@ export default function ProcurementPage() {
 
       setCards((prev) =>
         prev.map((c) => {
-          if (c.lineItemId !== lineItemId) return c;
+          if (!isSameCard(c, orderId, lineItemId)) return c;
           previousStatus = c.status;
           previousRemaining = c.remaining;
           return {
@@ -458,11 +478,11 @@ export default function ProcurementPage() {
         if (!res.ok) {
           // Revert
           setCards((prev) =>
-            prev.map((c) =>
-              c.lineItemId === lineItemId
-                ? { ...c, status: previousStatus, remaining: previousRemaining }
-                : c
-            )
+            patchCard(prev, orderId, lineItemId, (c) => ({
+              ...c,
+              status: previousStatus,
+              remaining: previousRemaining,
+            }))
           );
           return {
             ok: false,
@@ -473,11 +493,11 @@ export default function ProcurementPage() {
       } catch (e: unknown) {
         // Revert
         setCards((prev) =>
-          prev.map((c) =>
-            c.lineItemId === lineItemId
-              ? { ...c, status: previousStatus, remaining: previousRemaining }
-              : c
-          )
+          patchCard(prev, orderId, lineItemId, (c) => ({
+            ...c,
+            status: previousStatus,
+            remaining: previousRemaining,
+          }))
         );
         return {
           ok: false,
@@ -880,6 +900,27 @@ export default function ProcurementPage() {
           <div>
             <div className="font-medium">Could not load</div>
             <div className="text-[12px] opacity-80">{error}</div>
+          </div>
+        </div>
+      )}
+
+      {warnings.length > 0 && (
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-tint px-3 py-2 text-[13px] text-danger">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <div>
+            <div className="font-medium">
+              {warnings.length === 1
+                ? "1 order could not be read from Veeqo"
+                : `${warnings.length} orders could not be read from Veeqo`}
+            </div>
+            <ul className="mt-1 space-y-1 text-[12px] opacity-90">
+              {warnings.map((w) => (
+                <li key={`${w.orderId}:${w.message}`}>
+                  <span className="font-medium">{w.orderNumber}</span>
+                  {w.customerName ? ` · ${w.customerName}` : ""} — {w.message}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

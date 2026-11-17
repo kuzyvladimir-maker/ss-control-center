@@ -99,6 +99,7 @@ type AttentionReason =
   | "no_sku"
   | "budget"
   | "no_service"
+  | "no_items"
   | null;
 
 interface DashboardItem {
@@ -410,6 +411,7 @@ const ATTENTION_LABELS: Record<NonNullable<AttentionReason>, string> = {
   no_sku: "SKU not in database",
   budget: "Over budget for any service",
   no_service: "No carrier service available",
+  no_items: "Veeqo sent no readable items — check the order in Veeqo",
 };
 
 // /api/shipping/buy response shape — mirrored from buy/route.ts so the

@@ -4,6 +4,7 @@ import { shouldIncludeOrderInProcurement } from "@/lib/procurement/filter-rules"
 import { isHiddenVeeqoOrder } from "./hidden-orders";
 import { hasTag, PROCUREMENT_TAGS } from "./tags";
 import { getInternalNotes } from "./notes";
+import { isMalformedVeeqoOrder, malformedFields } from "./normalize";
 import {
   parseProcurementBlock,
   type LineItemStatus,
@@ -64,7 +65,7 @@ export interface ProcurementCard {
 
 // Loose shape of an order returned from the Veeqo API. We use unknown-tolerant
 // reads everywhere so renames or shape drift in Veeqo don't crash the page.
-type VeeqoOrder = Record<string, unknown> & {
+export type VeeqoOrder = Record<string, unknown> & {
   id?: string | number;
   number?: string;
   channel?: { type_code?: string; name?: string };
@@ -286,7 +287,22 @@ async function anchorAmazonCardsOnLiveListing(
  *      adjust `remaining` for partial buys)
  *   5. Anchor Amazon cards' title + image on the live marketplace listing
  */
+/** An order Procurement could not turn into cards — shown as a banner. */
+export interface ProcurementWarning {
+  orderId: string;
+  orderNumber: string;
+  customerName: string | null;
+  message: string;
+}
+
 export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
+  return (await fetchProcurementCardsWithWarnings()).cards;
+}
+
+export async function fetchProcurementCardsWithWarnings(): Promise<{
+  cards: ProcurementCard[];
+  warnings: ProcurementWarning[];
+}> {
   const allOrders: VeeqoOrder[] = [];
   let page = 1;
 
@@ -301,17 +317,51 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
     if (page > 50) break; // safety cap
   }
 
+  const built = buildProcurementCards(allOrders);
+
+  // Override title + image on Amazon cards from the live listing (best-effort).
+  await anchorAmazonCardsOnLiveListing(built.enrichable);
+
+  return { cards: built.cards, warnings: built.warnings };
+}
+
+/**
+ * Pure part of the fetcher: orders → per-line cards + warnings.
+ *
+ * Two guards against Veeqo sending broken data (2026-11-17, see
+ * normalize.ts):
+ *   - an order whose item list Veeqo sent unreadable gives NO cards (never a
+ *     guessed product) and a warning instead;
+ *   - a line item id that shows up on two different orders is impossible in
+ *     healthy data — those cards are dropped and both orders warned, so one
+ *     "Bought" can never act on someone else's line.
+ */
+export function buildProcurementCards(allOrders: VeeqoOrder[]): {
+  cards: ProcurementCard[];
+  warnings: ProcurementWarning[];
+  enrichable: Array<{ card: ProcurementCard; storeIndex: number }>;
+} {
   const cards: ProcurementCard[] = [];
+  const warnings: ProcurementWarning[] = [];
   const enrichable: Array<{ card: ProcurementCard; storeIndex: number }> = [];
 
   for (const order of allOrders) {
     if (isHiddenVeeqoOrder(order)) continue;
     if (!shouldIncludeOrderInProcurement(order)) continue;
 
+    if (isMalformedVeeqoOrder(order)) {
+      warnings.push({
+        orderId: String(order.id ?? ""),
+        orderNumber: order.number ?? String(order.id ?? ""),
+        customerName: pickCustomerName(order),
+        message: `Veeqo sent this order with an unreadable ${malformedFields(order).join(" / ")} — its items are not shown. Check the order in Veeqo before buying.`,
+      });
+      continue;
+    }
+
     const notes = getInternalNotes(order);
     const block = parseProcurementBlock(notes);
     const fromMike = hasTag(order as never, PROCUREMENT_TAGS.ORDERED_BY_MIKE);
-    const amazonStoreIndex = veeqoAmazonStoreIndex(order);
 
     for (const li of order.line_items ?? []) {
       const lineItemId = String(li.id ?? "");
@@ -381,14 +431,42 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
       };
 
       cards.push(card);
-      if (amazonStoreIndex !== null && card.sku) {
-        enrichable.push({ card, storeIndex: amazonStoreIndex });
-      }
     }
   }
 
-  // Override title + image on Amazon cards from the live listing (best-effort).
-  await anchorAmazonCardsOnLiveListing(enrichable);
+  // Same line item id on two different orders → corrupted data.
+  const ordersByLine = new Map<string, Set<string>>();
+  for (const c of cards) {
+    const set = ordersByLine.get(c.lineItemId) ?? new Set<string>();
+    set.add(c.orderId);
+    ordersByLine.set(c.lineItemId, set);
+  }
+  const clashing = new Set(
+    [...ordersByLine].filter(([, ids]) => ids.size > 1).map(([li]) => li),
+  );
+  const kept: ProcurementCard[] = [];
+  const warnedOrders = new Set<string>();
+  for (const c of cards) {
+    if (!clashing.has(c.lineItemId)) {
+      kept.push(c);
+      continue;
+    }
+    if (warnedOrders.has(c.orderId)) continue;
+    warnedOrders.add(c.orderId);
+    warnings.push({
+      orderId: c.orderId,
+      orderNumber: c.orderNumber,
+      customerName: c.customerName,
+      message: `Veeqo returned line ${c.lineItemId} on more than one order — the line is hidden so "Bought" cannot mark the wrong order. Check the order in Veeqo.`,
+    });
+  }
 
-  return cards;
+  const orderById = new Map(allOrders.map((o) => [String(o.id ?? ""), o]));
+  for (const card of kept) {
+    const order = orderById.get(card.orderId);
+    const storeIndex = order ? veeqoAmazonStoreIndex(order) : null;
+    if (storeIndex !== null && card.sku) enrichable.push({ card, storeIndex });
+  }
+
+  return { cards: kept, warnings, enrichable };
 }

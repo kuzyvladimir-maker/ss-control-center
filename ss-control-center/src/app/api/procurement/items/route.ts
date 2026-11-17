@@ -3,13 +3,13 @@ import {
   isVeeqoAuthError,
   VEEQO_KEY_REJECTED_MESSAGE,
 } from "@/lib/veeqo/client";
-import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
+import { fetchProcurementCardsWithWarnings } from "@/lib/veeqo/orders-procurement";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const cards = await fetchProcurementCards();
+    const { cards, warnings } = await fetchProcurementCardsWithWarnings();
 
     // Default sort: most-urgent ship-by first; orders with no ship-by date
     // sink to the bottom.
@@ -23,7 +23,7 @@ export async function GET() {
       return aDate - bDate;
     });
 
-    return NextResponse.json({ cards, total: cards.length });
+    return NextResponse.json({ cards, total: cards.length, warnings });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     console.error("[procurement/items] error", e);

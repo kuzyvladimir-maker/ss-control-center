@@ -1,4 +1,5 @@
 import { isVeeqoTransientError, veeqoFetch } from "@/lib/veeqo/client";
+import { isMalformedVeeqoOrder } from "@/lib/veeqo/normalize";
 import {
   getOrderTags,
   PROCUREMENT_TAGS,
@@ -28,6 +29,27 @@ interface VeeqoOrder {
     sellable?: { title?: string; product?: { title?: string; name?: string } };
   }>;
   [k: string]: unknown;
+}
+
+/**
+ * Refuse to write anything unless Veeqo gave us THIS order in a readable
+ * shape. 2026-11-17: Veeqo flapped between a normal body and one whose
+ * `line_items` was another customer's whole order; a guessed item list let a
+ * "Bought" write a note + Placed tag onto order 113-4365835-6488256 for a line
+ * that belongs to 114-8255419-4685824. Nothing is written in either case.
+ */
+export function assertOrderReadable(order: unknown, orderId: string): void {
+  const o = (order ?? {}) as Record<string, unknown>;
+  if (String(o.id ?? "") !== String(orderId)) {
+    throw new Error(
+      `Veeqo answered with a different order (asked ${orderId}, got ${String(o.id ?? "nothing")}) — nothing was saved. Refresh and try again.`,
+    );
+  }
+  if (isMalformedVeeqoOrder(order)) {
+    throw new Error(
+      `Veeqo sent order ${String(o.number ?? orderId)} with an unreadable item list — nothing was saved. Refresh in a minute, or check the order in Veeqo.`,
+    );
+  }
 }
 
 const MANAGED_TAGS: ReadonlyArray<string> = [
@@ -74,6 +96,7 @@ export async function applyProcurementAction(
 }> {
   // --- 1. Fetch current order state ---------------------------------------
   const order = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
+  assertOrderReadable(order, orderId);
   const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
   const allLineItemIds = lineItems
     .map((li) => String(li.id ?? ""))

@@ -5,7 +5,7 @@ import {
   utcToPacificYMD,
 } from "@/lib/shipping/dates";
 import { withoutHiddenOrders } from "./hidden-orders";
-import { normalizeVeeqoResponse } from "./normalize";
+import { normalizeVeeqoResponse, repairMalformedOrders } from "./normalize";
 
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
@@ -55,8 +55,11 @@ export async function veeqoFetch(
   options?: RequestInit,
   // A POST that only READS (the rate quote) may opt in to retries. Never pass
   // this for anything that buys, writes or appends.
-  opts?: { readOnlyPost?: boolean },
-) {
+  // noRepair: internal — the single re-read of a broken order must not
+  // trigger another re-read.
+  opts?: { readOnlyPost?: boolean; noRepair?: boolean },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- callers have always received the untyped JSON body
+): Promise<any> {
   // Only RETRY idempotent reads. GET/HEAD can be safely re-sent; a POST to
   // /shipping/shipments (label purchase) MUST NOT be — a transient error there
   // might mean "label already bought", so re-sending could buy a SECOND label.
@@ -125,8 +128,17 @@ export async function veeqoFetch(
       return text;
     }
     // One order with a non-array line_items took down every order screen
-    // (2026-11-17) — see normalize.ts.
-    return normalizeVeeqoResponse(path, parsed);
+    // (2026-11-17) — see normalize.ts. A broken order is never "recovered" by
+    // guessing; it is re-read once (Veeqo flapped between the broken and the
+    // normal body) and stays marked `_veeqoMalformed` if still broken.
+    const normalized = normalizeVeeqoResponse(path, parsed);
+    if (method === "GET" && !opts?.noRepair) {
+      return repairMalformedOrders(normalized, async (id) => {
+        await new Promise((r) => setTimeout(r, 600));
+        return veeqoFetch(`/orders/${id}`, undefined, { noRepair: true });
+      });
+    }
+    return normalized;
   }
   // Exhausted all attempts on a transient condition.
   throw lastErr ?? new Error("Veeqo API error: request failed");

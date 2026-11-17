@@ -32,6 +32,7 @@ import {
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
 import { ownShipBy, bucketForYmd } from "@/lib/shipping/own-deadline";
 import { cardItemClass } from "@/lib/shipping/temp-class/card-class";
+import { isMalformedVeeqoOrder } from "@/lib/veeqo/normalize";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -586,6 +587,7 @@ export async function GET() {
         | "no_sku"
         | "budget"
         | "no_service"
+        | "no_items"
         | null = null;
 
       const totals = ensureTotals(storeId, storeName, channelName || "");
@@ -672,7 +674,15 @@ export async function GET() {
           !reqsProfile &&
           items.some((i) => !skuByCode.has(i.sku));
 
-        if (frozenWalmart) {
+        // No readable items (Veeqo sent a broken item list, 2026-11-17) —
+        // never "ready to buy": a label bought now would have no product
+        // behind it and a guessed weight.
+        const noItems = items.length === 0 || isMalformedVeeqoOrder(o);
+
+        if (noItems) {
+          state = "need_attention";
+          needAttentionReason = "no_items";
+        } else if (frozenWalmart) {
           state = "need_attention";
           needAttentionReason = "frozen_walmart";
         } else if (mixed) {
