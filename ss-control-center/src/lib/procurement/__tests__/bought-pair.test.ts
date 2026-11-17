@@ -92,7 +92,7 @@ test("normalised broken order (line_items = another order) gives NO card, only a
   );
   assert.equal(warnings.length, 1);
   assert.equal(warnings[0].orderNumber, "113-4365835-6488256");
-  assert.match(warnings[0].message, /unreadable line_items/);
+  assert.match(warnings[0].message, /unreadable item list/);
 });
 
 test("a line id on two different orders is dropped from both and warned", () => {
@@ -112,10 +112,24 @@ test("Bought refuses to write on an unreadable or mismatched order", () => {
     ...orderA(),
     line_items: orderB() as unknown,
   });
-  assert.throws(() => assertOrderReadable(broken, "2277485341"), /unreadable item list — nothing was saved/);
+  assert.throws(() => assertOrderReadable(broken, "2277485341"), /unreadable item list or tags — nothing was saved/);
   assert.throws(
     () => assertOrderReadable(orderB(), "2277485341"),
     /different order \(asked 2277485341, got 2277125420\)/,
   );
   assert.doesNotThrow(() => assertOrderReadable(orderA(), "2277485341"));
+});
+
+test("junk in allocations[].line_items alone does not hide the order's cards", () => {
+  // 2026-11-17 prod: 111-… had a feature-flag blob in allocations[0].line_items
+  // while its own line_items were fine.
+  const o = {
+    ...orderA(),
+    allocations: [{ id: 1, line_items: { groups: [], percentage: 0, users: [], feature: "x", data: [] } }],
+  };
+  const [normalised] = normalizeVeeqoResponse("/orders?page=1", [o]) as VeeqoOrder[];
+  const { cards, warnings } = buildProcurementCards([normalised]);
+  assert.equal(warnings.length, 0);
+  assert.equal(cards.length, 1);
+  assert.doesNotThrow(() => assertOrderReadable(normalised, "2277485341"));
 });

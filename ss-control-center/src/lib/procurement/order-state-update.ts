@@ -1,5 +1,5 @@
 import { isVeeqoTransientError, veeqoFetch } from "@/lib/veeqo/client";
-import { isMalformedVeeqoOrder } from "@/lib/veeqo/normalize";
+import { isMalformedVeeqoOrder, WRITE_FIELDS } from "@/lib/veeqo/normalize";
 import {
   getOrderTags,
   PROCUREMENT_TAGS,
@@ -45,9 +45,9 @@ export function assertOrderReadable(order: unknown, orderId: string): void {
       `Veeqo answered with a different order (asked ${orderId}, got ${String(o.id ?? "nothing")}) — nothing was saved. Refresh and try again.`,
     );
   }
-  if (isMalformedVeeqoOrder(order)) {
+  if (isMalformedVeeqoOrder(order, WRITE_FIELDS)) {
     throw new Error(
-      `Veeqo sent order ${String(o.number ?? orderId)} with an unreadable item list — nothing was saved. Refresh in a minute, or check the order in Veeqo.`,
+      `Veeqo sent order ${String(o.number ?? orderId)} with an unreadable item list or tags — nothing was saved. Refresh in a minute, or check the order in Veeqo.`,
     );
   }
 }

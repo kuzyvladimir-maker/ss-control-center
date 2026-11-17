@@ -32,7 +32,7 @@ import {
 import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
 import { ownShipBy, bucketForYmd } from "@/lib/shipping/own-deadline";
 import { cardItemClass } from "@/lib/shipping/temp-class/card-class";
-import { isMalformedVeeqoOrder } from "@/lib/veeqo/normalize";
+import { isMalformedVeeqoOrder, ITEM_FIELDS } from "@/lib/veeqo/normalize";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -677,7 +677,8 @@ export async function GET() {
         // No readable items (Veeqo sent a broken item list, 2026-11-17) —
         // never "ready to buy": a label bought now would have no product
         // behind it and a guessed weight.
-        const noItems = items.length === 0 || isMalformedVeeqoOrder(o);
+        const noItems =
+          items.length === 0 || isMalformedVeeqoOrder(o, ITEM_FIELDS);
 
         if (noItems) {
           state = "need_attention";

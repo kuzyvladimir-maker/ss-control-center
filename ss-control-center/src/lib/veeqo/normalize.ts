@@ -60,20 +60,30 @@ function markMalformed(o: Record<string, any>, field: string, v: unknown): void 
   }
 }
 
-/** True when Veeqo sent this order with a broken list field. */
-export function isMalformedVeeqoOrder(order: unknown): boolean {
-  return (
-    isObj(order) &&
-    Array.isArray(order[MALFORMED_FIELD]) &&
-    (order[MALFORMED_FIELD] as unknown[]).length > 0
-  );
-}
+/** The order's own item list — what Procurement and Shipping cards are made
+ *  of. A broken `allocations[].line_items` alone does not make the items
+ *  unreadable (2026-11-17: one order carried a feature-flag blob there while
+ *  its `line_items` were fine). */
+export const ITEM_FIELDS = ["line_items"] as const;
+/** What a Procurement write reads before writing: items + current tags. */
+export const WRITE_FIELDS = ["line_items", "tags"] as const;
+/** Worth one re-read: top-level lists (not allocations[].line_items). */
+const REPAIR_FIELDS = ["line_items", "tags", "allocations"] as const;
 
 /** The broken field names (empty for a healthy order). */
 export function malformedFields(order: unknown): string[] {
-  return isMalformedVeeqoOrder(order)
-    ? [...((order as Record<string, unknown>)[MALFORMED_FIELD] as string[])]
-    : [];
+  if (!isObj(order) || !Array.isArray(order[MALFORMED_FIELD])) return [];
+  return [...(order[MALFORMED_FIELD] as string[])];
+}
+
+/** True when Veeqo sent this order with a broken list field — any field, or
+ *  only the given ones when `fields` is passed. */
+export function isMalformedVeeqoOrder(
+  order: unknown,
+  fields?: readonly string[],
+): boolean {
+  const broken = malformedFields(order);
+  return fields ? broken.some((f) => fields.includes(f)) : broken.length > 0;
 }
 
 /** Normalise one order in place; returns it. */
@@ -122,14 +132,14 @@ export async function repairMalformedOrders(
   max = 5,
 ): Promise<unknown> {
   const tryOne = async (o: unknown): Promise<unknown> => {
-    if (!isMalformedVeeqoOrder(o)) return o;
+    if (!isMalformedVeeqoOrder(o, REPAIR_FIELDS)) return o;
     const id = String((o as Record<string, unknown>).id ?? "");
     if (!/^\d+$/.test(id)) return o;
     try {
       const fresh = await refetch(id);
       if (
         isObj(fresh) &&
-        !isMalformedVeeqoOrder(fresh) &&
+        !isMalformedVeeqoOrder(fresh, REPAIR_FIELDS) &&
         String(fresh.id ?? "") === id
       ) {
         console.warn(`[veeqo] order id=${id}: re-read came back healthy — using it`);
@@ -146,7 +156,7 @@ export async function repairMalformedOrders(
   if (Array.isArray(body)) {
     let budget = max;
     for (let i = 0; i < body.length && budget > 0; i++) {
-      if (!isMalformedVeeqoOrder(body[i])) continue;
+      if (!isMalformedVeeqoOrder(body[i], REPAIR_FIELDS)) continue;
       budget--;
       body[i] = await tryOne(body[i]);
     }

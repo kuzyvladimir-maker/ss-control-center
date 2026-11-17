@@ -4,7 +4,7 @@ import { shouldIncludeOrderInProcurement } from "@/lib/procurement/filter-rules"
 import { isHiddenVeeqoOrder } from "./hidden-orders";
 import { hasTag, PROCUREMENT_TAGS } from "./tags";
 import { getInternalNotes } from "./notes";
-import { isMalformedVeeqoOrder, malformedFields } from "./normalize";
+import { isMalformedVeeqoOrder, ITEM_FIELDS } from "./normalize";
 import {
   parseProcurementBlock,
   type LineItemStatus,
@@ -349,12 +349,12 @@ export function buildProcurementCards(allOrders: VeeqoOrder[]): {
     if (isHiddenVeeqoOrder(order)) continue;
     if (!shouldIncludeOrderInProcurement(order)) continue;
 
-    if (isMalformedVeeqoOrder(order)) {
+    if (isMalformedVeeqoOrder(order, ITEM_FIELDS)) {
       warnings.push({
         orderId: String(order.id ?? ""),
         orderNumber: order.number ?? String(order.id ?? ""),
         customerName: pickCustomerName(order),
-        message: `Veeqo sent this order with an unreadable ${malformedFields(order).join(" / ")} — its items are not shown. Check the order in Veeqo before buying.`,
+        message: "Veeqo sent this order with an unreadable item list — its items are not shown. Check the order in Veeqo before buying.",
       });
       continue;
     }
