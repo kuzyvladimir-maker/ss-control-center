@@ -60,3 +60,17 @@ Local directory: `ss-control-center/data/cs-audit-20261118-evening/` (ignored, n
 - `tests.log`, `typecheck.log`: local checks. Post-deploy evidence is recorded alongside these artifacts.
 
 Validation so far: 106 Customer Hub authority/execution tests passed; screen UI test covers unknown/fresh/stale/API failure and retained timestamp; lease test covers conflicting owners/modes/expiry/handoff; shell syntax, TypeScript, changed-file ESLint checked. Deployment and final production acceptance recorded below after completion.
+
+## Final deployment and acceptance
+
+- Code commit: `76c1462b3`, pushed to origin/main. Production deployment `dpl_Dc7L2Hc9w3PPFuGoDJJDqa4RqPPq`, URL `https://ss-control-center-ugbr0vt8h-kuzyvladimir-makers-projects.vercel.app`, aliased to `https://salutemsolutions.info`. CLI build/deploy exit 0; Next compilation and TypeScript passed.
+- Production API acceptance at **23:29:04.211429Z**: responseNeeded=2, unreadMessages=null, current claims/chargebacks/feedback=null; store=2 does not inherit Salutem's response count. Execution journal byte-equivalent as parsed JSON to the initial audit read.
+- `production-ui.png` / `production-ui.txt`: real production UI shows “Ждут ответа: 2”, Mary/Sharon, independent 0 Over SLA and 1 Reported unresolved, unknown unread, 18:21:26 EST last success, manual collection notice, neutral store-selection badge, collapsed source and technical history. A fresh tab was used for final rendering verification.
+- Refresh view produced its success notice. Process next displayed the explicit paused/no-send notice (`production-actions.txt`); `execution-after-ui.json` proves the persisted journal remained unchanged.
+- `rejected-submissions.json`: duplicate observation rejected HTTP 400 (“Screen evidence must advance”); old timestamp rejected HTTP 400 (“Fresh screen timestamp required”); last success unchanged.
+- `mcp-acceptance.json`: cs_open_threads and cs_inbox_status return the same two screen-confirmed threads; cs_cards_pending returns no historical cards. This does **not** prove a resident producer has created new cards for Mary/Sharon; both currently have no card.
+- `ownership-negative.json`: missing owner, other owner, and native owner attempting worker startup all rejected with exit 75. Final native SS window closed, lease released (`status=null`); RDP transient unit not found/inactive with no restarts. No old job resumed. Installed script SHA256 matches the committed local copy.
+- Previously reported duplicate order `114-2471869-1927461` is two preserved legacy tasks: `cmvokltlx000907jtw91h8jui` (2026-10-26T01:21:01Z) and `cmvymf11j000308lhpcc9ha9y` (2026-11-02T02:09:25Z). Both are blocked because legacy DONE has no in-thread evidence. UI groups these tasks into one historical order; no deletion or new send.
+- Own deployment worktree removed. `agent-sync doctor` still reports the pre-existing excess registered worktrees; no other checkout was removed. Wiki-brain reports pre-existing missing/orphan links, including `feedback_cs_send_vps_only_and_min_data.md`; not treated as a release gate.
+
+Remaining acceptance gap is explicit: no unattended semantic screen collector or automatic failure reporter was installed/validated; only two manual screen→API cycles are proven. The live UI discloses that boundary. A-to-Z status for Scott, current claims/feedback collection, and new-card production are not claimed restored. This audit preserves that handoff rather than marking the whole project complete.
