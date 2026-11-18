@@ -15,10 +15,10 @@ def render(data, now=None):
     if data.get('stale') is not False or not 0 <= age < 3600:
         return 'Инбокс Customer Service не удалось проверить; список ожидающих решений не сформирован.'
     rows = [r for r in data.get('threads', []) if r.get('storeIndex') == 1 and
-            r.get('cardStatus') not in ('SENT', 'SUPERSEDED', 'CLOSED', 'RESOLVED') and not r.get('stale')]
+            not r.get('stale')]
     if not rows:
         return 'NO_REPLY'
-    lines = ['Ждут твоего решения']
+    lines = ['Response needed — подтверждено экраном Seller Central']
     for row in rows:
         lines.append(f"{row.get('buyer') or 'Покупатель'} — {row['order']} — срок: {row.get('deadline') or 'не установлен'} — {row.get('telegramLink') or 'карточка ещё не опубликована'}")
     lines.append('Ответь «отправляй» / «не так» / «доработать + комментарий» под нужной карточкой.')

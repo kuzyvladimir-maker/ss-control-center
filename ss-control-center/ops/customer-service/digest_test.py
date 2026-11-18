@@ -3,15 +3,15 @@ from datetime import datetime, timezone
 from digest import render
 
 class DigestTest(unittest.TestCase):
-    def test_answered_never_appears(self):
+    def test_screen_membership_wins_over_legacy_card_state(self):
         now = datetime(2026, 11, 9, 13, tzinfo=timezone.utc)
         rows = [{'storeIndex': 1, 'order': name, 'cardStatus': status} for name, status in
                 [('Dee', 'SENT'), ('Scott', 'SUPERSEDED'), ('Russell', 'CLOSED')]]
         data = {'source':'seller_central_screen','state':'fresh','lastScanAt': now.isoformat(), 'stale': False, 'threads': rows}
-        self.assertEqual(render(data, now), 'NO_REPLY')
+        self.assertIn('Dee', render(data, now))
         data['threads'].append({'storeIndex': 1, 'order': 'new', 'cardStatus': 'PUBLISHED'})
         self.assertIn('new', render(data, now))
-        self.assertNotIn('Scott', render(data, now))
+        self.assertIn('Scott', render(data, now))
 
     def test_stale_fail_closed(self):
         now = datetime(2026, 11, 9, 13, tzinfo=timezone.utc)
