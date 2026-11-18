@@ -114,7 +114,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--days', type=int, default=30)
     parser.add_argument('--json', action='store_true')
+    parser.add_argument('--history-only', action='store_true', help='Mail archive only; never a Seller Central queue')
     args = parser.parse_args()
+    if not args.history_only: parser.error('Mail cannot establish the current queue. Use the screen-only cs_open_threads source; --history-only explicitly requests the archive.')
     if not 1 <= args.days <= 30: parser.error('days must be 1..30')
     ignore = ROOT / 'memory/cs_mail_ignore.txt'
     ignored = {line.split()[0] for line in ignore.read_text().splitlines() if line.strip() and not line.lstrip().startswith('#')} if ignore.exists() else set()
@@ -124,7 +126,7 @@ def main():
         try: rows.extend(build_threads(account, collect_account(account, args.days), ignored, active_since))
         except Exception as exc: errors.append({'account': account, 'error': str(exc)[:200]})
     rows.sort(key=lambda row: row['lastMessageAt'], reverse=True)
-    result = {'schemaVersion': 2, 'lookbackDays': args.days, 'timezone': 'UTC', 'activeWindowDays': min(7, args.days), 'threads': rows,
+    result = {'historyOnly': True, 'isCurrentQueue': False, 'queueState': 'unknown', 'schemaVersion': 2, 'lookbackDays': args.days, 'timezone': 'UTC', 'activeWindowDays': min(7, args.days), 'threads': rows,
               'unanswered': [r for r in rows if r['status'] == 'awaiting_reply'], 'errors': errors}
     print(json.dumps(result, ensure_ascii=False, indent=1) if args.json else '\n'.join(f"{r['date']} | {r['buyer']} | {r['order']} | {r['status']}" for r in rows))
 if __name__ == '__main__': main()

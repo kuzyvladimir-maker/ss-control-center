@@ -61,8 +61,8 @@ export default function HubStatsCards({
   const cards = [
     {
       key: "messages",
-      label: "Ждут ответа (Amazon mail)",
-      value: stats.unreadMessages ?? "Unknown",
+      label: "Response needed (Seller Central)",
+      value: stats.unreadMessages ?? "Не проверено",
       icon: <MessageSquare size={14} />,
       iconVariant: "default" as const,
       chips:

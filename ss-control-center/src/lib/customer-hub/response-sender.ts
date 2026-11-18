@@ -74,6 +74,6 @@ export async function sendResponse(
     method: "MANUAL",
     messagingClosed: true,
     error:
-      "Replies are sent only through Seller Central from this account's VPS. The VPS send agent is not built yet — copy the reply into Buyer-Seller Messaging for this order. The case is marked sent automatically when Amazon's confirmation email arrives.",
+      "Replies are sent only through Seller Central from this account's VPS. The screen-only executor is blocked; no automatic send or retry. Email confirmation is history only. Sent requires verified screen evidence inside the matching thread.",
   };
 }

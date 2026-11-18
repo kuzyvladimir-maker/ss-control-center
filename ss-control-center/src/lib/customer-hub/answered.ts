@@ -24,6 +24,8 @@ export async function closeAnsweredByReply(
   via: "SELLER_CENTRAL" | "VPS_AGENT",
   opts: { exceptId?: string; skip?: (messageId: string) => Promise<boolean> } = {}
 ): Promise<string[]> {
+  // Email confirmations remain history evidence; they cannot complete a SEND.
+  if(via !== "VPS_AGENT") return [];
   const open = await prisma.buyerMessage.findMany({
     where: {
       storeIndex,

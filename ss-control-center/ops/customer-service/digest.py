@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 
 def render(data, now=None):
     now = now or datetime.now(timezone.utc)
+    if data.get('source') != 'seller_central_screen' or data.get('state') != 'fresh':
+        return 'Не проверено: нет свежего экранного снимка Seller Central. Почта не является очередью.'
     try:
         observed = datetime.fromisoformat(data['lastScanAt'].replace('Z', '+00:00'))
         age = (now - observed).total_seconds()
     except (KeyError, ValueError, TypeError, AttributeError):
         return 'Инбокс Customer Service не удалось проверить; список ожидающих решений не сформирован.'
-    if data.get('stale') is not False or not 0 <= age <= 7200:
+    if data.get('stale') is not False or not 0 <= age < 3600:
         return 'Инбокс Customer Service не удалось проверить; список ожидающих решений не сформирован.'
     rows = [r for r in data.get('threads', []) if r.get('storeIndex') == 1 and
             r.get('cardStatus') not in ('SENT', 'SUPERSEDED', 'CLOSED', 'RESOLVED') and not r.get('stale')]
@@ -24,7 +26,7 @@ def render(data, now=None):
 
 def main():
     import requests
-    from cs_inbox_scan import ROOT, env_file
+    from cs_mail_publish import ROOT, env_file
     env = {**env_file(ROOT / '.secrets/cs_scan.env'), **os.environ}
     token = env.get('JACKIE_API_TOKEN') or env['SSCC_API_TOKEN']
     try:

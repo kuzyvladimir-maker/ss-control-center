@@ -16,8 +16,8 @@ const text=node=>typeof node==='string'?node:node?.children?.map(text).join('')|
  let ui; await act(async()=>{ui=create(React.createElement(Panel));});
  const button=prefix=>ui.root.findAllByType('button').find(b=>text(b).startsWith(prefix));
  assert.match(text(ui.toJSON()),/История \(2\)/);
- assert.match(text(ui.toJSON()),/Ждут ответа: 0/);
- assert.match(text(ui.toJSON()),/История за 30 дней: 2 \(не требуют ответа\)/);
+ assert.doesNotMatch(text(ui.toJSON()),/Ждут ответа:/);
+ assert.match(text(ui.toJSON()),/не очередь Seller Central/);
  await act(async()=>button('Sent (').props.onClick());
  assert.equal(ui.root.findAllByType('tbody')[0].findAllByType('tr').length,1);
  await act(async()=>button('View messages').props.onClick());
@@ -25,7 +25,7 @@ const text=node=>typeof node==='string'?node:node?.children?.map(text).join('')|
  await act(async()=>button('Resolved (').props.onClick());
  assert.match(text(ui.root.findAllByType('tbody')[0]),/Ignored/);
  await act(async()=>ui.update(React.createElement(Panel,{processRequest:1})));
- assert.match(text(ui.toJSON()),/No messages awaiting reply/);
+ assert.doesNotMatch(text(ui.toJSON()),/Opened/);
  fail=true; await act(async()=>button('Refresh mail status').props.onClick());
  assert.match(text(ui.toJSON()),/Worker unavailable/);
  fail=false; const before=reads; await act(async()=>button('Refresh mail status').props.onClick());
@@ -33,8 +33,8 @@ const text=node=>typeof node==='string'?node:node?.children?.map(text).join('')|
  data={...data,threads:[thread('Next','awaiting_reply')]};
  await act(async()=>window.dispatchEvent(new Event('cs-mail-refresh')));
  await act(async()=>ui.update(React.createElement(Panel,{processRequest:2})));
- assert.match(text(ui.toJSON()),/Opened Next/);
- assert.match(text(ui.toJSON()),/Ждут ответа: 1/);
+ assert.doesNotMatch(text(ui.toJSON()),/Opened Next/);
+ assert.doesNotMatch(text(ui.toJSON()),/Ждут ответа:/);
  assert.doesNotMatch(text(ui.toJSON()),/не требуют ответа/);
  await act(async()=>ui.unmount());
  console.log('PASS: All/Sent/Resolved, body display, empty and active Process next, refresh failure and completed refresh');

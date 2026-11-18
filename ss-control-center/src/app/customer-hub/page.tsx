@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, RefreshCw } from "lucide-react";
-import MailInboxPanel from "@/components/customer-hub/MailInboxPanel";
+import ExecutionPanel from "@/components/customer-hub/ExecutionPanel";
+import ScreenQueuePanel from "@/components/customer-hub/ScreenQueuePanel";
 import HubStatsCards from "@/components/customer-hub/HubStatsCards";
 import StoreFilter from "@/components/customer-hub/StoreFilter";
 import PeriodFilter from "@/components/customer-hub/PeriodFilter";
@@ -86,14 +87,14 @@ export default function CustomerHubPage() {
   return (
     <div className="space-y-5">
       <PageHead
-        title={`Ждут ответа: ${stats.unreadMessages ?? "неизвестно"}`}
+        title={`Ждут ответа: ${stats.unreadMessages ?? "Не проверено"}`}
         
         subtitle={
           <>
-            <span>Customer Hub · Amazon mail</span>
+            <span>Customer Hub · Seller Central</span>
             <Sep />
             <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
-              Amazon mail · Coverage below
+              Прямой экранный снимок · без почтовых предположений
             </span>
           </>
         }
@@ -110,7 +111,7 @@ export default function CustomerHubPage() {
             </Btn>
             <WalmartSyncButton />
             <WalmartCaseModal />
-            <Btn variant="primary" icon={<ArrowRight size={13} />} onClick={()=>{setActiveTab("messages");setProcessRequest(n=>n+1);}}>
+            <Btn variant="primary" icon={<ArrowRight size={13} />} onClick={()=>{setActiveTab("messages");setProcessRequest(n=>n+1);setRefreshNotice("Исполнение приостановлено: нужна проверка ветки на VPS. Ничего не отправлено.");}}>
               Process next
             </Btn>
           </>
@@ -119,7 +120,8 @@ export default function CustomerHubPage() {
 
       {refreshError && <p role="alert" className="text-danger">{refreshError}</p>}
       {refreshNotice && <p role="status" className="text-sm text-ink-2">{refreshNotice}</p>}
-      <MailInboxPanel showQueue={false} period={period} />
+      <ScreenQueuePanel />
+      <ExecutionPanel />
 
       {/* KPI row */}
       <HubStatsCards

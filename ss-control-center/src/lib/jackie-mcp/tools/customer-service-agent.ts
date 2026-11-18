@@ -136,7 +136,7 @@ const taskClaim: JackieTool = {
 const taskComplete: JackieTool = {
   name: "cs_task_complete",
   description:
-    "Report a claimed SEND or LOOKUP task: DONE / FAILED / UNKNOWN. Unknown sends are never retried. INBOX_SCAN completions are rejected; inbox monitoring uses the Amazon mail source.",
+    "Report a claimed SEND or LOOKUP task: DONE / FAILED / UNKNOWN. Unknown sends are never retried. INBOX_SCAN completions are rejected; DONE requires result.sentVerification with account/order/exact body hash and fresh in-thread screen evidence.",
   write: true,
   input_schema: {
     type: "object",
@@ -238,7 +238,7 @@ const cardSetReply: JackieTool = {
 const inboxStatusTool: JackieTool = {
   name: "cs_inbox_status",
   description:
-    "Customer Service unanswered Amazon-mail threads from cs_mail_unanswered.py: mailbox coverage, source errors, lastSuccessfulCheckAt, stale and thread/card links. Counts are null when incomplete or older than 60 minutes. Walmart/eBay/TikTok are not covered. reconcile=true only retires disabled Chrome inbox tasks; no browser scans, buyer sends or alert cards.",
+    "Seller Central screen-only queue: separate metrics, lastSuccessfulCheckAt, unknown/stale and thread/card links. Mail never establishes the current queue. Counts are null without fresh screen evidence. Walmart/eBay/TikTok are not covered. reconcile=true only retires disabled Chrome inbox tasks; no browser scans, buyer sends or alert cards.",
   // reconcile=true retires disabled tasks; the plain call only reads.
   write: true,
   input_schema: { type: "object", properties: { reconcile: { type: "boolean" } }, additionalProperties: false },
@@ -331,7 +331,7 @@ const cardAuditTool: JackieTool = {
 
 const openThreadsTool: JackieTool = {
   name: "cs_open_threads",
-  description: "Amazon-mail unanswered threads, account/buyer/date/subject/thread, matched hub cards and links, lastSuccessfulCheckAt, errors and coverage. Partial results never imply a complete total. stale=true on failed or old checks. No Seller Central or Chrome access.",
+  description: "Only fresh account-bound Seller Central screen evidence. Separate Response needed, unread, Over SLA and Reported unresolved metrics. Unknown/stale returns no current threads; never infer queue from mail history.",
   write: false,
   input_schema: { type: "object", properties: {}, additionalProperties: false },
   handler: async () => openThreads(),

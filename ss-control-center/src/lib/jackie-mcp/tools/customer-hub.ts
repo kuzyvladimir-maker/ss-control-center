@@ -1,3 +1,4 @@
+import { screenInbox } from "@/lib/customer-hub/screen-inbox";
 /**
  * Jackie MCP tools — Customer Hub.
  *
@@ -22,7 +23,7 @@ import type { JackieTool } from "../registry";
 const messagesList: JackieTool = {
   name: "messages_list",
   description:
-    "List buyer messages for one channel (Amazon or Walmart). Default status='unread'; pass 'all' to include responded/closed. Channel must be 'AMAZON_SALUTEM'|…|'WALMART'.",
+    "List buyer messages for one channel (Amazon or Walmart). Default unread is a separate screen metric, not Response needed. Use status=response_needed for the fresh screen queue; all returns history only. Channel must be 'AMAZON_SALUTEM'|…|'WALMART'.",
   write: false,
   input_schema: {
     type: "object",
@@ -38,6 +39,10 @@ const messagesList: JackieTool = {
     const channel = requireChannel(args);
     const status = optionalString(args, "status") ?? "unread";
     const limit = optionalNumber(args, "limit") ?? 50;
+    if(['unread','response_needed','active'].includes(status)){
+      if(channel!=='AMAZON_SALUTEM')return {source:'seller_central_screen',state:'not_covered',count:null,messages:[]};
+      const q=await screenInbox();return {...q,count:status==='unread'?q.metrics.unread:q.metrics.responseNeeded,messages:status==='unread'?[]:q.threads,metric:status==='unread'?'unread':'responseNeeded'};
+    }
 
     const channelTag = channel === "WALMART" ? "Walmart" : "Amazon";
     const storeIndex = (() => {
@@ -66,7 +71,7 @@ const messagesList: JackieTool = {
       orderBy: { receivedAt: "desc" },
       take: Math.min(limit, 200),
     });
-    return { count: rows.length, messages: rows };
+    return { count: rows.length, messages: rows, historyOnly:true, isCurrentQueue:false };
   },
 };
 
@@ -91,7 +96,7 @@ const messageGet: JackieTool = {
 const messageRespond: JackieTool = {
   name: "message_respond",
   description:
-    "Send a reply to a buyer message via the existing Customer Hub response-sender (SP-API Messaging for Amazon, MANUAL marker for Walmart). Set dry_run=true to draft + preview without sending.",
+    "Record an explicitly approved reply through the task workflow. The SEND transport is blocked until a screen-only executor is verified; this tool does not prove delivery. Set dry_run=true to draft + preview without sending.",
   write: true,
   input_schema: {
     type: "object",

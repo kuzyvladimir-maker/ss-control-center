@@ -1,3 +1,4 @@
+import { SEND_TRANSPORT_ENABLED, verifySentEvidence } from "./send-verification";
 import { assertCardDecisionEvidence, assertGeneratedDecisionEvidence } from "./decision-send-gate";
 import { assertSendPolicy } from "./reply-policy";
 import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
@@ -10,7 +11,6 @@ import { assertActiveCsStore, ACTIVE_CS_STORES } from "./config";
  */
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { closeAnsweredByReply } from "./answered";
 
 type Msg = NonNullable<Awaited<ReturnType<typeof prisma.buyerMessage.findUnique>>>;
 
@@ -32,6 +32,8 @@ export async function enqueueSendTask(
   const idempotencyKey = `send:${m.id}:${sha(body)}`;
   const existing = await prisma.csTask.findUnique({ where: { idempotencyKey } });
   if (existing) return existing;
+  const unresolved=await prisma.csTask.findFirst({where:{kind:"SEND",storeIndex:m.storeIndex,amazonOrderId:m.amazonOrderId,status:{in:["QUEUED","CLAIMED","UNKNOWN","FAILED","BLOCKED"]}}});
+  if(unresolved)throw Error(`Prior send ${unresolved.id} is unresolved; verify the thread before any new attempt`);
   const task = await prisma.csTask.create({
     data: {
       kind: "SEND",
@@ -56,94 +58,59 @@ export async function enqueueSendTask(
 }
 
 export async function listTasks(storeIndex: number, kind?: string) {
-  if (kind === "INBOX_SCAN") return [];
+  if (kind === "INBOX_SCAN" || (kind === "SEND" && !SEND_TRANSPORT_ENABLED)) return [];
   assertActiveCsStore(storeIndex);
   return prisma.csTask.findMany({
-    where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : { kind: { not: "INBOX_SCAN" } }) },
+    where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : { kind: { notIn: ["INBOX_SCAN", ...(!SEND_TRANSPORT_ENABLED?["SEND"]:[])] } }) },
     orderBy: { createdAt: "asc" },
     take: 20,
   });
 }
 
-export async function claimTask(taskId: string, vps: string) {
-  const res = await prisma.csTask.updateMany({
+export async function claimTask(taskId: string, vps: string, db=prisma) {
+  const target=await db.csTask.findUniqueOrThrow({where:{id:taskId}});
+  if(target.kind==="SEND"&&!SEND_TRANSPORT_ENABLED)throw Error("SEND blocked: no verified screen-only executor; approval retained, no automatic retry");
+  const res = await db.csTask.updateMany({
     where: { id: taskId, kind: { not: "INBOX_SCAN" }, status: "QUEUED", storeIndex: { in: ACTIVE_CS_STORES } },
     data: { status: "CLAIMED", claimedBy: vps, claimedAt: new Date() },
   });
   if (res.count !== 1) throw new Error(`Task ${taskId} is not QUEUED (already claimed or finished)`);
-  return prisma.csTask.findUnique({ where: { id: taskId } });
+  return db.csTask.findUnique({ where: { id: taskId } });
 }
 
 export async function completeTask(
   taskId: string,
   outcome: "DONE" | "FAILED" | "UNKNOWN",
-  opts: { result?: Record<string, unknown>; screenshotUrl?: string; error?: string; vps?: string }
+  opts: { result?: Record<string, unknown>; screenshotUrl?: string; error?: string; vps?: string },
+  db=prisma
 ) {
-  const task = await prisma.csTask.findUnique({ where: { id: taskId } });
+  const task = await db.csTask.findUnique({ where: { id: taskId } });
   if (!task) throw new Error(`Task ${taskId} not found`);
+  if(task.kind==="SEND"&&task.status==="SENT_VERIFIED")return {ok:true,stage:"sent_verified",alreadyRecorded:true};
   if (task.status !== "CLAIMED") throw new Error(`Task ${taskId} is ${task.status}, expected CLAIMED`);
   assertActiveCsStore(task.storeIndex);
   const now = new Date();
-  if (task.kind === "INBOX_SCAN") throw new Error("Chrome inbox scanning permanently disabled; use Amazon mail source");
-  await prisma.csTask.update({
-    where: { id: taskId },
-    data: {
-      status: outcome,
-      completedAt: now,
-      resultJson: JSON.stringify({ ...(opts.result || {}), screenshotUrl: opts.screenshotUrl ?? null }),
-      error: opts.error ?? null,
-    },
-  });
-
-  // Seller Central inbox scan (inbox-watch.ts): the caller reconciles the hub
-  // against it in the background.
-
-
-  const m = await prisma.buyerMessage.findUnique({ where: { id: task.buyerMessageId } });
-  if (!m) return { ok: true };
-
-  if (task.kind === "SEND") {
-    const body = (JSON.parse(task.payloadJson) as { body: string }).body;
-    if (outcome === "DONE") {
-      await prisma.buyerMessage.update({
-        where: { id: m.id },
-        data: { status: "SENT", responseSentAt: now, responseSentVia: "VPS_AGENT", caseStage: "SENT" },
-      });
-      await prisma.buyerMessage.create({
-        data: {
-          channel: m.channel,
-          source: "vps_agent",
-          storeIndex: m.storeIndex,
-          storeName: m.storeName,
-          storeEmail: m.storeEmail,
-          customerName: m.customerName,
-          amazonOrderId: m.amazonOrderId,
-          product: m.product,
-          direction: "outgoing",
-          customerMessage: body,
-          status: "SENT",
-          responseSentAt: now,
-          responseSentVia: "VPS_AGENT",
-          action: m.action,
-          problemType: m.problemType,
-          problemTypeName: m.problemTypeName,
-          riskLevel: m.riskLevel,
-        },
-      });
-      if (task.cardId) await prisma.csCard.update({ where: { id: task.cardId }, data: { status: "SENT" } });
-      // One Seller Central reply answers the whole thread: earlier buyer
-      // messages of this order that are still open are answered too.
-      if (m.amazonOrderId)
-        await closeAnsweredByReply(m.storeIndex, m.amazonOrderId, now, "VPS_AGENT", { exceptId: m.id });
-    } else {
-      await prisma.buyerMessage.update({
-        where: { id: m.id },
-        data: { caseStage: outcome === "FAILED" ? "SEND_FAILED" : "SEND_UNKNOWN" },
-      });
-      if (task.cardId) await prisma.csCard.update({ where: { id: task.cardId }, data: { status: "SEND_FAILED" } });
-    }
-    return { ok: true, stage: outcome === "DONE" ? "SENT" : outcome };
+  if (task.kind === "INBOX_SCAN") throw new Error("Chrome inbox scanning permanently disabled; await verified screen evidence");
+  if(task.kind === "SEND") {
+    if(outcome === "DONE")verifySentEvidence(task,opts.result,now);
+    return db.$transaction(async tx=>{
+      const changed=await tx.csTask.updateMany({where:{id:taskId,status:"CLAIMED"},data:{status:outcome==="DONE"?"SENT_VERIFIED":outcome,completedAt:outcome==="DONE"?now:null,resultJson:JSON.stringify(opts.result||{}),error:opts.error??null}});
+      if(changed.count!==1)throw Error("Completion already recorded; no duplicate action");
+      const m=await tx.buyerMessage.findUnique({where:{id:task.buyerMessageId}});
+      if(m){
+        if(outcome==="DONE"){
+          const sentAt=new Date((opts.result!.sentVerification as {observedAt:string}).observedAt);
+          await tx.buyerMessage.update({where:{id:m.id},data:{status:"SENT",responseSentAt:sentAt,responseSentVia:"VPS_SCREEN_VERIFIED",caseStage:"SENT_VERIFIED"}});
+          await tx.buyerMessage.upsert({where:{id:`cs-sent:${taskId}`},update:{},create:{id:`cs-sent:${taskId}`,channel:m.channel,source:"vps_screen_verified",storeIndex:m.storeIndex,storeName:m.storeName,storeEmail:m.storeEmail,customerName:m.customerName,amazonOrderId:m.amazonOrderId,direction:"outgoing",customerMessage:JSON.parse(task.payloadJson).body,status:"SENT",responseSentAt:sentAt,responseSentVia:"VPS_SCREEN_VERIFIED"}});
+          if(task.cardId)await tx.csCard.update({where:{id:task.cardId},data:{status:"SENT"}});
+        } else await tx.buyerMessage.update({where:{id:m.id},data:{caseStage:"SEND_BLOCKED"}});
+      }
+      return {ok:true,stage:outcome==="DONE"?"sent_verified":"blocked"};
+    });
   }
+  await db.csTask.update({where:{id:taskId},data:{status:outcome,completedAt:now,resultJson:JSON.stringify(opts.result||{}),error:opts.error??null}});
+  const m=await db.buyerMessage.findUnique({where:{id:task.buyerMessageId}});
+  if(!m)return {ok:true};
 
   // LOOKUP: store what the agent found, then run the case again.
   let snap: Record<string, unknown> = {};
@@ -153,7 +120,7 @@ export async function completeTask(
     snap = {};
   }
   snap.vpsLookup = { status: outcome, result: opts.result || {}, at: now.toISOString() };
-  await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseDataJson: JSON.stringify(snap) } });
+  await db.buyerMessage.update({ where: { id: m.id }, data: { caseDataJson: JSON.stringify(snap) } });
   // The caller re-runs processCase(m.id) in the background (after()).
   return { ok: true, reprocessMessageId: m.id };
 }

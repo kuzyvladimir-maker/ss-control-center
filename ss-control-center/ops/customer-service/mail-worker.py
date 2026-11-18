@@ -24,7 +24,7 @@ def env_file(path):
 def collect(env, run=subprocess.run):
     checked = datetime.now(timezone.utc).isoformat()
     try:
-        result = run(['python3', str(ROOT / 'scripts/cs_mail_unanswered.py'), '--json'], env=env, capture_output=True, text=True, timeout=840)
+        result = run(['python3', str(ROOT / 'scripts/cs_mail_unanswered.py'), '--json', '--history-only'], env=env, capture_output=True, text=True, timeout=840)
         if result.returncode: raise ValueError('Source process failed')
         data = json.loads(result.stdout)
         if data.get('schemaVersion') != 2 or not isinstance(data.get('threads'), list) or not isinstance(data.get('unanswered'), list) or not isinstance(data.get('errors'), list): raise ValueError('Invalid source payload')
@@ -67,6 +67,6 @@ def main():
     proof = ROOT / 'data/customer-hub-mail'
     proof.mkdir(parents=True, exist_ok=True)
     (proof / 'last-published.json').write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    print(json.dumps({'state': 'partial_or_failed' if data['errors'] else 'ok', 'checkedAt': data['checkedAt'], 'lastSuccessfulCheckAt': saved['lastSuccessfulCheckAt'], 'threads': len(data.get('threads',[])), 'unanswered': len(data['unanswered']), 'errors': len(data['errors'])}))
+    print(json.dumps({'state': 'partial_or_failed' if data['errors'] else 'ok', 'checkedAt': data['checkedAt'], 'lastSuccessfulCheckAt': saved['lastSuccessfulCheckAt'], 'threads': len(data.get('threads',[])), 'historyOnly': True, 'isCurrentQueue': False, 'errors': len(data['errors'])}))
 
 if __name__ == '__main__': main()

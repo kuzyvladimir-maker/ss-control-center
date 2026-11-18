@@ -1,3 +1,4 @@
+import { assertQueueMembership } from "./screen-inbox";
 import { assertSendPolicy } from "./reply-policy";
 import { ACTIVE_CS_STORES, assertActiveCsStore } from "./config";
 /**
@@ -9,7 +10,7 @@ import { ACTIVE_CS_STORES, assertActiveCsStore } from "./config";
 import { prisma } from "@/lib/prisma";
 import { enqueueSendTask } from "./cs-tasks";
 import { learnOwnerReply, ownerRuleId } from "./owner-learning";
-import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
+import { ALERT_CARD_MESSAGE_ID } from "./inbox-watch";
 
 /**
  * Cards to post, only for active stores. Legacy alerts are never returned.
@@ -17,26 +18,27 @@ import { ALERT_CARD_MESSAGE_ID, cardUrgency } from "./inbox-watch";
  * ok), its Amazon deadline and hours left (owner, 2026-11-01).
  */
 export async function pendingCards(limit = 10) {
-  const allowed = await prisma.buyerMessage.findMany({ where: { storeIndex: { in: ACTIVE_CS_STORES } }, select: { id: true, status: true, responseSentAt: true } });
+  const allowed = await prisma.buyerMessage.findMany({ where: { storeIndex: { in: ACTIVE_CS_STORES } }, select: { id: true, status: true, responseSentAt: true, storeIndex:true, amazonOrderId:true } });
   const rows = await prisma.csCard.findMany({
     where: { status: "PENDING", buyerMessageId: { in: allowed.map((m) => m.id) } },
     orderBy: { createdAt: "asc" },
     take: limit,
   });
-  const now = new Date();
   const out = await Promise.all(
     rows.map(async (r) => {
       const card = JSON.parse(r.cardJson);
       if (r.buyerMessageId === ALERT_CARD_MESSAGE_ID || card.kind === "info") return card;
       const message = allowed.find((m) => m.id === r.buyerMessageId);
       if (!message || message.responseSentAt || ["SENT", "RESOLVED", "CLOSED"].includes(message.status)) return null;
-      const u = await cardUrgency(r, now);
+      try {const view=await assertQueueMembership(message.storeIndex,message.amazonOrderId);if(card.queueSource!==view.source||card.queueObservedAt!==view.lastScanAt)return null;}catch{return null;}
+      const evidence=await assertQueueMembership(message.storeIndex,message.amazonOrderId);
+      const thread=evidence.threads.find(t=>t.order===message.amazonOrderId)!;
       return {
         ...card,
-        urgency: u?.level ?? "ok",
-        urgencyFlags: u?.flags ?? [],
-        deadline: u?.deadline ?? null,
-        hoursLeft: u?.hoursLeft ?? null,
+        urgency: thread.overSla===true?"overdue":thread.overSla===false?"ok":"unknown",
+        urgencyFlags: thread.overSla===true?["overdue"]:[],
+        deadline: thread.deadline,
+        hoursLeft: null,
       };
     })
   );
@@ -44,6 +46,8 @@ export async function pendingCards(limit = 10) {
 }
 
 export async function markPublished(cardId: string, telegramMessageId: string) {
+  const card=await prisma.csCard.findUniqueOrThrow({where:{id:cardId}});
+  if(JSON.parse(card.cardJson).kind!=="info"){const m=await prisma.buyerMessage.findUniqueOrThrow({where:{id:card.buyerMessageId}});const view=await assertQueueMembership(m.storeIndex,m.amazonOrderId);const payload=JSON.parse(card.cardJson);if(payload.queueSource!==view.source||payload.queueObservedAt!==view.lastScanAt)throw Error("Historical card has no current screen provenance");}
   const res = await prisma.csCard.updateMany({
     where: { id: cardId, status: "PENDING" },
     data: { status: "PUBLISHED", telegramMessageId, publishedAt: new Date() },

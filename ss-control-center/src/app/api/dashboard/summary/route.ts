@@ -1,4 +1,4 @@
-import { mailInbox } from "@/lib/customer-hub/mail-inbox";
+import { screenInbox } from "@/lib/customer-hub/screen-inbox";
 import { NextRequest, NextResponse, after } from "next/server";
 // Its own DB clients: these ~29 reads (several full scans) took 25–65 s on a
 // cold Turso cache and must not hold the clients /shipping runs on.
@@ -250,7 +250,7 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
       // "Cases open" = the Customer Hub's own "Unread messages" card, same
       // definition (src/lib/customer-hub/live-counts.ts) so the tile, the
       // sidebar badge and the hub always agree.
-      mailInbox(),
+      screenInbox(),
       // Active A-to-Z — same definition as the hub's "Active A-to-Z" card.
       prisma.atozzClaim.count({
         where: activeClaimsWhere(
@@ -377,8 +377,8 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
       amazonStores,
       labelsBoughtToday,
       adjustmentsCharged30d,
-      hubChargebacks,
-      hubNewFeedback,
+      _hubChargebacks,
+      _hubNewFeedback,
       lastOrdersSync,
     ] = await Promise.all([
       prisma.amazonOrder.groupBy({
@@ -585,6 +585,7 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
 
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
+    void _hubChargebacks; void _hubNewFeedback;
     mark("db_batch2", tBatch2);
     let procurementOrdersToBuy = 0;
     let procurementError: string | null = null;
@@ -670,14 +671,13 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         store1: ordersByStore.find((r) => r.storeIndex === 1)?.count ?? 0,
         store2: ordersByStore.find((r) => r.storeIndex === 2)?.count ?? 0,
       },
-      customerService: { openCases: mailSource.stale ? null : mailSource.items.length, source: mailSource.source, lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt },
+      customerService: { openCases: mailSource.stale ? null : mailSource.metrics.responseNeeded, source: mailSource.source, lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt },
       claims: { active: activeClaims },
       ordersByStore,
       labelsBoughtToday,
       customerHub: {
-        // Same sum as the hub page headline: unread + A-to-Z + chargebacks
-        // + new feedback.
-        attention: (mailSource.stale ? 0 : mailSource.items.length) + activeClaims + hubChargebacks + hubNewFeedback,
+        // Response needed only; independent metrics must never be summed.
+        attention: mailSource.metrics.responseNeeded,
         mailCountUnknown: mailSource.stale,
         lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt,
         lastAmazonMessageAt: lastAmazonMessage?.createdAt.toISOString() ?? null,

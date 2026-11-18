@@ -1,3 +1,4 @@
+import { assertQueueMembership } from "./screen-inbox";
 import { createHash } from "node:crypto";
 import { transitFacts } from "./transit";
 import { decisionPrompt } from "./decision-facts";
@@ -182,6 +183,7 @@ export async function createCard(
   opts: { infoOnly?: boolean } = {}
 ) {
   assertActiveCsStore(m.storeIndex);
+  const queueEvidence=opts.infoOnly?null:await assertQueueMembership(m.storeIndex,m.amazonOrderId);
   const prev = await prisma.csCard.findMany({
     where: { buyerMessageId: m.id },
     orderBy: { version: "desc" },
@@ -272,7 +274,7 @@ export async function createCard(
     draftEn: payload.draftEn,
     attachments: payload.attachments,
   });
-  await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify(payload) } });
+  await prisma.csCard.update({ where: { id: card.id }, data: { cardJson: JSON.stringify({...payload,queueSource:queueEvidence?.source??null,queueObservedAt:queueEvidence?.lastScanAt??null}) } });
   if (!opts.infoOnly) await prisma.buyerMessage.update({ where: { id: m.id }, data: { caseStage: missingRu ? "NEEDS_OWNER_DATA" : "CARD_PENDING" } });
   return card.id;
 }
