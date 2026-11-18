@@ -66,3 +66,13 @@ interaction checks. Typecheck and changed-file lint; production API/MCP checks
 after deployment. The old CDP cron remains disabled. No customer send is
 performed by this repair. Runtime evidence and MJ journal readback are reported
 in topic 42; the screenshot/access limitation remains an explicit blocker.
+
+## Production verification
+
+Live API and MCP returned source seller_central_screen, state unknown, all four
+metrics null, no current threads and no actionable pending cards. MJ blocked
+intent was persisted once and a repeated request returned the same record.
+Native Chrome UI inspection confirmed the unknown heading and four unknown
+metrics, separate mail history, and the blocked MJ intent. Process next displayed
+the explicit suspended notice without sending. Refresh view reads screen authority;
+Refresh mail history only updates history. The RDP certificate blocker remains.

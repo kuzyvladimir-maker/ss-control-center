@@ -74,11 +74,11 @@ export default function CustomerHubPage() {
   async function syncNow() {
     setSyncing(true); setRefreshError(null); setRefreshNotice(null);
     try {
-      const results=await Promise.all(['/api/customer-hub/mail-inbox?view=all','/api/customer-hub/stats'].map(url=>fetch(url,{cache:'no-store'})));
+      const results=await Promise.all(['/api/customer-hub/screen-inbox','/api/customer-hub/stats'].map(url=>fetch(url,{cache:'no-store'})));
       for(const r of results) {const d=await r.json();if(!r.ok)throw Error(d.error||`HTTP ${r.status}`);if(d.errors && !Array.isArray(d.errors) && Object.keys(d.errors).length)throw Error(Object.values(d.errors).join('; '));}
       window.dispatchEvent(new Event("cs-mail-refresh"));
       setSyncedAt(new Date().toISOString());
-      setRefreshNotice("View refreshed from saved data. Use Refresh mail status to request a new mail check.");
+      setRefreshNotice("View refreshed. Current queue requires fresh Seller Central screen evidence.");
     } catch(e) {setRefreshError(e instanceof Error ? e.message : "Refresh failed");} finally {
       setSyncing(false);
     }

@@ -26,9 +26,9 @@ const text=node=>typeof node==='string'?node:node?.children?.map(text).join('')|
  assert.match(text(ui.root.findAllByType('tbody')[0]),/Ignored/);
  await act(async()=>ui.update(React.createElement(Panel,{processRequest:1})));
  assert.doesNotMatch(text(ui.toJSON()),/Opened/);
- fail=true; await act(async()=>button('Refresh mail status').props.onClick());
+ fail=true; await act(async()=>button('Refresh mail history').props.onClick());
  assert.match(text(ui.toJSON()),/Worker unavailable/);
- fail=false; const before=reads; await act(async()=>button('Refresh mail status').props.onClick());
+ fail=false; const before=reads; await act(async()=>button('Refresh mail history').props.onClick());
  assert.ok(reads>before); assert.match(text(ui.toJSON()),/Mail checked successfully/);
  data={...data,threads:[thread('Next','awaiting_reply')]};
  await act(async()=>window.dispatchEvent(new Event('cs-mail-refresh')));
