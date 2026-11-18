@@ -12,12 +12,14 @@ readonly RDP_LOG=/var/log/ss-hands-rdp.log
 readonly SCRIPT_PATH=$(readlink -f "$0")
 export DISPLAY="$DISP"
 readonly LEASE=/root/.openclaw/workspace/scripts/ss_screen_lease.py
+readonly PREFLIGHT=/root/.openclaw/workspace/scripts/ss_direct_preflight.py
+direct_preflight() { python3 "$PREFLIGHT"; }
 lease_check() { python3 "$LEASE" check --owner "${SS_SCREEN_OWNER:-}" --mode worker; }
 
 unit_active() { systemctl is-active --quiet "$1"; }
 unit_pid() { systemctl show --value -p MainPID "$1" 2>/dev/null || echo 0; }
-# Only the VPS address is read from the env file — never the password.
-vps_ip() { sed -n 's/^SS_VPS_IP=["'"'"']\{0,1\}\([^"'"'"']*\).*/\1/p' "$ENV_FILE" | head -1; }
+# Only the explicitly verified tailnet RDP address is read here. No public-IP fallback.
+vps_ip() { sed -n 's/^SS_VPS_TAILSCALE_IP=["'"'"']\{0,1\}\([^"'"'"']*\).*/\1/p' "$ENV_FILE" | head -1; }
 
 status() {
   local unit state pid ip
@@ -48,18 +50,19 @@ status() {
 # never passed to systemd-run or stored in a unit property.
 if [[ "${1:-}" == _run_rdp ]]; then
   lease_check
+  direct_preflight
   export HOME=/root XDG_RUNTIME_DIR=/run/user/0
   set -a
   # shellcheck disable=SC1090
   source "$ENV_FILE"
   set +a
-  : "${SS_VPS_IP:?}" "${SS_VPS_USER:?}" "${SS_VPS_PASS:?}"
+  : "${SS_VPS_TAILSCALE_IP:?}" "${SS_VPS_USER:?}" "${SS_VPS_PASS:?}"
   # Timestamped stderr + explicit exit status, both to the journal and to
   # $RDP_LOG (the password is passed as an argument only, never logged).
   ts() { while IFS= read -r line; do printf '%s %s\n' "$(date -Is)" "$line"; done; }
-  printf '%s xfreerdp starting -> %s as %s\n' "$(date -Is)" "$SS_VPS_IP" "$SS_VPS_USER" | tee -a "$RDP_LOG" >&2
+  printf '%s xfreerdp starting -> %s as %s\n' "$(date -Is)" "$SS_VPS_TAILSCALE_IP" "$SS_VPS_USER" | tee -a "$RDP_LOG" >&2
   set +e
-  /usr/bin/xfreerdp /v:"$SS_VPS_IP" /u:"$SS_VPS_USER" /p:"$SS_VPS_PASS" /cert:fingerprint:sha256:FFEDD80E08EE13D0AB30AF4A969E4B768F1163853532D3B47B027E59D6A6C1BF \
+  /usr/bin/xfreerdp /v:"$SS_VPS_TAILSCALE_IP" /u:"$SS_VPS_USER" /p:"$SS_VPS_PASS" /cert:fingerprint:sha256:FFEDD80E08EE13D0AB30AF4A969E4B768F1163853532D3B47B027E59D6A6C1BF \
     /size:1366x768 /bpp:32 +clipboard -themes -wallpaper -auto-reconnect /log-level:ERROR \
     /drive:uploads,/root/.openclaw/workspace/media 2> >(ts | tee -a "$RDP_LOG" >&2)
   rc=$?
@@ -73,6 +76,7 @@ shift || true
 case "$cmd" in
   up)
     lease_check
+    direct_preflight
     exec 9>"$LOCK_FILE"
     flock -x 9
     if ! unit_active "$XVFB_UNIT"; then
