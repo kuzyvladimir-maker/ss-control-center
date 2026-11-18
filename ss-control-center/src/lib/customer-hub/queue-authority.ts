@@ -5,6 +5,7 @@ export interface ScreenSnapshot {
   source: typeof QUEUE_SOURCE; storeIndex: number; observedAt: string;
   method: 'screen_read'; account: 'Salutem Solutions'; evidenceRef: string;
   metrics: { unread: number | null; responseNeeded: number; overSla: number | null; reportedUnresolved: number | null };
+  lastFailure?: { observedAt: string; reason: string };
   threads: { order: string; buyer: string; deadline: string | null; overSla: boolean | null }[];
 }
 export function validateScreenSnapshot(s: ScreenSnapshot, now = new Date()) {
@@ -21,10 +22,11 @@ export function queueView(snapshot: ScreenSnapshot | null, now = new Date()) {
   let valid=false;
   if(snapshot) try { validateScreenSnapshot(snapshot,new Date(snapshot.observedAt));valid=true; } catch {}
   const age=valid?now.getTime()-Date.parse(snapshot!.observedAt):Infinity;
-  const fresh=valid && age>=0 && age<QUEUE_TTL_MS;
-  return {source:QUEUE_SOURCE, state:fresh?'fresh':valid?'stale':'unknown', stale:!fresh,
+  const failed=Boolean(snapshot?.lastFailure && (!valid || Date.parse(snapshot.lastFailure.observedAt)>=Date.parse(snapshot.observedAt)));
+  const fresh=valid && !failed && age>=0 && age<QUEUE_TTL_MS;
+  return {source:QUEUE_SOURCE, state:fresh?'fresh':failed?'unknown':valid?'stale':'unknown', stale:!fresh,
     lastSuccessfulCheckAt:valid?snapshot!.observedAt:null,lastScanAt:valid?snapshot!.observedAt:null,
-    reason:fresh?null:valid?'Снимок Seller Central устарел':'Не проверено: нет подтверждённого экранного снимка Seller Central',
+    reason:failed?`Screen check failed: ${snapshot!.lastFailure!.reason}`:fresh?null:valid?'Снимок Seller Central устарел':'Не проверено: нет подтверждённого экранного снимка Seller Central',
     metrics:fresh?snapshot!.metrics:{unread:null,responseNeeded:null,overSla:null,reportedUnresolved:null},
     threads:fresh?snapshot!.threads.map(t=>({...t,storeIndex:1,status:'response_needed',stale:false,lastScanAt:snapshot!.observedAt})):[],
     evidenceRef:valid?snapshot!.evidenceRef:null, errors:[] as {account:string;error:string}[]};

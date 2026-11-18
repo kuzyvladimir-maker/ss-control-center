@@ -25,3 +25,9 @@ test('repeated completion writes one verified reply; repeat claim cannot send',a
  await completeTask('test-task','DONE',{result},db);await completeTask('test-task','DONE',{result},db);assert.equal(writes,1);
  await assert.rejects(()=>claimTask('test-task','screen',db),/blocked/);await assert.rejects(()=>claimTask('test-task','screen',db),/blocked/);assert.equal(writes,1);
 });
+test('failed screen read invalidates even a recent success without losing last success',()=>{
+ const failed={...snapshot,lastFailure:{observedAt:new Date(now.getTime()+1000).toISOString(),reason:'RDP disconnected 0x5'}};
+ const q=queueView(failed,new Date(now.getTime()+2000));
+ assert.equal(q.state,'unknown');assert.equal(q.stale,true);assert.equal(q.metrics.responseNeeded,null);assert.deepEqual(q.threads,[]);assert.equal(q.lastSuccessfulCheckAt,snapshot.observedAt);assert.match(q.reason!,/0x5/);
+ assert.equal(queueView({...snapshot,observedAt:new Date(now.getTime()+3000).toISOString()},new Date(now.getTime()+4000)).state,'fresh');
+});

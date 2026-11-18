@@ -63,3 +63,12 @@ an unattended screen collector is not claimed as verified.
 
 Tests cover evidence rejection, wrong branch/body, pending replacement, replay,
 history preservation, collapsed UI grouping and refresh, plus existing CS suites.
+
+A failed screen attempt can be recorded through authenticated POST /screen-inbox
+with state unknown, source seller_central_screen, storeIndex 1, observedAt and
+reason. This immediately invalidates even a recent snapshot, preserving its
+last successful timestamp. Only a newer successful screenshot clears the fault.
+The second manual cycle at 19:27 UTC again showed an empty Response needed list,
+with Reported unresolved 1 separately. The updated snapshot was accepted by prod.
+After native RDP disconnect, the temporary service was already inactive/absent
+(changed externally); no stopped process remained and it was not restarted.
