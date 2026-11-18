@@ -40,7 +40,7 @@ interface DashboardData {
     store1: number;
     store2: number;
   };
-  customerService: { openCases: number };
+  customerService: { openCases: number | null };
   claims: { active: number };
   ordersByStore?: Array<{ storeIndex: number; count: number; lastOrderAt: string | null }>;
   customerHub?: { lastAmazonMessageAt: string | null; stale: boolean };
@@ -163,6 +163,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [cases, setCases] = useState<CsCaseRow[]>([]);
+  const [caseQueueState,setCaseQueueState]=useState("unknown");
   // Live "awaiting shipment" count from the SAME endpoint the Shipping
   // Labels page (and the sidebar badge) render — Veeqo awaiting_fulfillment.
   // The DB count (AmazonOrder.status = Unshipped) drifted to 72 vs Veeqo's
@@ -317,6 +318,7 @@ export default function DashboardPage() {
       });
       setOrders(mapped);
 
+      setCaseQueueState(cs?.state || "unknown");
       const allMessages: CsCaseRow[] = Array.isArray(cs?.messages)
         ? cs.messages
         : Array.isArray(cs)
@@ -870,7 +872,7 @@ export default function DashboardPage() {
               // from `openCases`, so the header said "9" over a list that
               // rendered "No open cases" whenever the oldest 4 of those 9
               // were all stale backlog (2026-10-21).
-              count={cases.length}
+              count={caseQueueState==="fresh"?cases.length:undefined}
               right={
                 <Link
                   href="/customer-hub"
@@ -883,7 +885,7 @@ export default function DashboardPage() {
             <PanelBody className="p-0">
               {cases.length === 0 ? (
                 <div className="px-4 py-6 text-center text-[12px] text-ink-3">
-                  No open cases.
+                  {caseQueueState==="fresh"?"No Response needed threads in the verified snapshot.":"Не проверено: нет свежего снимка Seller Central."}
                 </div>
               ) : (
                 <div>

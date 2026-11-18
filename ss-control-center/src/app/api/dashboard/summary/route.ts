@@ -575,13 +575,7 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         `Account Health: no fresh report${latestSnapshot ? ` since ${fmtDay(latestSnapshot.createdAt)}` : ""}.`
       );
     }
-    const inboxStale =
-      !lastAmazonMessage || now.getTime() - lastAmazonMessage.createdAt.getTime() > 7 * 86400000;
-    if (inboxStale) {
-      dataIssues.push(
-        `Customer Hub: no Amazon buyer message ingested${lastAmazonMessage ? ` since ${fmtDay(lastAmazonMessage.createdAt)}` : ""}.`
-      );
-    }
+    if (mailSource.stale) dataIssues.push('Customer Hub: Seller Central screen queue not verified; mail is history only.');
 
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
@@ -681,7 +675,7 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         mailCountUnknown: mailSource.stale,
         lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt,
         lastAmazonMessageAt: lastAmazonMessage?.createdAt.toISOString() ?? null,
-        stale: inboxStale || mailSource.stale,
+        stale: mailSource.stale,
       },
       health: {
         issues: healthIssues,
@@ -736,11 +730,11 @@ function emptyResponse() {
       store1: 0,
       store2: 0,
     },
-    customerService: { openCases: 0 },
+    customerService: { openCases: null, source:"seller_central_screen", lastSuccessfulCheckAt:null },
     claims: { active: 0 },
     ordersByStore: [],
     labelsBoughtToday: 0,
-    customerHub: { lastAmazonMessageAt: null, stale: false },
+    customerHub: { attention:null, lastAmazonMessageAt: null, stale: true },
     health: { issues: 0, lastSnapshotAt: null, stale: false },
     procurement: { ordersToBuy: 0 },
     frozen: { incidents30d: 0, riskElevated: 0, riskLow: 0 },

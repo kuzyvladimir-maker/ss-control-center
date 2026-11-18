@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const store = sp.get("store");
     const status = (sp.get("status") || "active").toLowerCase();
     const orderId = sp.get("orderId");
-    if(!orderId && ["active","awaiting_reply"].includes(status)){const q=await screenInbox();return NextResponse.json({...q,messages:q.threads,total:q.metrics.responseNeeded});}
+    if(!orderId && ["active","awaiting_reply"].includes(status)){const q=await screenInbox();return NextResponse.json({...q,messages:q.threads.map(t=>({...t,id:t.messageId||t.order,customerName:t.buyer,amazonOrderId:t.order,channel:"Amazon",createdAt:q.lastScanAt})),total:q.metrics.responseNeeded});}
     if (!orderId && sp.get("source") !== "legacy") {
       const inbox = await mailHistory();
       const threads = inbox.threads.filter(t => status === 'all' || (status === 'active' ? t.status === 'awaiting_reply' : t.status === status));

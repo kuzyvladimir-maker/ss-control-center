@@ -58,7 +58,7 @@ export async function enqueueSendTask(
 }
 
 export async function listTasks(storeIndex: number, kind?: string) {
-  if (kind === "INBOX_SCAN" || (kind === "SEND" && !SEND_TRANSPORT_ENABLED)) return [];
+  if (!SEND_TRANSPORT_ENABLED || kind === "INBOX_SCAN") return [];
   assertActiveCsStore(storeIndex);
   return prisma.csTask.findMany({
     where: { storeIndex, status: "QUEUED", ...(kind ? { kind } : { kind: { notIn: ["INBOX_SCAN", ...(!SEND_TRANSPORT_ENABLED?["SEND"]:[])] } }) },
@@ -69,7 +69,8 @@ export async function listTasks(storeIndex: number, kind?: string) {
 
 export async function claimTask(taskId: string, vps: string, db=prisma) {
   const target=await db.csTask.findUniqueOrThrow({where:{id:taskId}});
-  if(target.kind==="SEND"&&!SEND_TRANSPORT_ENABLED)throw Error("SEND blocked: no verified screen-only executor; approval retained, no automatic retry");
+  if(!SEND_TRANSPORT_ENABLED)throw Error("Execution blocked: no verified screen-only executor; work retained, no automatic retry");
+  if(target.kind==="INBOX_SCAN")throw Error("Legacy inbox scanning is permanently disabled");
   const res = await db.csTask.updateMany({
     where: { id: taskId, kind: { not: "INBOX_SCAN" }, status: "QUEUED", storeIndex: { in: ACTIVE_CS_STORES } },
     data: { status: "CLAIMED", claimedBy: vps, claimedAt: new Date() },
