@@ -12,7 +12,7 @@ interface HubStatsCardsProps {
 }
 
 interface HubStats {
-  unreadMessages: number | null;
+  responseNeeded: number | null;
   urgentMessages: number | null;
   activeAtoz: number | null;
   activeChargebacks: number | null;
@@ -27,8 +27,8 @@ export default function HubStatsCards({
   onCardClick,
 }: HubStatsCardsProps) {
   const [stats, setStats] = useState<HubStats>({
-    unreadMessages: null,
-    urgentMessages: 0,
+    responseNeeded: null,
+    urgentMessages: null,
     activeAtoz: null,
     activeChargebacks: null,
     newFeedback: null,
@@ -43,15 +43,15 @@ export default function HubStatsCards({
       .then(async r => { const d=await r.json(); if(!r.ok) throw Error(d.error||`HTTP ${r.status}`); return d; })
       .then((data) =>
         setStats({
-          unreadMessages: data.unreadMessages ?? null,
-          urgentMessages: data.urgentMessages ?? 0,
+          responseNeeded: data.responseNeeded ?? null,
+          urgentMessages: data.urgentMessages ?? null,
           activeAtoz: data.activeAtoz ?? null,
           activeChargebacks: data.activeChargebacks ?? null,
           newFeedback: data.newFeedback ?? null,
           metadata: data.metadata, errors: data.errors,
         })
       )
-      .catch(() => setStats(s => ({ ...s, unreadMessages: null, activeAtoz: null, activeChargebacks: null, newFeedback: null, errors: {all:"Counters unavailable; refresh to retry"} })));
+      .catch(() => setStats(s => ({ ...s, responseNeeded: null, activeAtoz: null, activeChargebacks: null, newFeedback: null, errors: {all:"Counters unavailable; refresh to retry"} })));
     window.addEventListener("cs-mail-refresh",refresh);
     void refresh();
     const timer = setInterval(refresh, 60_000);
@@ -62,7 +62,7 @@ export default function HubStatsCards({
     {
       key: "messages",
       label: "Response needed (Seller Central)",
-      value: stats.unreadMessages ?? "Не проверено",
+      value: stats.responseNeeded ?? "Не проверено",
       icon: <MessageSquare size={14} />,
       iconVariant: "default" as const,
       chips:

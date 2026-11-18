@@ -88,8 +88,8 @@ export default function Header() {
 
       <div className="flex-1" />
 
-      {/* Live pill — reflects the global store filter selection */}
-      <StoresLiveBadge />
+      {/* Store selection — does not imply source availability */}
+      <StoreSelectionBadge />
 
       {/* Critical alerts feed — polls /api/alerts/unacknowledged */}
       <CriticalAlertsBell />
@@ -142,7 +142,7 @@ export default function Header() {
   );
 }
 
-function StoresLiveBadge() {
+function StoreSelectionBadge() {
   const { selectedStoreIds, allStores, isAllSelected, isLoading } =
     useStoreFilter();
 
@@ -152,19 +152,16 @@ function StoresLiveBadge() {
   const label = noSelection
     ? "No stores selected"
     : isAllSelected
-      ? `All ${allStores.length} stores live`
-      : `${selectedStoreIds.length} of ${allStores.length} stores`;
+      ? `All ${allStores.length} stores selected`
+      : `${selectedStoreIds.length} of ${allStores.length} stores selected`;
 
   return (
     <div
       className={cn(
         "hidden items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium sm:inline-flex",
-        noSelection
-          ? "bg-bg-elev text-ink-3"
-          : "bg-green-soft text-green-ink"
+        "bg-bg-elev text-ink-3"
       )}
     >
-      <span className={cn("live-dot", noSelection && "opacity-30")} />
       <span className="tabular">{label}</span>
     </div>
   );

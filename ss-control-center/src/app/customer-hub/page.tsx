@@ -18,7 +18,7 @@ import WalmartSyncButton from "@/components/customer-hub/WalmartSyncButton";
 import { Btn, PageHead, Sep } from "@/components/kit";
 
 interface HubStats {
-  unreadMessages: number | null;
+  responseNeeded: number | null;
   urgentMessages: number;
   activeAtoz: number | null;
   activeChargebacks: number | null;
@@ -36,7 +36,7 @@ export default function CustomerHubPage() {
     if (t && ["messages", "atoz", "chargebacks", "feedback"].includes(t)) setActiveTab(t);
   }, []);
   const [stats, setStats] = useState<HubStats>({
-    unreadMessages: null,
+    responseNeeded: null,
     urgentMessages: 0,
     activeAtoz: null,
     activeChargebacks: null,
@@ -57,14 +57,14 @@ export default function CustomerHubPage() {
       .then(async r => { if(!r.ok) throw Error(`HTTP ${r.status}`); return r.json(); })
       .then((data) =>
         setStats({
-          unreadMessages: data.unreadMessages ?? null,
+          responseNeeded: data.responseNeeded ?? null,
           urgentMessages: data.urgentMessages ?? 0,
           activeAtoz: data.activeAtoz ?? null,
           activeChargebacks: data.activeChargebacks ?? null,
           newFeedback: data.newFeedback ?? null, totalConversations: data.totalConversations ?? null,
         })
       )
-      .catch(() => setStats(s => ({ ...s, unreadMessages: null, activeAtoz: null, activeChargebacks: null, newFeedback: null, totalConversations: null })));
+      .catch(() => setStats(s => ({ ...s, responseNeeded: null, activeAtoz: null, activeChargebacks: null, newFeedback: null, totalConversations: null })));
     window.addEventListener("cs-mail-refresh",refresh);
     void refresh();
     const timer = setInterval(refresh, 60_000);
@@ -87,7 +87,7 @@ export default function CustomerHubPage() {
   return (
     <div className="space-y-5">
       <PageHead
-        title={`Ждут ответа: ${stats.unreadMessages ?? "Не проверено"}`}
+        title={`Ждут ответа: ${stats.responseNeeded ?? "Не проверено"}`}
         
         subtitle={
           <>
@@ -142,7 +142,7 @@ export default function CustomerHubPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         counts={{
-          messages: stats.unreadMessages,
+          messages: stats.responseNeeded,
           atoz: stats.activeAtoz,
           chargebacks: stats.activeChargebacks,
           feedback: stats.newFeedback,

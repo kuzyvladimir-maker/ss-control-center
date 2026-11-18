@@ -5,19 +5,20 @@ import { activeClaimsWhere } from '@/lib/customer-hub/live-counts';
 export async function GET(request: NextRequest) {
   const store=request.nextUrl.searchParams.get('store');
   const storeFilter=store && /^\d+$/.test(store) ? {storeIndex:Number(store)} : {};
-  const [mail,atoz,chargebacks,feedback]=await Promise.allSettled([
+  const [screen,atoz,chargebacks,feedback]=await Promise.allSettled([
     screenInbox(),
     Promise.all([prisma.atozzClaim.count({where:activeClaimsWhere('A_TO_Z',storeFilter)}),prisma.atozzClaim.count({where:{claimType:'A_TO_Z',...storeFilter}}),prisma.atozzClaim.findFirst({where:{claimType:'A_TO_Z',...storeFilter},orderBy:{createdAt:'desc'},select:{createdAt:true}})]),
     Promise.all([prisma.atozzClaim.count({where:activeClaimsWhere('CHARGEBACK',storeFilter)}),prisma.atozzClaim.count({where:{claimType:'CHARGEBACK',...storeFilter}}),prisma.atozzClaim.findFirst({where:{claimType:'CHARGEBACK',...storeFilter},orderBy:{createdAt:'desc'},select:{createdAt:true}})]),
     Promise.all([prisma.sellerFeedback.count({where:{status:'NEW'}}),prisma.sellerFeedback.count()]),
   ]);
   const errors:Record<string,string>={};
-  for(const [name,result] of [['mail',mail],['atoz',atoz],['chargebacks',chargebacks],['feedback',feedback]] as const) if(result.status==='rejected') errors[name]=`${name} data unavailable; retry refresh`;
+  for(const [name,result] of [['screen',screen],['atoz',atoz],['chargebacks',chargebacks],['feedback',feedback]] as const) if(result.status==='rejected') errors[name]=`${name} data unavailable; retry refresh`;
   const claimMeta=(result: typeof atoz)=>result.status==='fulfilled'?{storedTotal:result.value[1],latestStoredAt:result.value[2]?.createdAt.toISOString()??null,definition:'Not verified: no current Seller Central source. Stored imports are history only.'}:null;
   return NextResponse.json({
-    unreadMessages:mail.status==='fulfilled'&&!mail.value.stale?mail.value.metrics.responseNeeded:null,
+    responseNeeded:(!store || store==='all' || store==='1') && screen.status==='fulfilled'&&!screen.value.stale?screen.value.metrics.responseNeeded:null,
+    unreadMessages:(!store || store==='all' || store==='1') && screen.status==='fulfilled'&&!screen.value.stale?screen.value.metrics.unread:null,
     totalConversations:null,
-    queue:mail.status==='fulfilled'?mail.value:null,
+    queue:screen.status==='fulfilled'?screen.value:null,
     urgentMessages:null,
     activeAtoz:null,
     activeChargebacks:null,
