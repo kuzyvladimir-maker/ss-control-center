@@ -73,14 +73,14 @@ export default function HubStatsCards({
     {
       key: "atoz",
       label: "Active A-to-Z",
-      value: stats.activeAtoz ?? "Unavailable",
+      value: stats.activeAtoz ?? "Not verified",
       icon: <Scale size={14} />,
       iconVariant: (stats.activeAtoz ?? 0) > 0 ? ("warn" as const) : ("default" as const),
     },
     {
       key: "chargebacks",
       label: "Active chargebacks",
-      value: stats.activeChargebacks ?? "Unavailable",
+      value: stats.activeChargebacks ?? "Not verified",
       icon: <CreditCard size={14} />,
       iconVariant:
         (stats.activeChargebacks ?? 0) > 0 ? ("danger" as const) : ("default" as const),
@@ -88,7 +88,7 @@ export default function HubStatsCards({
     {
       key: "feedback",
       label: "New feedback",
-      value: stats.newFeedback ?? "Unavailable",
+      value: stats.newFeedback ?? "Not verified",
       icon: <Star size={14} />,
       iconVariant: "default" as const,
     },

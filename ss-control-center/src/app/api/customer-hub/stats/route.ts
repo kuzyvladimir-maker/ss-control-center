@@ -13,15 +13,15 @@ export async function GET(request: NextRequest) {
   ]);
   const errors:Record<string,string>={};
   for(const [name,result] of [['mail',mail],['atoz',atoz],['chargebacks',chargebacks],['feedback',feedback]] as const) if(result.status==='rejected') errors[name]=`${name} data unavailable; retry refresh`;
-  const claimMeta=(result: typeof atoz)=>result.status==='fulfilled'?{storedTotal:result.value[1],latestStoredAt:result.value[2]?.createdAt.toISOString()??null,definition:'Active statuses created in the last 60 days. Stored imports, not a live Amazon check.'}:null;
+  const claimMeta=(result: typeof atoz)=>result.status==='fulfilled'?{storedTotal:result.value[1],latestStoredAt:result.value[2]?.createdAt.toISOString()??null,definition:'Not verified: no current Seller Central source. Stored imports are history only.'}:null;
   return NextResponse.json({
     unreadMessages:mail.status==='fulfilled'&&!mail.value.stale?mail.value.metrics.responseNeeded:null,
     totalConversations:null,
     queue:mail.status==='fulfilled'?mail.value:null,
     urgentMessages:null,
-    activeAtoz:atoz.status==='fulfilled'?atoz.value[0]:null,
-    activeChargebacks:chargebacks.status==='fulfilled'?chargebacks.value[0]:null,
-    newFeedback:feedback.status==='fulfilled'?feedback.value[0]:null,
+    activeAtoz:null,
+    activeChargebacks:null,
+    newFeedback:null,
     metadata:{atoz:claimMeta(atoz),chargebacks:claimMeta(chargebacks),feedback:{storedTotal:feedback.status==='fulfilled'?feedback.value[1]:null,definition:'Automatic feedback import is not implemented. Manual records only; 0 does not mean no Amazon feedback.'}},
     errors, generatedAt:new Date().toISOString(),
   },{headers:{'Cache-Control':'no-store'}});
