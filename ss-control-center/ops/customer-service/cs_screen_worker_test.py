@@ -13,6 +13,12 @@ class ScreenReadTest(unittest.TestCase):
   for order,sla in [('113-2368331-67...','Due: 4 mins'),('113-2368331-6725010','Open')]:
    with self.assertRaises(ValueError):parse_thread('Mary',order,sla)
 class NotificationTest(unittest.TestCase):
+ def test_new_episode_only_after_absence(self):
+  from cs_screen_worker import arrival_keys
+  k,s=arrival_keys(['order'],{});self.assertEqual(k['order'],'arrival:order')
+  k,s=arrival_keys(['order'],s);self.assertEqual(k['order'],'arrival:order')
+  _,s=arrival_keys([],s);k,s=arrival_keys(['order'],s)
+  self.assertEqual(k['order'],'arrival:order:2')
  def test_ambiguous_publication_is_not_retried(self):
   import tempfile,json
   from pathlib import Path

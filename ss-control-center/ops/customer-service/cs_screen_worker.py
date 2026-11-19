@@ -132,16 +132,36 @@ def post(payload, endpoint="screen-inbox"):
 
 
 def notify_once(key,text,seconds=None):
-    ledger=STATE/'notifications.json'; old=json.loads(ledger.read_text()) if ledger.exists() else {}
-    prior=old.get(key)
-    if prior and (seconds is None or time.time()-prior['at']<seconds): return
-    # Reserve before external send. An ambiguous outcome is never blindly duplicated.
-    old[key]={'at':time.time(),'status':'pending'};ledger.write_text(json.dumps(old))
+    import fcntl
+    ledger=STATE/'notifications.json'
+    def read(): return json.loads(ledger.read_text()) if ledger.exists() else {}
+    def save(x):
+        tmp=ledger.with_suffix('.tmp');tmp.write_text(json.dumps(x));tmp.replace(ledger)
+    with (STATE/'notifications.lock').open('a') as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX)
+        old=read();prior=old.get(key)
+        if prior and (seconds is None or time.time()-prior['at']<seconds): return
+        # Reserve before external send; ambiguous delivery must be inspected, never replayed.
+        old[key]={'at':time.time(),'status':'pending'};save(old)
     result=run(['openclaw','message','send','--channel','telegram','--target','-1003924739153','--thread-id','42','--message',text,'--json'])
     receipt=json.loads(result)
     if not receipt.get('messageId'): raise ValueError('Telegram delivery receipt missing; notification remains pending')
-    old[key]['status']='sent';old[key]['receipt']=receipt;ledger.write_text(json.dumps(old))
+    with (STATE/'notifications.lock').open('a') as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX)
+        old=read();old[key]['status']='sent';old[key]['receipt']=receipt;save(old)
     return receipt['messageId']
+
+
+def arrival_keys(orders, previous):
+    """A re-opened thread gets a new episode, while repeat reads do not re-publish."""
+    result={k:{**v,'active':k in orders} for k,v in previous.items()}
+    keys={}
+    for order in orders:
+        old=previous.get(order,{})
+        episode=old.get('episode',0)+(0 if old.get('active') else 1)
+        result[order]={'episode':episode,'active':True}
+        keys[order]='arrival:'+order+((':'+str(episode)) if episode>1 else '')
+    return keys,result
 
 
 def mark_published(card_id,message_id):
@@ -169,8 +189,11 @@ def main():
         phase='screen read'
         payload=collect(folder);phase='snapshot publication';api=post(payload);(folder/'api.json').write_text(json.dumps(api,indent=2))
         phase='owner card publication'
+        episodes=STATE/'episodes.json'
+        keys,updated=arrival_keys([t['order'] for t in payload['threads']],json.loads(episodes.read_text()) if episodes.exists() else {})
+        tmp=episodes.with_suffix('.tmp');tmp.write_text(json.dumps(updated));tmp.replace(episodes)
         for t in payload['threads']:
-            key='arrival:'+t['order']
+            key=keys[t['order']]
             ledger=STATE/'notifications.json'
             known=json.loads(ledger.read_text()) if ledger.exists() else {}
             if key not in known:
