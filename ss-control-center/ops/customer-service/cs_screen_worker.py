@@ -137,22 +137,38 @@ def notify_once(key,text,seconds=None):
     if prior and (seconds is None or time.time()-prior['at']<seconds): return
     # Reserve before external send. An ambiguous outcome is never blindly duplicated.
     old[key]={'at':time.time(),'status':'pending'};ledger.write_text(json.dumps(old))
-    result=run(['python3',SCRIPTS/'cj.py','send','ss-control-center','42','-'],input=text)
-    old[key]['status']='queued';old[key]['receipt']=json.loads(result);ledger.write_text(json.dumps(old))
+    result=run(['openclaw','message','send','--channel','telegram','--target','-1003924739153','--thread-id','42','--message',text,'--json'])
+    receipt=json.loads(result)
+    if not receipt.get('messageId'): raise ValueError('Telegram delivery receipt missing; notification remains pending')
+    old[key]['status']='sent';old[key]['receipt']=receipt;ledger.write_text(json.dumps(old))
+    return receipt['messageId']
 
+
+def mark_published(card_id,message_id):
+    import requests
+    e=env_file(ROOT/'.secrets/cs_scan.env');token=e.get('JACKIE_API_TOKEN') or e['SSCC_API_TOKEN']
+    r=requests.post('https://salutemsolutions.info/api/mcp',headers={'Authorization':'Bearer '+token},json={'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'cs_card_published','arguments':{'card_id':card_id,'telegram_message_id':str(message_id)}}},timeout=60)
+    if r.status_code!=200:raise ValueError('Card publication receipt could not be saved')
+    x=r.json()
+    if x.get('error') or x.get('result',{}).get('isError'):raise ValueError('Card publication receipt rejected')
 
 def main():
     os.umask(0o077);STATE.mkdir(parents=True,exist_ok=True)
     folder=STATE/dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ');folder.mkdir()
-    acquired=False; started=False
+    acquired=False; started=False; phase='lease'
     try:
         run(['python3',SCRIPTS/'ss_screen_lease.py','acquire','--owner',OWNER,'--mode','worker','--seconds','900']);acquired=True
+        phase='direct preflight'
         preflight=run(['python3',SCRIPTS/'ss_direct_preflight.py']);(folder/'preflight.json').write_text(preflight)
         if subprocess.run(['systemctl','is-active','--quiet','ss-hands-rdp.service']).returncode==0:
             raise ValueError('Existing RDP transport has no cycle ownership; explicit handoff required')
+        phase='Windows session ownership'
         (folder/'quser.txt').write_text(session_free())
+        phase='RDP startup'
         hands('up');started=True;time.sleep(5)
-        payload=collect(folder);api=post(payload);(folder/'api.json').write_text(json.dumps(api,indent=2))
+        phase='screen read'
+        payload=collect(folder);phase='snapshot publication';api=post(payload);(folder/'api.json').write_text(json.dumps(api,indent=2))
+        phase='owner card publication'
         for t in payload['threads']:
             key='arrival:'+t['order']
             ledger=STATE/'notifications.json'
@@ -165,11 +181,12 @@ def main():
                     'decisionRu':'Прочитать полную ветку и подготовить ответ для одобрения.',
                     'missing':['Текст обращения, факты заказа и доставки ещё не разобраны.']},'screen-review')
                 (folder/('card-'+t['order']+'.json')).write_text(json.dumps(card,ensure_ascii=False))
-                notify_once(key,card['textRu'])
+                message_id=notify_once(key,card['textRu'])
+                if message_id: mark_published(card['cardId'],message_id)
         (folder/'result.json').write_text(json.dumps({'state':'fresh','at':stamp(),'observedAt':payload['observedAt']}))
         print(json.dumps({'state':'fresh','evidence':str(folder),'observedAt':payload['observedAt']}))
     except Exception as error:
-        reason=str(error) if isinstance(error,ValueError) else type(error).__name__+' during screen cycle'
+        reason=phase+': '+(str(error) if isinstance(error,ValueError) else type(error).__name__)
         failure={'source':'seller_central_screen','storeIndex':1,'state':'unknown','observedAt':stamp(),'reason':reason}
         (folder/'failure.json').write_text(json.dumps(failure))
         try: (folder/'api-failure.json').write_text(json.dumps(post(failure)))

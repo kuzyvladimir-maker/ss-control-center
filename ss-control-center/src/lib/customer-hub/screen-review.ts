@@ -19,11 +19,13 @@ export function validateReview(x:ScreenReview, now=Date.now()) {
 /** Stores a draft for owner review only. Never calls a buyer transport or learns approval. */
 export async function screenReview(input:ScreenReview) {
  const x=validateReview(input); const queue=await assertQueueMembership(1,x.order);
- const id='screen-review-'+createHash('sha256').update(x.requestId).digest('hex').slice(0,32);
+ const id='scr-'+createHash('sha256').update(x.requestId).digest('hex').slice(0,20);
  const existing=await prisma.csCard.findUnique({where:{id}});
  if(existing)return JSON.parse(existing.cardJson);
  const infoOnly=!x.draftEn;
  const payload=await prisma.$transaction(async tx=>{
+  const old=await tx.buyerMessage.findMany({where:{source:'screenshot',storeIndex:1,amazonOrderId:x.order,id:{startsWith:'screen-message-'}},select:{id:true}});
+  await tx.csCard.updateMany({where:{buyerMessageId:{in:old.map(m=>m.id)},status:{in:['PENDING','PUBLISHED']}},data:{status:'SUPERSEDED'}});
   const messageId='screen-message-'+createHash('sha256').update(x.requestId).digest('hex').slice(0,32);
   await tx.buyerMessage.create({data:{id:messageId,source:'screenshot',channel:'Amazon',storeIndex:1,storeName:'Salutem Solutions',customerName:x.buyer,amazonOrderId:x.order,customerMessage:x.clientText,customerMessageRu:x.clientRu||null,suggestedResponse:x.draftEn||null,suggestedResponseRu:x.draftRu||null,status:'ANALYZED',ownerBrief:x.decisionRu,action:'clarify'}});
   const textRu=renderCardText({orderId:x.order,store:'Salutem Solutions',version:1,infoOnly,deadlineRu:queue.threads.find(t=>t.order===x.order)?.deadline||'Срок — см. свежую очередь Seller Central',clientRu:x.clientRu||x.clientText,historyRu:null,facts:[...x.facts,{what:'Экранный источник',value:x.evidenceRef+'; '+x.observedAt}],verdictRu:x.decisionRu,pointsRu:[],missing:x.missing,draftRu:x.draftRu||null,draftEn:x.draftEn||'',attachments:[]});
