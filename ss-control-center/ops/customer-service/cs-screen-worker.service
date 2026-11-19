@@ -1,0 +1,9 @@
+[Unit]
+Description=Read-only Seller Central screen evidence (Salutem tailnet)
+After=network-online.target tailscaled.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /root/.openclaw/workspace/scripts/cs_screen_worker.py
+TimeoutStartSec=10min
+UMask=0077
+Restart=no

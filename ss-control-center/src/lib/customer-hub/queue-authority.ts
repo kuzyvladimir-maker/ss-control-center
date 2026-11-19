@@ -3,7 +3,7 @@ export const QUEUE_SOURCE = 'seller_central_screen';
 export const QUEUE_TTL_MS = 60 * 60_000;
 export interface ScreenSnapshot {
   source: typeof QUEUE_SOURCE; storeIndex: number; observedAt: string;
-  method: 'screen_read'; account: 'Salutem Solutions'; evidenceRef: string;
+  collector?: 'cs-screen-worker'; method: 'screen_read'; account: 'Salutem Solutions'; evidenceRef: string;
   metrics: { unread: number | null; responseNeeded: number; overSla: number | null; reportedUnresolved: number | null };
   lastFailure?: { observedAt: string; reason: string };
   threads: { order: string; buyer: string; deadline: string | null; overSla: boolean | null }[];
@@ -29,5 +29,5 @@ export function queueView(snapshot: ScreenSnapshot | null, now = new Date()) {
     reason:failed?`Screen check failed: ${snapshot!.lastFailure!.reason}`:fresh?null:valid?'Снимок Seller Central устарел':'Не проверено: нет подтверждённого экранного снимка Seller Central',
     metrics:fresh?snapshot!.metrics:{unread:null,responseNeeded:null,overSla:null,reportedUnresolved:null},
     threads:fresh?snapshot!.threads.map(t=>({...t,storeIndex:1,status:'response_needed',stale:false,lastScanAt:snapshot!.observedAt})):[],
-    evidenceRef:valid?snapshot!.evidenceRef:null, errors:[] as {account:string;error:string}[]};
+    collector:valid?snapshot!.collector??'manual':null, evidenceRef:valid?snapshot!.evidenceRef:null, errors:[] as {account:string;error:string}[]};
 }

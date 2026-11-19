@@ -62,7 +62,7 @@ if [[ "${1:-}" == _run_rdp ]]; then
   ts() { while IFS= read -r line; do printf '%s %s\n' "$(date -Is)" "$line"; done; }
   printf '%s xfreerdp starting -> %s as %s\n' "$(date -Is)" "$SS_VPS_TAILSCALE_IP" "$SS_VPS_USER" | tee -a "$RDP_LOG" >&2
   set +e
-  /usr/bin/xfreerdp /v:"$SS_VPS_TAILSCALE_IP" /u:"$SS_VPS_USER" /p:"$SS_VPS_PASS" /cert:fingerprint:sha256:FFEDD80E08EE13D0AB30AF4A969E4B768F1163853532D3B47B027E59D6A6C1BF \
+  /usr/bin/xfreerdp /v:"$SS_VPS_TAILSCALE_IP" /u:"$SS_VPS_USER" /p:"$SS_VPS_PASS" /cert:fingerprint:sha256:ff:ed:d8:0e:08:ee:13:d0:ab:30:af:4a:96:9e:4b:76:8f:11:63:85:35:32:d3:b4:7b:02:7e:59:d6:a6:c1:bf \
     /size:1366x768 /bpp:32 +clipboard -themes -wallpaper -auto-reconnect /log-level:ERROR \
     /drive:uploads,/root/.openclaw/workspace/media 2> >(ts | tee -a "$RDP_LOG" >&2)
   rc=$?

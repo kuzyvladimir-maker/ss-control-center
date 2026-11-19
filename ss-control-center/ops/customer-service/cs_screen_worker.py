@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""Read-only SS screen collector. No DOM/CDP, buyer text entry, or send controls.
+A bounded visible list is supported; overflow/uncertainty fails closed.
+"""
+import datetime as dt
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import time
+from zoneinfo import ZoneInfo
+
+ROOT = Path('/root/.openclaw/workspace')
+SCRIPTS = ROOT / 'scripts'
+STATE = ROOT / 'data/customer-hub-screen/worker'
+OWNER = 'cs-screen-worker'
+URL = 'https://sellercentral.amazon.com/messaging/inbox?fi=responseNeeded'
+
+
+def run(args, **kw):
+    return subprocess.run([str(a) for a in args], capture_output=True, text=True, timeout=40, check=True, **kw).stdout
+
+
+def hands(*args):
+    return run([SCRIPTS/'ss_hands.sh', *args], env={**os.environ, 'SS_SCREEN_OWNER': OWNER})
+
+
+def stamp():
+    return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def env_file(path):
+    return {k.strip(): v.strip().strip('\"\x27') for line in Path(path).read_text().splitlines()
+            if '=' in line and not line.lstrip().startswith('#') for k,v in [line.split('=',1)]}
+
+
+def session_free():
+    import winrm
+    e=env_file(ROOT/'.secrets/ss_vps.env')
+    s=winrm.Session('http://'+e['SS_VPS_TAILSCALE_IP']+':5985/wsman',
+                    auth=(e['SS_VPS_USER'],e['SS_VPS_PASS']),transport='ntlm', message_encryption='always', operation_timeout_sec=15,read_timeout_sec=20)
+    r=s.run_cmd('quser')
+    text=r.std_out.decode(errors='replace')
+    if r.status_code or 'USERNAME' not in text or re.search(r'\bActive\b',text,re.I):
+        raise ValueError('Windows session active or quser unavailable; no takeover')
+    return text
+
+
+def ocr(path, box, psm=6):
+    from PIL import Image
+    im=Image.open(path); im=im.crop(box); im=im.resize((im.width*3,im.height*3))
+    tmp=path.with_name(path.stem+'-crop.png');im.save(tmp)
+    text=run(['tesseract',tmp,'stdout','--psm',str(psm)])
+    tmp.unlink()
+    return text
+
+
+def parse_metrics(account, text):
+    if 'Salutem Solutions' not in account or 'United States' not in account:
+        raise ValueError('Account identity unreadable')
+    needed=re.search(r'Response needed\s+(\d+)\b',text)
+    unresolved=re.search(r'Reported unresolved\s+(\d+)\b',text)
+    if not needed or not unresolved:
+        raise ValueError('Independent queue metrics unreadable')
+    return int(needed[1]),int(unresolved[1])
+
+
+def parse_thread(buyer, order, sla):
+    name=buyer.split('See all communication')[0].strip()
+    name=re.sub(r'[^\w .\-\u0080-\uffff]+$','',name).strip()
+    name=re.sub(r'\s+[©®Oo]$','',name).strip()
+    orders=re.findall(r'\b\d{3}-\d{7}-\d{7}\b',order)
+    if len(set(orders))!=1 or not name or len(name)>80: raise ValueError('Thread identity unreadable')
+    if re.search(r'Over SLA',sla,re.I): overdue=True
+    elif re.search(r'Due:\s*\d+\s*(mins?|hrs?|hours?|days?)',sla,re.I): overdue=False
+    else: raise ValueError('Thread SLA unreadable')
+    return {'order':orders[0],'buyer':name,'deadline':None,'overSla':overdue}
+
+
+def collect(folder):
+    # Navigation only. A fixed browser address cannot execute a buyer action.
+    hands('key','ctrl+l');hands('type',URL);hands('key','Return')
+    time.sleep(12)
+    hands('click','1020','265');hands('key','ctrl+Home');time.sleep(2)
+    shot=folder/'queue.png';hands('shot',shot)
+    account=ocr(shot,(190,120,380,160));metric_text=ocr(shot,(15,315,245,405))
+    count,unresolved=parse_metrics(account,metric_text)
+    # In this pinned 1366x768 layout only 3 complete rows fit. Never publish a partial list.
+    if count>3: raise ValueError('Visible queue capacity exceeded; full-list screen reader required')
+    threads=[]
+    if count==0:
+        empty=ocr(shot,(135,415,1100,720))
+        if not re.search(r'(no messages|no conversations|all caught up)',empty,re.I):
+            raise ValueError('Zero queue not corroborated by empty-list screen')
+    else:
+        # Read actual date-line positions from screen OCR, not fixed guesses about row heights.
+        from PIL import Image
+        im=Image.open(shot).crop((135,450,360,728));im.resize((675,834)).save(folder/'list.png')
+        tsv=run(['tesseract',folder/'list.png','stdout','--psm','6','tsv'])
+        import csv,io
+        rows=list(csv.DictReader(io.StringIO(tsv),delimiter='\t'))
+        ys=sorted({450+int(r['top'])//3 for r in rows if re.fullmatch(r'20\d\d',r.get('text',''))})
+        if len(ys)!=count: raise ValueError('Visible thread count does not match Response needed')
+        for i,y in enumerate(ys):
+            hands('click','240',str(y+25));time.sleep(3)
+            p=folder/f'thread-{i}.png';hands('shot',p)
+            # Header/order panel coordinates remain stable; Amazon text length changes order Y.
+            thread=parse_thread(ocr(p,(368,420,650,450)),ocr(p,(1110,545,1330,625)),ocr(p,(1000,450,1100,478)))
+            threads.append(thread)
+    if len({t['order'] for t in threads})!=count: raise ValueError('Duplicate or incomplete screen threads')
+    # Re-read metrics after traversal to reject a queue changing mid-scan.
+    hands('key','ctrl+r');time.sleep(10)
+    final=folder/'queue-confirm.png';hands('shot',final)
+    again=parse_metrics(ocr(final,(190,120,380,160)),ocr(final,(15,315,245,405)))
+    if again!=(count,unresolved): raise ValueError('Queue changed during read; retry next cycle')
+    payload={'source':'seller_central_screen','method':'screen_read','storeIndex':1,'account':'Salutem Solutions',
+             'observedAt':stamp(),'evidenceRef':str(folder),'collector':'cs-screen-worker',
+             'metrics':{'unread':None,'responseNeeded':count,'overSla':sum(t['overSla'] for t in threads),'reportedUnresolved':unresolved},'threads':threads}
+    (folder/'snapshot.json').write_text(json.dumps(payload,indent=2));return payload
+
+
+def post(payload, endpoint="screen-inbox"):
+    import requests
+    e=env_file(ROOT/'.secrets/cs_scan.env'); token=e.get('JACKIE_API_TOKEN') or e['SSCC_API_TOKEN']
+    r=requests.post('https://salutemsolutions.info/api/customer-hub/'+endpoint,headers={'Authorization':'Bearer '+token},json=payload,timeout=60)
+    if r.status_code!=200: raise ValueError('Hub snapshot API rejected publication HTTP '+str(r.status_code))
+    data=r.json()
+    if endpoint=='screen-inbox' and payload.get('state')!='unknown' and (data.get('state')!='fresh' or data.get('lastScanAt')!=payload['observedAt']): raise ValueError('Hub did not confirm current snapshot')
+    return data
+
+
+def notify_once(key,text,seconds=None):
+    ledger=STATE/'notifications.json'; old=json.loads(ledger.read_text()) if ledger.exists() else {}
+    prior=old.get(key)
+    if prior and (seconds is None or time.time()-prior['at']<seconds): return
+    # Reserve before external send. An ambiguous outcome is never blindly duplicated.
+    old[key]={'at':time.time(),'status':'pending'};ledger.write_text(json.dumps(old))
+    result=run(['python3',SCRIPTS/'cj.py','send','ss-control-center','42','-'],input=text)
+    old[key]['status']='queued';old[key]['receipt']=json.loads(result);ledger.write_text(json.dumps(old))
+
+
+def main():
+    os.umask(0o077);STATE.mkdir(parents=True,exist_ok=True)
+    folder=STATE/dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ');folder.mkdir()
+    acquired=False; started=False
+    try:
+        run(['python3',SCRIPTS/'ss_screen_lease.py','acquire','--owner',OWNER,'--mode','worker','--seconds','900']);acquired=True
+        preflight=run(['python3',SCRIPTS/'ss_direct_preflight.py']);(folder/'preflight.json').write_text(preflight)
+        if subprocess.run(['systemctl','is-active','--quiet','ss-hands-rdp.service']).returncode==0:
+            raise ValueError('Existing RDP transport has no cycle ownership; explicit handoff required')
+        (folder/'quser.txt').write_text(session_free())
+        hands('up');started=True;time.sleep(5)
+        payload=collect(folder);api=post(payload);(folder/'api.json').write_text(json.dumps(api,indent=2))
+        for t in payload['threads']:
+            key='arrival:'+t['order']
+            ledger=STATE/'notifications.json'
+            known=json.loads(ledger.read_text()) if ledger.exists() else {}
+            if key not in known:
+                card=post({'requestId':key,'order':t['order'],'buyer':t['buyer'],
+                    'observedAt':payload['observedAt'],'evidenceRef':payload['evidenceRef'],
+                    'clientText':'Новое обращение в Response needed; текст требует полного чтения.',
+                    'facts':[{'what':'Покупатель','value':t['buyer']},{'what':'Over SLA','value':'Да' if t['overSla'] else 'Нет'}],
+                    'decisionRu':'Прочитать полную ветку и подготовить ответ для одобрения.',
+                    'missing':['Текст обращения, факты заказа и доставки ещё не разобраны.']},'screen-review')
+                (folder/('card-'+t['order']+'.json')).write_text(json.dumps(card,ensure_ascii=False))
+                notify_once(key,card['textRu'])
+        (folder/'result.json').write_text(json.dumps({'state':'fresh','at':stamp(),'observedAt':payload['observedAt']}))
+        print(json.dumps({'state':'fresh','evidence':str(folder),'observedAt':payload['observedAt']}))
+    except Exception as error:
+        reason=str(error) if isinstance(error,ValueError) else type(error).__name__+' during screen cycle'
+        failure={'source':'seller_central_screen','storeIndex':1,'state':'unknown','observedAt':stamp(),'reason':reason}
+        (folder/'failure.json').write_text(json.dumps(failure))
+        try: (folder/'api-failure.json').write_text(json.dumps(post(failure)))
+        except Exception: reason+='; failure publication unavailable'
+        try: notify_once('failure:'+hashlib.sha256(reason.encode()).hexdigest(), 'Проверка не выполнилась: '+reason,7200)
+        except Exception: pass
+        print(json.dumps({'state':'unknown','reason':reason,'evidence':str(folder)}))
+        return 1
+    finally:
+        if acquired:
+            if started: hands('down')
+            # A failed startup can leave a live transport: preserve lease for explicit recovery.
+            active=subprocess.run(['systemctl','is-active','--quiet','ss-hands-rdp.service']).returncode==0
+            if not active: run(['python3',SCRIPTS/'ss_screen_lease.py','release','--owner',OWNER])
+    return 0
+if __name__=='__main__': raise SystemExit(main())

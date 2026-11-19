@@ -26,7 +26,7 @@ def render(data, now=None):
 
 def main():
     import requests
-    from cs_mail_publish import ROOT, env_file
+    from cs_screen_worker import ROOT, env_file
     env = {**env_file(ROOT / '.secrets/cs_scan.env'), **os.environ}
     token = env.get('JACKIE_API_TOKEN') or env['SSCC_API_TOKEN']
     try:

@@ -10,8 +10,19 @@ from pathlib import Path
 import subprocess
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import rdp_identity_probe  # noqa: E402
+
+# Two different names describe the same machine (verified 2026-11-19 with
+# rdp_identity_probe.py on both the tailnet and the public address):
+#   * Tailscale device name / MagicDNS: salutem-vps (stable node ID below)
+#   * Windows computer name (NTLM/RDP):  CLOUD-NN0V1SRSP
+# Both are required; the RDP cert is pinned to the same fingerprint xfreerdp uses.
 EXPECTED_HOST = 'CLOUD-NN0V1SRSP'
 EXPECTED_TAILNET = 'tail3cb362.ts.net'
+EXPECTED_TS_DNSNAME = 'salutem-vps.tail3cb362.ts.net.'
+EXPECTED_TS_NODE_ID = 'nEmuiKoDzu11CNTRL'
+EXPECTED_RDP_CERT_SHA256 = 'FFEDD80E08EE13D0AB30AF4A969E4B768F1163853532D3B47B027E59D6A6C1BF'
 
 
 def validate_route(status, address):
@@ -31,11 +42,23 @@ def validate_route(status, address):
     if len(peers) != 1:
         raise ValueError('SS tailnet peer is missing or ambiguous')
     peer = peers[0]
-    if peer.get('HostName', '').casefold() != EXPECTED_HOST.casefold():
+    if (peer.get('DNSName', '').casefold() != EXPECTED_TS_DNSNAME.casefold()
+            or peer.get('ID') != EXPECTED_TS_NODE_ID):
         raise ValueError('Tailnet address belongs to a different host')
     if not peer.get('Online'):
         raise ValueError('SS tailnet peer is offline')
-    return {'ready': True, 'host': EXPECTED_HOST, 'address': address, 'transportOnly': True}
+    return {'ready': True, 'host': EXPECTED_HOST, 'tailnetName': EXPECTED_TS_DNSNAME.rstrip('.'), 'address': address, 'transportOnly': True}
+
+
+def validate_windows_identity(address):
+    try:
+        ident = rdp_identity_probe.probe(address, 3389, timeout=10)
+    except Exception:
+        raise ValueError('SS RDP identity probe failed over tailnet') from None
+    if ident.get('certSha256') != EXPECTED_RDP_CERT_SHA256:
+        raise ValueError('SS RDP certificate does not match the pinned fingerprint')
+    if (ident.get('DnsComputerName') or ident.get('NbComputerName') or '').casefold() != EXPECTED_HOST.casefold():
+        raise ValueError('SS RDP computer name does not match ' + EXPECTED_HOST)
 
 
 def read_env(path):
@@ -54,7 +77,10 @@ def main():
     if not address:
         validate_route({}, address)
     result = subprocess.run(['tailscale', 'status', '--json'], capture_output=True, text=True, timeout=15, check=True)
-    print(json.dumps(validate_route(json.loads(result.stdout), address)))
+    route = validate_route(json.loads(result.stdout), address)
+    validate_windows_identity(address)
+    route['windowsIdentityVerified'] = True
+    print(json.dumps(route))
 
 
 if __name__ == '__main__':

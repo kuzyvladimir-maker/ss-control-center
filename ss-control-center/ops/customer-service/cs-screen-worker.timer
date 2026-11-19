@@ -1,0 +1,10 @@
+[Unit]
+Description=Seller Central read-only screen check every 30 minutes (08:00-22:00 ET)
+[Timer]
+OnCalendar=*-*-* 08..21:00,30:00 America/New_York
+OnCalendar=*-*-* 22:00:00 America/New_York
+Persistent=false
+AccuracySec=1s
+Unit=cs-screen-worker.service
+[Install]
+WantedBy=timers.target
