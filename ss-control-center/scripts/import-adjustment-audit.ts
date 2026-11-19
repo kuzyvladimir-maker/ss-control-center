@@ -10,13 +10,12 @@
  * amountAlreadyPaid, totalChargeFromCarrier, transactionTotal.
  *
  * Скрипт НИЧЕГО не отправляет в Amazon — только читает файл и пишет в базу.
+ * Класс пересчитывается только у обновлённых строк; глобального пересчёта
+ * всех магазинов после импорта больше нет (серверные классы не трогаются).
+ * Полный пересчёт — отдельно, scripts/reclassify-adjustments.ts.
  */
 import { readFileSync } from "node:fs";
-import {
-  importAuditRecords,
-  reclassifyAll,
-  type AuditRecord,
-} from "@/lib/adjustments/audit-import";
+import { importAuditRecords, type AuditRecord } from "@/lib/adjustments/audit-import";
 import { AUDIT_SOURCES } from "@/lib/adjustments/audit-classify";
 
 function arg(name: string): string | undefined {
@@ -45,9 +44,9 @@ async function main() {
 
   const result = await importAuditRecords(records, { storeId: store, source });
   console.log("импорт аудита:", JSON.stringify(result, null, 2));
-
-  const counts = await reclassifyAll();
-  console.log("классы после импорта:", JSON.stringify(counts, null, 2));
+  if (result.skipped.length) {
+    console.log(`пропущено записей: ${result.skipped.length} (см. skipped — причина у каждой)`);
+  }
 }
 
 main().catch((e) => {

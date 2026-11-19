@@ -99,6 +99,7 @@
     "models:check": "npx tsx scripts/check-model-updates.ts",
     "postinstall": "prisma generate",
     "test:shipping": "node --import tsx --test src/lib/shipping/__tests__/*.test.ts",
+    "test:adjustments": "node --import tsx --test src/lib/adjustments/__tests__/*.test.ts",
     "test:procurement-placed": "node --import tsx --test src/lib/procurement/__tests__/placed.test.ts src/lib/veeqo/__tests__/hidden-orders.test.ts"
   },
   "dependencies": {
