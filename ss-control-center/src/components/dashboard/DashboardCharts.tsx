@@ -10,7 +10,7 @@
  * a chart of zeros.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Panel, PanelBody, PanelHeader } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
@@ -62,14 +62,19 @@ function niceTicks(max: number): number[] {
   return [0, step, step * 2, step * 3];
 }
 
+// Callback ref: the measured box only mounts after data arrives (skeleton
+// first), so a mount-time effect would observe nothing.
 function useWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
   const [width, setWidth] = useState(0);
-  useEffect(() => {
-    if (!ref.current) return;
+  const roRef = useRef<ResizeObserver | null>(null);
+  const ref = useCallback((el: T | null) => {
+    roRef.current?.disconnect();
+    roRef.current = null;
+    if (!el) return;
+    setWidth(Math.floor(el.getBoundingClientRect().width));
     const ro = new ResizeObserver(([e]) => setWidth(Math.floor(e.contentRect.width)));
-    ro.observe(ref.current);
-    return () => ro.disconnect();
+    ro.observe(el);
+    roRef.current = ro;
   }, []);
   return [ref, width] as const;
 }
