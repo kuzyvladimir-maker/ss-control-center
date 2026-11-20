@@ -39,7 +39,7 @@ class PartialCycleTest(unittest.TestCase):
     return 'Sharon © See all communication'
    if box[0]==1110:return '114-8686665-2821053'
    return 'Due: 10 hrs'
-  with tempfile.TemporaryDirectory() as d,patch.object(w,'hands'),patch.object(w.time,'sleep'),patch('PIL.Image.open',return_value=MagicMock()),patch.object(w,'ocr',side_effect=read),patch.object(w,'run',return_value='top\ttext\n54\t2026\n345\t2026\n'):
+  with tempfile.TemporaryDirectory() as d,patch.object(w,'hands'),patch.object(w.time,'sleep'),patch.dict('sys.modules',{'PIL':MagicMock()}),patch.object(w,'ocr',side_effect=read),patch.object(w,'run',return_value='top\ttext\n54\t2026\n345\t2026\n'):
    result=w.collect(Path(d));self.assertEqual(len(result['threads']),1)
    self.assertEqual(result['threads'][0]['buyer'],'Sharon');self.assertEqual(result['metrics']['responseNeeded'],2)
    self.assertIsNone(result['metrics']['overSla']);self.assertEqual(result['threadErrors'][0]['row'],0)
