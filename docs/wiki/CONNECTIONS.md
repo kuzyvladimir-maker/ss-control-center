@@ -24,6 +24,7 @@
 
 ### [Dashboard](dashboard.md)
 ← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
+→ [Charts, freshness, CS fallback 2026-11-20](dashboard-charts-and-freshness-2026-11-20.md)
 
 ### [Shipping Labels](shipping-labels.md)
 ← [Veeqo API](veeqo-api.md), [Veeqo API Quirks](veeqo-api-quirks.md) (VAS из shipping_service_options, tracking object-shape, Vercel ephemeral disk), [SKU Database](sku-database-migration.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки), [Claude AI](claude-ai.md) (AI classification в [Shipping Labels Page v1](shipping-labels-page-v1.md)), [Google Drive](google-drive-setup.md) (постоянное хранение PDF этикеток), [Drive Backfill](drive-backfill.md) (Layer 2 safety net когда синхронная загрузка упала), [Frozen Analytics](frozen-analytics.md) (risk badge + recommendation per row + PDF filename marker)
