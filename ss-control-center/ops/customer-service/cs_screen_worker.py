@@ -20,7 +20,7 @@ URL = 'https://sellercentral.amazon.com/messaging/inbox?fi=responseNeeded'
 
 
 def run(args, **kw):
-    return subprocess.run([str(a) for a in args], capture_output=True, text=True, timeout=40, check=True, **kw).stdout
+    return subprocess.run([str(a) for a in args], capture_output=True, text=True, timeout=kw.pop('timeout',40), check=True, **kw).stdout
 
 
 def hands(*args):
@@ -67,16 +67,26 @@ def parse_metrics(account, text):
     return int(needed[1]),int(unresolved[1])
 
 
-def parse_thread(buyer, order, sla):
+def parse_sla(text):
+    if re.search(r'\bOver\s+SLA\b',text,re.I): return True
+    if re.search(r'\bDue\s*:\s*\d+\s*(?:mins?|minutes?|hrs?|hours?|days?)\b',text,re.I): return False
+    return None
+
+
+def parse_thread(buyer, order, sla, alternate_sla=''):
     name=buyer.split('See all communication')[0].strip()
     name=re.sub(r'[^\w .\-\u0080-\uffff]+$','',name).strip()
     name=re.sub(r'\s+[©®Oo]$','',name).strip()
     orders=re.findall(r'\b\d{3}-\d{7}-\d{7}\b',order)
     if len(set(orders))!=1 or not name or len(name)>80: raise ValueError('Thread identity unreadable')
-    if re.search(r'Over SLA',sla,re.I): overdue=True
-    elif re.search(r'Due:\s*\d+\s*(mins?|hrs?|hours?|days?)',sla,re.I): overdue=False
-    else: raise ValueError('Thread SLA unreadable')
+    readings=[v for v in [parse_sla(sla),parse_sla(alternate_sla)] if v is not None]
+    overdue=readings[0] if readings and all(v==readings[0] for v in readings) else None
     return {'order':orders[0],'buyer':name,'deadline':None,'overSla':overdue}
+
+
+def aggregate_sla(threads, expected):
+    if len(threads)!=expected or any(t['overSla'] is None for t in threads): return None
+    return sum(t['overSla'] for t in threads)
 
 
 def collect(folder):
@@ -89,7 +99,7 @@ def collect(folder):
     count,unresolved=parse_metrics(account,metric_text)
     # In this pinned 1366x768 layout only 3 complete rows fit. Never publish a partial list.
     if count>3: raise ValueError('Visible queue capacity exceeded; full-list screen reader required')
-    threads=[]
+    threads=[];errors=[];readings=[]
     if count==0:
         empty=ocr(shot,(135,415,1100,720))
         if not re.search(r'(no messages|no conversations|all caught up)',empty,re.I):
@@ -107,9 +117,18 @@ def collect(folder):
             hands('click','240',str(y+25));time.sleep(3)
             p=folder/f'thread-{i}.png';hands('shot',p)
             # Header/order panel coordinates remain stable; Amazon text length changes order Y.
-            thread=parse_thread(ocr(p,(368,420,650,450)),ocr(p,(1110,545,1330,625)),ocr(p,(1000,450,1100,478)))
-            threads.append(thread)
-    if len({t['order'] for t in threads})!=count: raise ValueError('Duplicate or incomplete screen threads')
+            bottom=min(ys[i+1]-2 if i+1<len(ys) else 728,y+100)
+            try:
+                raw={'row':i,'buyer':ocr(p,(368,420,650,450)),'order':ocr(p,(1110,545,1330,625)),
+                     'slaHeader':ocr(p,(1000,450,1100,478)), 'slaList':ocr(p,(140,y+20,355,bottom))}
+                readings.append(raw)
+                thread=parse_thread(raw['buyer'],raw['order'],raw['slaHeader'],raw['slaList'])
+                if any(t['order']==thread['order'] for t in threads): raise ValueError('Duplicate screen thread identity')
+                threads.append(thread)
+                if thread['overSla'] is None: errors.append({'row':i,'field':'sla','reason':'SLA unreadable or conflicting badges'})
+            except (ValueError,subprocess.SubprocessError,OSError) as error:
+                errors.append({'row':i,'field':'identity','reason':str(error) if isinstance(error,ValueError) else 'Thread OCR '+type(error).__name__})
+    (folder/'thread-readings.json').write_text(json.dumps(readings,ensure_ascii=False,indent=2))
     # Re-read metrics after traversal to reject a queue changing mid-scan.
     hands('key','ctrl+r');time.sleep(10)
     final=folder/'queue-confirm.png';hands('shot',final)
@@ -117,7 +136,7 @@ def collect(folder):
     if again!=(count,unresolved): raise ValueError('Queue changed during read; retry next cycle')
     payload={'source':'seller_central_screen','method':'screen_read','storeIndex':1,'account':'Salutem Solutions',
              'observedAt':stamp(),'evidenceRef':str(folder),'collector':'cs-screen-worker',
-             'metrics':{'unread':None,'responseNeeded':count,'overSla':sum(t['overSla'] for t in threads),'reportedUnresolved':unresolved},'threads':threads}
+             'metrics':{'unread':None,'responseNeeded':count,'overSla':aggregate_sla(threads,count),'reportedUnresolved':unresolved},'threads':threads,'threadErrors':errors}
     (folder/'snapshot.json').write_text(json.dumps(payload,indent=2));return payload
 
 
@@ -143,13 +162,26 @@ def notify_once(key,text,seconds=None):
         if prior and (seconds is None or time.time()-prior['at']<seconds): return
         # Reserve before external send; ambiguous delivery must be inspected, never replayed.
         old[key]={'at':time.time(),'status':'pending'};save(old)
-    result=run(['openclaw','message','send','--channel','telegram','--target','-1003924739153','--thread-id','42','--message',text,'--json'])
+        with (STATE/'notification-attempts.jsonl').open('a') as audit: audit.write(json.dumps({'key':key,'at':stamp(),'state':'pending'})+'\n')
+    result=run(['openclaw','message','send','--channel','telegram','--target','-1003924739153','--thread-id','42','--message',text,'--json'],timeout=120)
     receipt=json.loads(result)
     if not receipt.get('messageId'): raise ValueError('Telegram delivery receipt missing; notification remains pending')
     with (STATE/'notifications.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX)
         old=read();old[key]['status']='sent';old[key]['receipt']=receipt;save(old)
+        with (STATE/'notification-attempts.jsonl').open('a') as audit: audit.write(json.dumps({'key':key,'at':stamp(),'state':'sent','messageId':receipt['messageId']})+'\n')
     return receipt['messageId']
+
+
+def notify_failure(reason,folder):
+    key='failure:'+hashlib.sha256(reason.encode()).hexdigest()
+    try:
+        message_id=notify_once(key,'Проверка не выполнилась: '+reason,7200)
+        result={'state':'sent' if message_id else 'throttled_or_pending','messageId':message_id,'reason':reason}
+    except Exception as error:
+        result={'state':'unconfirmed','reason':reason,'error':type(error).__name__}
+        print(json.dumps({'notification':result}),flush=True)
+    (folder/'notification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
 
 
 def arrival_keys(orders, previous):
@@ -189,8 +221,12 @@ def main():
         phase='screen read'
         payload=collect(folder);phase='snapshot publication';api=post(payload);(folder/'api.json').write_text(json.dumps(api,indent=2))
         phase='owner card publication'
+        if payload.get('threadErrors'): notify_failure('screen read: '+ '; '.join(sorted({e['reason'] for e in payload['threadErrors']})),folder)
         episodes=STATE/'episodes.json'
-        keys,updated=arrival_keys([t['order'] for t in payload['threads']],json.loads(episodes.read_text()) if episodes.exists() else {})
+        previous=json.loads(episodes.read_text()) if episodes.exists() else {}
+        visible=[t['order'] for t in payload['threads']]
+        if any(e['field']=='identity' for e in payload.get('threadErrors',[])): visible+= [k for k,v in previous.items() if v.get('active') and k not in visible]
+        keys,updated=arrival_keys(visible,previous)
         tmp=episodes.with_suffix('.tmp');tmp.write_text(json.dumps(updated));tmp.replace(episodes)
         for t in payload['threads']:
             key=keys[t['order']]
@@ -200,22 +236,22 @@ def main():
                 card=post({'requestId':key,'order':t['order'],'buyer':t['buyer'],
                     'observedAt':payload['observedAt'],'evidenceRef':payload['evidenceRef'],
                     'clientText':'Новое обращение в Response needed; текст требует полного чтения.',
-                    'facts':[{'what':'Покупатель','value':t['buyer']},{'what':'Over SLA','value':'Да' if t['overSla'] else 'Нет'}],
+                    'facts':[{'what':'Покупатель','value':t['buyer']},{'what':'Over SLA','value':'Не проверено' if t['overSla'] is None else 'Да' if t['overSla'] else 'Нет'}],
                     'decisionRu':'Прочитать полную ветку и подготовить ответ для одобрения.',
                     'missing':['Текст обращения, факты заказа и доставки ещё не разобраны.']},'screen-review')
                 (folder/('card-'+t['order']+'.json')).write_text(json.dumps(card,ensure_ascii=False))
                 message_id=notify_once(key,card['textRu'])
                 if message_id: mark_published(card['cardId'],message_id)
-        (folder/'result.json').write_text(json.dumps({'state':'fresh','at':stamp(),'observedAt':payload['observedAt']}))
-        print(json.dumps({'state':'fresh','evidence':str(folder),'observedAt':payload['observedAt']}))
+        state='partial' if payload.get('threadErrors') else 'ok'
+        (folder/'result.json').write_text(json.dumps({'state':state,'at':stamp(),'observedAt':payload['observedAt']}))
+        print(json.dumps({'state':state,'evidence':str(folder),'observedAt':payload['observedAt']}))
     except Exception as error:
         reason=phase+': '+(str(error) if isinstance(error,ValueError) else type(error).__name__)
         failure={'source':'seller_central_screen','storeIndex':1,'state':'unknown','observedAt':stamp(),'reason':reason}
         (folder/'failure.json').write_text(json.dumps(failure))
         try: (folder/'api-failure.json').write_text(json.dumps(post(failure)))
         except Exception: reason+='; failure publication unavailable'
-        try: notify_once('failure:'+hashlib.sha256(reason.encode()).hexdigest(), 'Проверка не выполнилась: '+reason,7200)
-        except Exception: pass
+        notify_failure(reason,folder)
         print(json.dumps({'state':'unknown','reason':reason,'evidence':str(folder)}))
         return 1
     finally:

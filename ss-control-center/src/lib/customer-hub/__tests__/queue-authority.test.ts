@@ -31,3 +31,13 @@ test('failed screen read invalidates even a recent success without losing last s
  assert.equal(q.state,'unknown');assert.equal(q.stale,true);assert.equal(q.metrics.responseNeeded,null);assert.deepEqual(q.threads,[]);assert.equal(q.lastSuccessfulCheckAt,snapshot.observedAt);assert.match(q.reason!,/0x5/);
  assert.equal(queueView({...snapshot,observedAt:new Date(now.getTime()+3000).toISOString()},new Date(now.getTime()+4000)).state,'fresh');
 });
+test('one unreadable SLA preserves both identities and independent metrics',()=>{
+ const partial:ScreenSnapshot={...snapshot,metrics:{...snapshot.metrics,overSla:null},threads:[snapshot.threads[0],{...snapshot.threads[1],overSla:null}],threadErrors:[{row:1,field:'sla',reason:'OCR could not read badge'}]};
+ const q=queueView(partial,now);assert.equal(q.state,'fresh');assert.equal(q.readStatus,'partial');assert.equal(q.threads.length,2);assert.equal(q.metrics.responseNeeded,2);assert.equal(q.metrics.overSla,null);assert.equal(q.errors.length,1);
+ assert.throws(()=>validateScreenSnapshot({...partial,metrics:{...partial.metrics,overSla:1}},now));
+});
+test('identity failure retains readable branch with explicit incomplete coverage',()=>{
+ const partial:ScreenSnapshot={...snapshot,metrics:{...snapshot.metrics,overSla:null},threads:[snapshot.threads[0]],threadErrors:[{row:1,field:'identity',reason:'Order unreadable'}]};
+ const q=queueView(partial,now);assert.equal(q.threads.length,1);assert.equal(q.metrics.responseNeeded,2);assert.deepEqual(q.coverage,{expected:2,read:1});assert.equal(q.readStatus,'partial');
+ assert.throws(()=>validateScreenSnapshot({...partial,threadErrors:[]},now));
+});
