@@ -16,6 +16,7 @@ import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 import { matchLiveRate } from "@/lib/shipping/requote-match";
 import { iceExtraFromNotes } from "@/lib/shipping/temp-class/ice";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
+import { applyBuyOverride, type BuyOverride } from "@/lib/shipping/buy-override";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
@@ -125,22 +126,7 @@ function parseBoxSize(
 // Per-itemId override: operator picked a different carrier/service through
 // /shipping's PickRateDialog. When present we substitute these fields into
 // the item before the buy call hits Veeqo, instead of using the
-// algorithmically-picked rate.
-interface BuyOverride {
-  carrierId?: string | null;
-  remoteShipmentId?: string | null;
-  serviceType?: string | null;
-  subCarrierId?: string | null;
-  serviceCarrier?: string | null;
-  totalNetCharge?: string | null;
-  baseRate?: string | null;
-  carrier?: string | null;
-  service?: string | null;
-  // Physical ship day the operator forced via the inline picker / rate modal.
-  // When present it becomes the dispatch date the label is bought against
-  // (the dispatch-date dance below keys off item.physicalShipDate).
-  physicalShipDate?: string | null;
-}
+// algorithmically-picked rate. Type + merge live in lib/shipping/buy-override.
 
 // Wall-clock of one awaited stage, recorded into `into` under `key`. Stage
 // timings are what tell us where a slow buy actually went — the operator can't
@@ -315,27 +301,7 @@ export async function POST(request: NextRequest) {
       // algorithm picked nothing for. Override fields take precedence; the
       // rest fall back to whatever the plan stored.
       const ov = overrides[rawItem.id];
-      const item = ov
-        ? {
-            ...rawItem,
-            carrierId: ov.carrierId ?? rawItem.carrierId,
-            remoteShipmentId:
-              ov.remoteShipmentId ?? rawItem.remoteShipmentId,
-            serviceType: ov.serviceType ?? rawItem.serviceType,
-            subCarrierId: ov.subCarrierId ?? rawItem.subCarrierId,
-            serviceCarrier: ov.serviceCarrier ?? rawItem.serviceCarrier,
-            totalNetCharge: ov.totalNetCharge ?? rawItem.totalNetCharge,
-            baseRate: ov.baseRate ?? rawItem.baseRate,
-            carrier: ov.carrier ?? rawItem.carrier,
-            service: ov.service ?? rawItem.service,
-            // A forced ship date overrides BOTH date columns so the
-            // dispatch-date dance (keyed on physicalShipDate) buys against the
-            // chosen day, and the warehouse note reflects it.
-            physicalShipDate:
-              ov.physicalShipDate ?? rawItem.physicalShipDate,
-            actualShipDay: ov.physicalShipDate ?? rawItem.actualShipDay,
-          }
-        : rawItem;
+      const item = applyBuyOverride(rawItem, ov);
       try {
         // NOTE: remoteShipmentId is intentionally NOT required here. Frozen
         // orders are quoted through the new Rate Shopping API, whose response
