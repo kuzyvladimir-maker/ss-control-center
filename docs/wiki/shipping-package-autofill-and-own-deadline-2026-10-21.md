@@ -152,3 +152,5 @@ after deploy:
 **Note on Dry and non-Amazon orders.** They still quote through the allocation
 pool (`GET /shipping/rates`), which takes no date parameter. Their EDDs come
 from Veeqo as-is and are never shifted by us.
+
+See also: [[shipping-manual-override-requote-price-2026-11-20]] — manual rate override kept the plan price/EDD, so the price guard refused the operator-picked rate (fixed 2026-11-20).
