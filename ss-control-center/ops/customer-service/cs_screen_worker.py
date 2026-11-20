@@ -69,7 +69,9 @@ def parse_metrics(account, text):
 
 def parse_sla(text):
     if re.search(r'\bOver\s+SLA\b',text,re.I): return True
-    if re.search(r'\bDue\s*:\s*\d+\s*(?:mins?|minutes?|hrs?|hours?|days?)\b',text,re.I): return False
+    # Only classify Amazon's explicit Due badge, not its duration. OCR h->b in hrs
+    # cannot change the SLA flag; deadline remains unknown and raw OCR is retained.
+    if re.search(r'\bDue\s*:\s*\d+\b',text,re.I): return False
     return None
 
 

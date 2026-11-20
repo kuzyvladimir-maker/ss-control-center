@@ -16,7 +16,8 @@ class BadgeRegressionTest(unittest.TestCase):
  def test_both_formats_and_ocr_fallback(self):
   from cs_screen_worker import parse_sla,aggregate_sla
   self.assertTrue(parse_sla('© Over SLA'));self.assertFalse(parse_sla('© Due: 10 hrs'))
-  self.assertIsNone(parse_sla('© Due: 10 brs'))
+  self.assertFalse(parse_sla('© Due: 10 brs'));self.assertFalse(parse_sla('© Due: 9 brs'))
+  self.assertIsNone(parse_sla('Due: unreadable'));self.assertIsNone(parse_sla('9 hrs'))
   row=parse_thread('Sharon © See all communication','114-8686665-2821053','© Due: 10 brs','Inquiry ... © Due: 10 hrs')
   self.assertFalse(row['overSla']);self.assertEqual(aggregate_sla([{'overSla':True},row],2),1)
  def test_unreadable_or_conflicting_sla_is_unknown_not_fatal(self):
