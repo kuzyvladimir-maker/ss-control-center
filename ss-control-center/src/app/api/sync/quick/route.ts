@@ -24,7 +24,7 @@ export const maxDuration = 30;
 
 const JOB_NAME = "orders-amazon";
 const LOCK_TTL_MS = 25_000;
-const MIN_INTERVAL_MS = 45_000;
+const MIN_INTERVAL_MS = 60_000; // owner: data at most 1–2 min old on open
 
 export async function POST() {
   try {

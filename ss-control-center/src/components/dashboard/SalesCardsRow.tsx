@@ -57,7 +57,15 @@ interface SalesResponse {
  * store filter so toggles in the sidebar refetch live. Hidden entirely when
  * the user has unselected every store (the parent shows an EmptyState then).
  */
-export function SalesCardsRow() {
+export function SalesCardsRow({
+  refreshKey = 0,
+  sparks = null,
+}: {
+  /** Bumped by the Dashboard when its on-load orders sync lands → refetch. */
+  refreshKey?: number;
+  /** Sparkline series from /api/dashboard/charts (null = not loaded). */
+  sparks?: { daily14: number[]; mtd: number[]; months: number[] } | null;
+} = {}) {
   const {
     selectedStoreIds,
     isLoading: storeLoading,
@@ -81,7 +89,8 @@ export function SalesCardsRow() {
     }
 
     let cancelled = false;
-    setLoading(true);
+    // Keep showing the current numbers while a post-sync refetch runs.
+    if (refreshKey === 0) setLoading(true);
     const qs = isAllSelected ? "" : `?storeIds=${selectedStoreIds.join(",")}`;
     fetch(`/api/dashboard/sales${qs}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
@@ -100,7 +109,7 @@ export function SalesCardsRow() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, storeLoading, isAllSelected]);
+  }, [filterKey, storeLoading, isAllSelected, refreshKey]);
 
   // Hide entirely when the user has unselected everything — Dashboard
   // already shows an empty-state panel in that branch.
@@ -122,7 +131,7 @@ export function SalesCardsRow() {
     );
   }
 
-  if (loading || !data) return <SalesCardsSkeleton />;
+  if ((loading && !data) || !data) return <SalesCardsSkeleton />;
 
   // Each sales card is a Link to /analytics scoped to that period. The
   // analytics page reads `?period=` to scope its tables and charts to
@@ -147,7 +156,9 @@ export function SalesCardsRow() {
         amazon={amzToday}
         walmart={wmtToday}
         comparison={data.today.comparison}
-        comparisonLabel="vs yesterday"
+        comparisonLabel="vs yesterday same time"
+        sparkline={sparks?.daily14}
+        sparklineTitle="Daily sales, last 14 full days"
       />
       <SalesCard
         title="Sales yesterday"
@@ -168,6 +179,8 @@ export function SalesCardsRow() {
         walmart={wmtMtd}
         comparison={data.mtd.comparison}
         comparisonLabel="vs last mo. same period"
+        sparkline={sparks?.mtd}
+        sparklineTitle="Running total this month"
       />
       <SalesCard
         title="Last month"
@@ -186,6 +199,9 @@ export function SalesCardsRow() {
         comparisonLabel="vs last month"
         forecastReason={data.forecast.meta?.reason}
         isForecast
+        sparkline={sparks?.months}
+        sparklineTitle="Monthly sales, last 5 full months"
+        sparkBars
       />
     </div>
   );
@@ -202,7 +218,14 @@ function SalesCard({
   forecastReason,
   isForecast,
   href,
+  sparkline,
+  sparklineTitle,
+  sparkBars,
 }: {
+  sparkline?: number[];
+  sparklineTitle?: string;
+  /** Render as mini bars (discrete periods) instead of a line. */
+  sparkBars?: boolean;
   title: string;
   value: number | null;
   /** Total non-cancelled order count for this period (combined channels). */
@@ -313,7 +336,37 @@ function SalesCard({
       {!comparison && forecastReason && (
         <div className="mt-2 text-[11.5px] text-ink-3">{forecastReason}</div>
       )}
+      {sparkline && sparkline.length >= 2 && (
+        <MiniSpark values={sparkline} bars={sparkBars} title={sparklineTitle} />
+      )}
     </Wrapper>
+  );
+}
+
+function MiniSpark({ values, bars, title }: { values: number[]; bars?: boolean; title?: string }) {
+  const w = 200;
+  const h = 26;
+  const max = Math.max(...values, 1);
+  const y = (v: number) => h - 2 - (v / max) * (h - 5);
+  if (bars) {
+    const slot = w / values.length;
+    return (
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-2.5 h-6 w-full" role="img" aria-label={title}>
+        <title>{title}</title>
+        {values.map((v, i) => (
+          <rect key={i} x={i * slot + 2} y={y(v)} width={slot - 4} height={h - y(v)} rx="2" fill="var(--green-light)" />
+        ))}
+      </svg>
+    );
+  }
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => `${i * step},${y(v)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-2.5 h-6 w-full" role="img" aria-label={title}>
+      <title>{title}</title>
+      <polyline points={`${pts} ${w},${h} 0,${h}`} fill="var(--green-soft)" stroke="none" />
+      <polyline points={pts} fill="none" stroke="var(--green)" strokeWidth="1.5" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }
 

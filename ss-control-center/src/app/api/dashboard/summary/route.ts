@@ -1,4 +1,4 @@
-import { screenInbox } from "@/lib/customer-hub/screen-inbox";
+import { screenInbox, SCREEN_KEY } from "@/lib/customer-hub/screen-inbox";
 import { NextRequest, NextResponse, after } from "next/server";
 // Its own DB clients: these ~29 reads (several full scans) took 25–65 s on a
 // cold Turso cache and must not hold the clients /shipping runs on.
@@ -106,6 +106,46 @@ const STALE_MS = 2 * 86400000;
 // store1 — before anyone noticed because this tile had no stale state).
 const ORDERS_STALE_MS = 2 * 3600000;
 
+function fmtTimeET(d: Date): string {
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/New_York",
+  }) + " ET";
+}
+
+// Last successful Seller Central screen read, straight from the stored
+// snapshot (metrics/threads are kept when a later check fails).
+function lastKnownScreen(raw: string | undefined | null) {
+  if (!raw) return null;
+  try {
+    const s = JSON.parse(raw);
+    const failure =
+      s.lastFailure && (!s.observedAt || Date.parse(s.lastFailure.observedAt) >= Date.parse(s.observedAt))
+        ? { observedAt: String(s.lastFailure.observedAt), reason: String(s.lastFailure.reason ?? "unknown") }
+        : null;
+    if (!s.observedAt || !s.metrics) return { observedAt: null, responseNeeded: null, overSla: null, threads: [], failure };
+    return {
+      observedAt: String(s.observedAt),
+      responseNeeded: typeof s.metrics.responseNeeded === "number" ? s.metrics.responseNeeded : null,
+      overSla: typeof s.metrics.overSla === "number" ? s.metrics.overSla : null,
+      threads: Array.isArray(s.threads)
+        ? s.threads.slice(0, 10).map((t: { order?: string; buyer?: string; overSla?: boolean | null }) => ({
+            order: String(t.order ?? ""),
+            // Screen text carries Seller Central link chrome after the name.
+            buyer: String(t.buyer ?? "").replace(/\s*©.*$/, "").trim(),
+            overSla: t.overSla ?? null,
+          }))
+        : [],
+      failure,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function fmtDay(d: Date): string {
   return d.toLocaleDateString("en-US", {
     month: "short",
@@ -150,10 +190,17 @@ function rebuildSummary(key: string, request: NextRequest): Promise<NextResponse
 }
 
 export async function GET(request: NextRequest) {
-  const key = request.nextUrl.search;
+  // `fresh=1` is sent by the Dashboard right after its on-load orders sync
+  // finishes: the cached body predates that sync, so it must be rebuilt now
+  // (2026-11-20: the page showed "Updated 1h ago" because it rendered the
+  // SWR copy and never re-read after the sync landed). Not part of the key.
+  const params = new URLSearchParams(request.nextUrl.search);
+  const forceFresh = params.get("fresh") === "1";
+  params.delete("fresh");
+  const key = params.toString() ? `?${params.toString()}` : "";
   const hit = summaryCache.get(key);
   const age = hit ? Date.now() - hit.at : Infinity;
-  if (hit && age < SUMMARY_MAX_STALE_MS) {
+  if (hit && age < SUMMARY_MAX_STALE_MS && !(forceFresh && age >= 5_000)) {
     if (age >= SUMMARY_FRESH_MS) {
       after(() => rebuildSummary(key, request).then(() => undefined, () => undefined));
     }
@@ -380,6 +427,8 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
       _hubChargebacks,
       _hubNewFeedback,
       lastOrdersSync,
+      screenRow,
+      mail24h,
     ] = await Promise.all([
       prisma.amazonOrder.groupBy({
         by: ["storeIndex"],
@@ -473,6 +522,20 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         where: { jobName: { in: ["orders-amazon", "all"] }, status: "done" },
         orderBy: { completedAt: "desc" },
         select: { completedAt: true },
+      }),
+      // Raw screen snapshot — screenInbox() blanks the metrics once the check
+      // is stale, but the Dashboard still shows the last verified numbers,
+      // clearly labelled "as of …", instead of "Unknown".
+      prisma.setting.findUnique({ where: { key: SCREEN_KEY } }),
+      // Buyer mail that arrived in the last 24h (store1) — history, shown as
+      // a secondary hint next to the last verified screen count.
+      prisma.buyerMessage.count({
+        where: {
+          channel: "Amazon",
+          storeIndex: 1,
+          direction: "incoming",
+          createdAt: { gte: new Date(now.getTime() - 86400000) },
+        },
       }),
     ]);
 
@@ -575,7 +638,15 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         `Account Health: no fresh report${latestSnapshot ? ` since ${fmtDay(latestSnapshot.createdAt)}` : ""}.`
       );
     }
-    if (mailSource.stale) dataIssues.push('Customer Hub: Seller Central screen queue not verified; mail is history only.');
+    const csLastKnown = mailSource.stale ? lastKnownScreen(screenRow?.value) : null;
+    if (mailSource.stale) {
+      const failure = csLastKnown?.failure;
+      dataIssues.push(
+        csLastKnown?.observedAt
+          ? `Customer Hub: Seller Central check ${failure ? `failing (${failure.reason}, last attempt ${fmtTimeET(new Date(failure.observedAt))})` : "not run"} — last verified snapshot ${fmtTimeET(new Date(csLastKnown.observedAt))}; counts below are as of that time.`
+          : "Customer Hub: no verified Seller Central snapshot yet — mail is history only."
+      );
+    }
 
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
@@ -665,7 +736,15 @@ async function buildSummary(request: NextRequest): Promise<NextResponse> {
         store1: ordersByStore.find((r) => r.storeIndex === 1)?.count ?? 0,
         store2: ordersByStore.find((r) => r.storeIndex === 2)?.count ?? 0,
       },
-      customerService: { openCases: mailSource.stale ? null : mailSource.metrics.responseNeeded, source: mailSource.source, lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt },
+      customerService: {
+        openCases: mailSource.stale ? null : mailSource.metrics.responseNeeded,
+        source: mailSource.source,
+        lastSuccessfulCheckAt: mailSource.lastSuccessfulCheckAt,
+        // Last verified screen counts while the live check is stale — never
+        // presented as current (the UI labels them "as of …").
+        lastKnown: csLastKnown,
+        mail24h,
+      },
       claims: { active: activeClaims },
       ordersByStore,
       labelsBoughtToday,

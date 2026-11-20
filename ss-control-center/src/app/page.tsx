@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import { SalesCardsRow } from "@/components/dashboard/SalesCardsRow";
 import {
+  OrdersByHourChart,
+  SalesByDayChart,
+  salesSparks,
+  type ChartsData,
+} from "@/components/dashboard/DashboardCharts";
+import {
   ShoppingCart,
   Truck,
   MessageSquare,
@@ -40,7 +46,19 @@ interface DashboardData {
     store1: number;
     store2: number;
   };
-  customerService: { openCases: number | null };
+  customerService: {
+    openCases: number | null;
+    // Last verified Seller Central screen read, sent while the live check
+    // is stale — shown "as of …", never as the current count.
+    lastKnown?: {
+      observedAt: string | null;
+      responseNeeded: number | null;
+      overSla: number | null;
+      threads: Array<{ order: string; buyer: string; overSla: boolean | null }>;
+      failure: { observedAt: string; reason: string } | null;
+    } | null;
+    mail24h?: number;
+  };
   claims: { active: number };
   ordersByStore?: Array<{ storeIndex: number; count: number; lastOrderAt: string | null }>;
   customerHub?: { lastAmazonMessageAt: string | null; stale: boolean };
@@ -133,6 +151,16 @@ function formatTime(date: string | null | undefined): string {
   });
 }
 
+function asOfET(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/New_York",
+  });
+}
+
 function shortDay(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
@@ -173,6 +201,10 @@ export default function DashboardPage() {
   const [liveAwaiting, setLiveAwaiting] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [charts, setCharts] = useState<ChartsData | null>(null);
+  const [chartsError, setChartsError] = useState<string | null>(null);
+  // Bumped when the on-load orders sync lands, so the sales cards refetch.
+  const [salesRefresh, setSalesRefresh] = useState(0);
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -185,8 +217,21 @@ export default function DashboardPage() {
   // when the actual set of selected stores changes.
   const filterKey = [...selectedStoreIds].sort().join(",");
 
+  const loadCharts = useCallback(() => {
+    const qs = toQueryString();
+    return fetch(`/api/dashboard/charts${qs ? `?${qs}` : ""}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
+      .then((j: ChartsData) => {
+        setCharts(j);
+        setChartsError(null);
+      })
+      .catch((e) => setChartsError(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]);
+
   const load = useCallback(async () => {
     setLoading(true);
+    loadCharts();
     // Slow (live Veeqo walk) — fired separately so it never delays the tiles.
     fetch("/api/shipping/dashboard")
       .then((r) => (r.ok ? r.json() : null))
@@ -203,20 +248,41 @@ export default function DashboardPage() {
       .catch(() => setLiveAwaiting(null));
     // Every page load/refresh pulls a fresh Amazon orders window (not just
     // the 2-hourly cron) so Sales/Awaiting reflect what changed since the
-    // last view. Debounced server-side (SyncLog lock, ~45s) so rapid repeat
-    // loads don't hammer SP-API; capped client-side at 9s so a slow/stuck
-    // call never blocks the tiles from rendering with whatever's already
-    // in the DB.
-    try {
+    // last view. Debounced server-side (SyncLog lock, ~1 min) so rapid
+    // repeat loads don't hammer SP-API. Runs IN PARALLEL with the tiles:
+    // they render from the DB at once and re-read when the sync lands.
+    // (Was: awaited with a 9 s cap, but the sync takes ~11 s, so the cap
+    // always fired, tiles showed the cached copy and never re-read —
+    // "Updated 1h ago" on every open, 2026-11-20.)
+    const quick = (async () => {
       const ctrl = new AbortController();
-      const timeout = setTimeout(() => ctrl.abort(), 9000);
-      await fetch("/api/sync/quick", { method: "POST", signal: ctrl.signal }).catch(() => null);
-      clearTimeout(timeout);
-    } catch {
-      // ignore — summary below still loads whatever's in the DB
-    }
+      const timeout = setTimeout(() => ctrl.abort(), 28000);
+      try {
+        const r = await fetch("/api/sync/quick", { method: "POST", signal: ctrl.signal });
+        return r.ok ? ((await r.json()) as { skipped?: boolean; reason?: string }) : null;
+      } catch {
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
+    const summaryQs = toQueryString();
+    quick.then(async (q) => {
+      if (!q || q.reason === "in-progress") return;
+      // Summary is served stale-while-revalidate; fresh=1 forces a rebuild
+      // that includes what the sync just wrote.
+      const fresh = await fetch(
+        `/api/dashboard/summary?${summaryQs ? `${summaryQs}&` : ""}fresh=1`
+      )
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+      if (fresh && !fresh.error) setData(fresh);
+      if (q.skipped === false) {
+        setSalesRefresh((n) => n + 1);
+        loadCharts();
+      }
+    });
     try {
-      const summaryQs = toQueryString();
       // Selected store names so we can ask Veeqo for only those marketplaces.
       // Veeqo's filter is by channel/store name, not our id — best-effort.
       const veeqoQs = isAllSelected
@@ -343,7 +409,7 @@ export default function DashboardPage() {
     // / hasAmazon etc. are derived from `filterKey`, so depending on that
     // single string keeps the dependency list tight.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, isAllSelected, hasAmazon, hasWalmart]);
+  }, [filterKey, isAllSelected, hasAmazon, hasWalmart, loadCharts]);
 
   useEffect(() => {
     if (filterLoading) return;
@@ -489,7 +555,13 @@ export default function DashboardPage() {
       )}
       {/* Sales row — 5-period gross revenue. Lives ABOVE the operations KPI row;
           see docs/SALES_CARDS_DASHBOARD_SPEC_v1_0.md */}
-      <SalesCardsRow />
+      <SalesCardsRow refreshKey={salesRefresh} sparks={salesSparks(charts)} />
+
+      {/* Charts — real store data from /api/dashboard/charts. */}
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <SalesByDayChart data={charts} error={chartsError} />
+        <OrdersByHourChart data={charts} error={chartsError} />
+      </div>
 
       {/* Operations KPI row — one tile per module, every tile clickable
           → opens the corresponding section so the operator can drill in
@@ -527,14 +599,35 @@ export default function DashboardPage() {
         <KpiCard
           href="/customer-hub"
           label="Cases open"
-          value={data?.customerService.openCases ?? "Unknown"}
-          icon={<MessageSquare size={14} />}
-          iconVariant={(data?.customerService.openCases ?? 0) > 0 ? "warn" : "default"}
-          chips={
-            (data?.claims.active ?? 0) > 0
-              ? [{ label: `${data?.claims.active} A-to-Z active`, variant: "urgent" }]
-              : undefined
+          // Live screen count when verified; otherwise the last verified
+          // count with its time ("as of …"), never a bare "Unknown".
+          value={
+            data?.customerService.openCases ??
+            data?.customerService.lastKnown?.responseNeeded ??
+            "—"
           }
+          icon={<MessageSquare size={14} />}
+          iconVariant={
+            data?.customerService.openCases == null ||
+            (data?.customerService.openCases ?? 0) > 0
+              ? "warn"
+              : "default"
+          }
+          chips={[
+            ...(data && data.customerService.openCases == null
+              ? [
+                  {
+                    label: data.customerService.lastKnown?.observedAt
+                      ? `As of ${asOfET(data.customerService.lastKnown.observedAt)} · not current`
+                      : "No verified check yet",
+                    variant: "urgent" as const,
+                  },
+                ]
+              : []),
+            ...((data?.claims.active ?? 0) > 0
+              ? [{ label: `${data?.claims.active} A-to-Z active`, variant: "urgent" as const }]
+              : []),
+          ]}
         />
         <KpiCard
           href="/account-health"
@@ -572,6 +665,12 @@ export default function DashboardPage() {
         <KpiCard
           href="/frozen-analytics"
           label="Frozen at risk"
+          // Weekly count of frozen orders flagged medium+ (12 weeks).
+          sparkline={
+            charts && charts.feed.frozenRows > 0
+              ? charts.weekly.frozen.map((w) => w.elevated)
+              : undefined
+          }
           // Same number as the "Today's risk" badge on /frozen-analytics:
           // pending alerts, low and above, ship date today or later.
           value={(data?.frozen.riskElevated ?? 0) + (data?.frozen.riskLow ?? 0)}
@@ -595,6 +694,12 @@ export default function DashboardPage() {
         <KpiCard
           href="/adjustments?period=30d"
           label="Adjustments 30d"
+          // Charged per week, 12 weeks (same accounts as the tile).
+          sparkline={
+            charts && charts.feed.adjustmentRows > 0
+              ? charts.weekly.adjustments.map((w) => w.amount)
+              : undefined
+          }
           value={`$${Math.round(data?.adjustments.charged30d?.amount ?? 0).toLocaleString("en-US")}`}
           icon={<Receipt size={14} />}
           iconVariant={(data?.adjustments.charged30d?.amount ?? 0) > 0 ? "warn" : "default"}
@@ -872,7 +977,11 @@ export default function DashboardPage() {
               // from `openCases`, so the header said "9" over a list that
               // rendered "No open cases" whenever the oldest 4 of those 9
               // were all stale backlog (2026-10-21).
-              count={caseQueueState==="fresh"?cases.length:undefined}
+              count={
+                caseQueueState === "fresh"
+                  ? cases.length
+                  : data?.customerService.lastKnown?.responseNeeded ?? undefined
+              }
               right={
                 <Link
                   href="/customer-hub"
@@ -883,9 +992,61 @@ export default function DashboardPage() {
               }
             />
             <PanelBody className="p-0">
-              {cases.length === 0 ? (
+              {cases.length === 0 && caseQueueState !== "fresh" && data?.customerService.lastKnown?.observedAt ? (
+                // Live check stale → the last verified snapshot, labelled.
+                <div>
+                  <div
+                    className="border-b border-rule px-4 py-2 text-[11px]"
+                    style={{ background: "var(--warn-tint)", color: "var(--warn-strong)" }}
+                  >
+                    Last verified {asOfET(data.customerService.lastKnown.observedAt)} ET — not current.
+                    {data.customerService.lastKnown.failure &&
+                      ` Latest check failed: ${data.customerService.lastKnown.failure.reason}.`}
+                  </div>
+                  {data.customerService.lastKnown.threads.length === 0 ? (
+                    <div className="px-4 py-5 text-center text-[12px] text-ink-3">
+                      No Response needed threads at that time.
+                    </div>
+                  ) : (
+                    data.customerService.lastKnown.threads.slice(0, 4).map((t) => (
+                      <Link
+                        key={t.order}
+                        href="/customer-hub"
+                        className="flex items-start gap-3 border-b border-rule px-4 py-3 last:border-0 hover:bg-surface-tint"
+                      >
+                        <div
+                          className="grid h-7 w-7 place-items-center rounded-md"
+                          style={{
+                            background: t.overSla ? "var(--warn-tint)" : "var(--green-soft)",
+                            color: t.overSla ? "var(--warn-strong)" : "var(--green-ink)",
+                          }}
+                        >
+                          {t.overSla ? <AlertTriangle size={13} /> : <Clock size={13} />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[12.5px] font-medium text-ink">
+                            Response needed{t.buyer ? ` · ${t.buyer}` : ""}
+                          </div>
+                          <div className="truncate text-[11px] text-ink-3">
+                            Amazon · {t.order}
+                            {t.overSla ? " · over SLA" : ""}
+                          </div>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                  {(data.customerService.mail24h ?? 0) > 0 && (
+                    <div className="border-t border-rule px-4 py-2 text-[11px] text-ink-3">
+                      {data.customerService.mail24h} buyer email
+                      {data.customerService.mail24h === 1 ? "" : "s"} in the last 24h (mail history).
+                    </div>
+                  )}
+                </div>
+              ) : cases.length === 0 ? (
                 <div className="px-4 py-6 text-center text-[12px] text-ink-3">
-                  {caseQueueState==="fresh"?"No Response needed threads in the verified snapshot.":"Не проверено: нет свежего снимка Seller Central."}
+                  {caseQueueState === "fresh"
+                    ? "No Response needed threads in the verified snapshot."
+                    : "Not verified: no Seller Central snapshot yet."}
                 </div>
               ) : (
                 <div>

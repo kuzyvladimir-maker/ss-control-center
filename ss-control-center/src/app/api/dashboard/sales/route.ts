@@ -105,6 +105,10 @@ export async function GET(request: NextRequest) {
     const todayStart = asUtc(startOfDay(nowEt));
     const yesterdayStart = asUtc(startOfDay(subDays(nowEt, 1)));
     const yesterdayEnd = asUtc(endOfDay(subDays(nowEt, 1)));
+    // Same wall-clock moment yesterday — "Sales today" compares like with
+    // like. Comparing a half-finished day against all of yesterday read
+    // "-82%" every morning (owner, 2026-11-20).
+    const yesterdaySameTime = asUtc(subDays(nowEt, 1));
     const sameDayLastWeekStart = asUtc(startOfDay(subDays(nowEt, 7)));
     const sameDayLastWeekEnd = asUtc(endOfDay(subDays(nowEt, 7)));
     const monthStart = asUtc(startOfMonth(nowEt));
@@ -163,6 +167,7 @@ export async function GET(request: NextRequest) {
       nowEt,
       yesterdayStart,
       yesterdayEnd,
+      yesterdaySameTime,
       sameDayLastWeekStart,
       sameDayLastWeekEnd,
       monthStart,
@@ -213,6 +218,7 @@ function buildPeriods(
     nowEt: Date;
     yesterdayStart: Date;
     yesterdayEnd: Date;
+    yesterdaySameTime: Date;
     sameDayLastWeekStart: Date;
     sameDayLastWeekEnd: Date;
     monthStart: Date;
@@ -237,6 +243,7 @@ function buildPeriods(
   const todayCount = countInRange(windows.todayStart, windows.realNow);
   const yesterday = sumInRange(windows.yesterdayStart, windows.yesterdayEnd);
   const yesterdayCount = countInRange(windows.yesterdayStart, windows.yesterdayEnd);
+  const yesterdaySoFar = sumInRange(windows.yesterdayStart, windows.yesterdaySameTime);
   const sameDayLastWeek = sumInRange(
     windows.sameDayLastWeekStart,
     windows.sameDayLastWeekEnd
@@ -292,9 +299,9 @@ function buildPeriods(
       value: today,
       count: todayCount,
       comparison: {
-        vs: "yesterday",
-        baseline: yesterday,
-        percent: pct(today, yesterday),
+        vs: "yesterdaySameTime",
+        baseline: yesterdaySoFar,
+        percent: pct(today, yesterdaySoFar),
       },
     },
     yesterday: {
