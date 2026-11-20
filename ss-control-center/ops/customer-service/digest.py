@@ -16,9 +16,13 @@ def render(data, now=None):
         return 'Инбокс Customer Service не удалось проверить; список ожидающих решений не сформирован.'
     rows = [r for r in data.get('threads', []) if r.get('storeIndex') == 1 and
             not r.get('stale')]
-    if not rows:
+    partial = data.get('readStatus') == 'partial' or bool(data.get('errors'))
+    if not rows and not partial:
         return 'NO_REPLY'
     lines = ['Response needed — подтверждено экраном Seller Central']
+    if partial:
+        coverage = data.get('coverage') or {}
+        lines.append(f"Частичная проверка: прочитано веток {coverage.get('read', len(rows))} из {coverage.get('expected', 'не установлено')}; отдельные поля или ветки не проверены. Список ниже может быть неполным.")
     for row in rows:
         lines.append(f"{row.get('buyer') or 'Покупатель'} — {row['order']} — срок: {row.get('deadline') or 'не установлен'} — {row.get('telegramLink') or 'карточка ещё не опубликована'}")
     lines.append('Ответь «отправляй» / «не так» / «доработать + комментарий» под нужной карточкой.')

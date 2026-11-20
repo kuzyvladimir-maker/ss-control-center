@@ -20,6 +20,11 @@ class DigestTest(unittest.TestCase):
             self.assertNotIn('secret', result)
             self.assertIn('не удалось проверить', result)
 
+    def test_partial_source_never_silently_omits_unreadable_rows(self):
+        now = datetime(2026, 11, 20, 15, tzinfo=timezone.utc)
+        data={'source':'seller_central_screen','state':'fresh','readStatus':'partial','lastScanAt':now.isoformat(),'stale':False,'coverage':{'expected':2,'read':0},'threads':[]}
+        result=render(data,now);self.assertNotEqual(result,'NO_REPLY');self.assertIn('Частичная проверка',result);self.assertIn('0 из 2',result)
+
     def test_mail_never_enters_queue(self):
         result=render({'source':'amazon_mail','state':'fresh','stale':False,'threads':[{'order':'mail-only'}]})
         self.assertIn('Не проверено',result);self.assertNotIn('mail-only',result)
