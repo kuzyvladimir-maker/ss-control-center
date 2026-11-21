@@ -22,6 +22,7 @@ import { prisma } from "@/lib/prisma";
 import { lookupSku } from "@/lib/sku-database";
 import { resolveOrderParcel } from "@/lib/shipping/order-parcel";
 import { todayNY } from "@/lib/shipping/dates";
+import { mergeMissingRates } from "@/lib/shipping/rate-pool-merge";
 
 // Quoting carriers is a multi-second round trip and the operator is sitting in
 // front of the dialog waiting for it; never let the platform default cut it off
@@ -116,7 +117,24 @@ export async function GET(request: NextRequest) {
         `${shipDate}T16:00:00Z`,
         parcel,
       );
-      return NextResponse.json({ rates: resp.available, shipDate });
+      // Ship today: after 11:00 ET the quote drops FedEx entirely, while
+      // Veeqo's own screen (and the buy's live re-quote) use the allocation
+      // pool, which still offers it. Append the pool's missing services so
+      // the operator sees every rate Veeqo shows. See rate-pool-merge.ts.
+      let rates = resp.available as Record<string, unknown>[];
+      try {
+        const pool = await getShippingRates(String(allocationId));
+        rates = mergeMissingRates(
+          rates,
+          (pool?.available as Record<string, unknown>[]) || [],
+        );
+      } catch (e) {
+        console.warn(
+          `[rates] allocation pool fetch failed for order ${orderId}, showing the quote only:`,
+          e instanceof Error ? e.message : e,
+        );
+      }
+      return NextResponse.json({ rates, shipDate });
     }
 
     // Fallback (non-Amazon channels, or no ship date): the old allocation-rates
