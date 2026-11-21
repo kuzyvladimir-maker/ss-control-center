@@ -75,3 +75,5 @@
 - 2026-10-26 — [Slowness: Prisma libsql adapter = one DB lock per client → pool](perf-prisma-libsql-mutex-2026-10-26.md)
 
 - 2026-11-20 — [Manual rate override refused at Buy: price guard used the plan price](shipping-manual-override-requote-price-2026-11-20.md)
+
+- 2026-11-20 — [Pick rate missed FedEx on ship-today: past 16:00Z quote anchor](shipping-pick-rate-missing-fedex-today-2026-11-20.md)
