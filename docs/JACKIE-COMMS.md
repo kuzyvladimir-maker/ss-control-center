@@ -17,7 +17,7 @@
 Одна shell-команда, её может запустить любая модель:
 
 ```sh
-ssh server 'python3 /root/.openclaw/workspace/scripts/t3_jackie.py notify --cwd "/Users/vladimirkuznetsov/SS%20Command%20Center" --engine <claude|codex|fable|...>' <<< "текст до 1500 символов"
+ssh server 'python3 /root/.openclaw/workspace/scripts/t3_jackie.py notify --cwd "/Users/vladimirkuznetsov/SS Command Center" --engine <claude|codex|fable|...>' <<< "текст до 1500 символов"
 ```
 
 Ответ `{"ok": true}` значит, что сообщение принято. Ответ Джеки придёт в этот тред, а не в терминал: после отправки продолжай работу или закончи ход.
