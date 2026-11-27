@@ -25,6 +25,7 @@
 //   }
 
 import { NextRequest, NextResponse } from "next/server";
+import { computeFedexWeight } from "@/lib/shipping/fedex-weight";
 import { prisma } from "@/lib/prisma";
 import { updateAllocationPackage } from "@/lib/veeqo/client";
 import { invalidateSkuDatabaseCache } from "@/lib/sku-database";
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
         description: body.description ?? "",
         boxSize: body.boxSize,
         weight,
-        weightFedex: body.weightFedex ?? weight * 1.25,
+        weightFedex: body.weightFedex ?? computeFedexWeight(weight),
         itemCount: body.itemCount ?? 1,
         totalQty: body.totalQty ?? 1,
         source: "manual",
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
         description: body.description ?? undefined,
         boxSize: body.boxSize,
         weight,
-        weightFedex: body.weightFedex ?? weight * 1.25,
+        weightFedex: body.weightFedex ?? computeFedexWeight(weight),
         itemCount: body.itemCount ?? undefined,
         totalQty: body.totalQty ?? undefined,
       },
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
         // Preserve metadata fields — operator only intends to change
         // weight / box on this path.
         weight,
-        weightFedex: body.weightFedex ?? weight * 1.25,
+        weightFedex: body.weightFedex ?? computeFedexWeight(weight),
         length: body.length ?? existing.length,
         width: body.width ?? existing.width,
         height: body.height ?? existing.height,
@@ -248,7 +249,7 @@ export async function POST(request: NextRequest) {
       width: body.width,
       height: body.height,
       weight,
-      weightFedex: body.weightFedex ?? weight * 1.25,
+      weightFedex: body.weightFedex ?? computeFedexWeight(weight),
       source: "manual",
     },
   });

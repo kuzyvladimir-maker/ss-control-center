@@ -28,6 +28,14 @@ import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { findShippedPackage } from "@/lib/shipping/package-history";
 import { resolveDeliveryBy } from "@/lib/shipping/delivery-by";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
+import { computeFedexWeight } from "@/lib/shipping/fedex-weight";
+import { mergeMissingRates } from "@/lib/shipping/rate-pool-merge";
+import {
+  retryIfEmptyRates,
+  hasRates,
+  effectiveBuyWeightLbs,
+  alignRateToReweightedQuote,
+} from "@/lib/shipping/plan-quote-helpers";
 import {
   isProcurementPlaced,
   procurementPlacedSource,
@@ -714,7 +722,8 @@ export async function GET(request: NextRequest) {
                 description: historyProduct,
                 boxSize: shipped.boxSize,
                 weight: shipped.weight,
-                weightFedex: shipped.weight * 1.25,
+                // FedEx One Rate declared weight, +20% (fedex-weight.ts).
+                weightFedex: computeFedexWeight(shipped.weight),
                 itemCount: orderLines.length,
                 totalQty: historyQty,
                 source: "history",
@@ -766,7 +775,8 @@ export async function GET(request: NextRequest) {
                     length: skuData.length,
                     width: skuData.width,
                     height: skuData.height,
-                    weightFedex: (skuData.weight ?? shipped.weight) * 1.25,
+                    // FedEx One Rate declared weight, +20% (fedex-weight.ts).
+                    weightFedex: computeFedexWeight(skuData.weight ?? shipped.weight),
                     notes: `Package from shipped order ${shipped.fromOrder}`,
                     source: "history",
                   },
@@ -1000,24 +1010,69 @@ export async function GET(request: NextRequest) {
           // True when Veeqo ignored a FUTURE ship day (weekend load / manual
           // override) and the EDDs below are projected, not quoted.
           let shipDayProjected = false;
+          // The Rate Shopping API quote alone, before any allocation-pool rows
+          // are merged in. The Monday anchor check compares EDDs against it:
+          // pool rows count from the order's Veeqo dispatch_date, not the ship
+          // day, and would make an ignored Monday date look "honoured".
+          let v1QuotedRates: VeeqoRate[] = [];
+          // Veeqo sometimes answers 200 with an EMPTY list and the full list a
+          // second later (2026-11-27: valid orders stopped with "0 rates
+          // checked") — retry an empty answer before believing it.
+          const onEmptyRetry = (attempt: number, delayMs: number) =>
+            console.warn(
+              `[plan] ${order.number} Veeqo returned 0 rates — retry ${attempt} in ${delayMs}ms`,
+            );
           if (useNewRateApi) {
             if (effectiveShipDay > today) {
-              const resp = await timed("veeqo_rates", getRatesForLaterShipDay(
-                order,
-                effectiveShipDay,
-                today,
-                newApiParcel,
+              const resp = await timed("veeqo_rates", retryIfEmptyRates(
+                () =>
+                  getRatesForLaterShipDay(
+                    order,
+                    effectiveShipDay,
+                    today,
+                    newApiParcel,
+                  ),
+                { onRetry: onEmptyRetry },
               ));
               rates = resp.available as unknown as VeeqoRate[];
+              v1QuotedRates = rates;
               shipDayProjected = !resp.anchorHonored;
               if (shipDayProjected) quoteAnchorDay = resp.quoteAnchorYmd;
             } else {
-              const resp = await timed("veeqo_rates", getRatesForShipDate(
-                order,
-                `${effectiveShipDay}T16:00:00Z`,
-                newApiParcel,
+              const resp = await timed("veeqo_rates", retryIfEmptyRates(
+                () =>
+                  getRatesForShipDate(
+                    order,
+                    `${effectiveShipDay}T16:00:00Z`,
+                    newApiParcel,
+                  ),
+                { onRetry: onEmptyRetry },
               ));
               rates = resp.available as unknown as VeeqoRate[];
+              v1QuotedRates = rates;
+              // Ship today: once 11:00 ET (the 16:00Z anchor) has passed, the
+              // quote drops EVERY FedEx service, while Veeqo's allocation pool
+              // still offers them (114-2900934-1081853, 2026-11-20) — and the
+              // buy re-quotes against that same pool. Append the services the
+              // quote left out, exactly like /api/shipping/rates does. Fetched
+              // FRESH, not from the pre-warm cache: the cache was filled before
+              // the allocation_package push above, so its prices could be for
+              // Veeqo's old package. Best-effort: a pool failure keeps the quote.
+              try {
+                const pool = await timed(
+                  "veeqo_rates_pool",
+                  getShippingRates(String(allocationId)),
+                );
+                const poolRates = (pool?.available ?? []) as VeeqoRate[];
+                if (poolRates.length > 0) {
+                  rates = mergeMissingRates(rates, poolRates);
+                }
+              } catch (e) {
+                console.warn(
+                  `[plan] ${order.number} allocation-pool merge skipped:`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
             }
           } else {
             if (shipDateOverride) {
@@ -1034,10 +1089,18 @@ export async function GET(request: NextRequest) {
                 );
               }
             }
-            const ratesResponse = shipDateOverride
-              ? await getShippingRates(String(allocationId))
-              : (ratesByAlloc.get(String(allocationId)) ??
-                (await getShippingRates(String(allocationId))));
+            // Pre-warmed answer when it has rates; an empty (or missing) one is
+            // re-fetched with the empty-list retry instead of being trusted.
+            const cached = shipDateOverride
+              ? undefined
+              : ratesByAlloc.get(String(allocationId));
+            const ratesResponse =
+              cached && hasRates(cached)
+                ? cached
+                : await retryIfEmptyRates(
+                    () => getShippingRates(String(allocationId)),
+                    { onRetry: onEmptyRetry },
+                  );
             rates = ratesResponse?.available || [];
           }
 
@@ -1120,14 +1183,21 @@ export async function GET(request: NextRequest) {
             const destZip = pickDestZip(order);
             if (coolerSize && destZip) {
               try {
+                // Weather is for the PHYSICAL travel dates → effectiveShipDay.
+                // Transit + deadline use the same anchor as selectBestRate
+                // above: when Veeqo ignored the ship day, the carrier's EDDs
+                // count from `quoteAnchorDay`, so transit is measured from
+                // there against the pulled-in deadline (selShipDay /
+                // selDeliveryBy). Measuring from effectiveShipDay made a
+                // projected quote look a day or more shorter than it is.
                 const weather = await timed("weather", getRouteWeather(destZip, effectiveShipDay));
                 shadow = {
                   ...buildShadowResult({
                     rates,
                     tempClass: tempClass as TempClass,
                     size: coolerSize,
-                    deliveryBy,
-                    shipDay: effectiveShipDay,
+                    deliveryBy: selDeliveryBy,
+                    shipDay: selShipDay,
                     weather,
                     summerRate: selectedRate,
                     summerCapDays: frozenMaxCalDays(frozenRiskLevel),
@@ -1144,8 +1214,8 @@ export async function GET(request: NextRequest) {
                     rates,
                     tempClass: tempClass as TempClass,
                     size: coolerSize,
-                    deliveryBy,
-                    shipDay: effectiveShipDay,
+                    deliveryBy: selDeliveryBy,
+                    shipDay: selShipDay,
                     weather,
                     summerCapDays: frozenMaxCalDays(frozenRiskLevel),
                   });
@@ -1160,7 +1230,7 @@ export async function GET(request: NextRequest) {
                     // extra ice is needed exactly when the pick uses it.
                     const pickedDays = Math.round(
                       (Date.parse(veeqoDateToLocal(liveSel.rate.delivery_promise_date)) -
-                        Date.parse(effectiveShipDay)) /
+                        Date.parse(selShipDay)) /
                         86_400_000,
                     );
                     liveIceExtra =
@@ -1245,7 +1315,7 @@ export async function GET(request: NextRequest) {
                 nextMonday,
                 effectiveShipDay,
                 newApiParcel,
-                shipDayProjected ? undefined : (rates as never),
+                shipDayProjected ? undefined : (v1QuotedRates as never),
               ));
               if (!mondayResp.anchorHonored) {
                 throw new Error(
@@ -1329,6 +1399,56 @@ export async function GET(request: NextRequest) {
                 order.id,
                 e instanceof Error ? e.message : e,
               );
+            }
+          }
+
+          // ── Price at the weight the BUY will push ──────────────────────
+          // The quote above used the catalog weight. The buy pushes a heavier
+          // package before it re-quotes — + extra gel ice (Live engine), then
+          // ×1.20 for FedEx One Rate — and its price guard refused labels whose
+          // live price came out above the card: 112-1171076-0579460 ($15.88 →
+          // $17.52), 113-8220504-0305829 ($27.78 → $32.61), 2026-11-27. So
+          // re-quote the PICKED service once at that weight for the final ship
+          // day and save its price. Only the price moves, never the service;
+          // any failure / missing service keeps the original pick (a ship-today
+          // re-quote after 11:00 ET has no FedEx at all — that's fine). The card
+          // weight stays catalog + ice; the buy adds the One Rate +20% itself.
+          if (useNewRateApi && selectedRate && skuWeight != null && newApiParcel) {
+            const buyWeightLbs = effectiveBuyWeightLbs({
+              baseWeightLbs: skuWeight,
+              liveIceExtra,
+              serviceTitle: selectedRate.title,
+            });
+            if (buyWeightLbs > skuWeight) {
+              const finalShipDay =
+                shipDateNote && nextMonday ? nextMonday : effectiveShipDay;
+              try {
+                const reResp = await timed("veeqo_rates_buy_weight", getRatesForShipDate(
+                  order,
+                  `${finalShipDay}T16:00:00Z`,
+                  { ...newApiParcel, weightOz: buyWeightLbs * 16 },
+                ));
+                const aligned = alignRateToReweightedQuote(
+                  selectedRate,
+                  (reResp.available ?? []) as unknown as VeeqoRate[],
+                );
+                if (aligned.changed) {
+                  console.log(
+                    `[plan] ${order.number} "${selectedRate.title}" re-priced at buy weight ` +
+                      `${buyWeightLbs}lbs: $${selectedRate.total_net_charge} → $${aligned.rate.total_net_charge}`,
+                  );
+                  selectedRate = aligned.rate;
+                } else {
+                  console.warn(
+                    `[plan] ${order.number} buy-weight re-quote kept original price: ${aligned.reason}`,
+                  );
+                }
+              } catch (e) {
+                console.warn(
+                  `[plan] ${order.number} buy-weight re-quote failed, keeping original price:`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
             }
           }
 

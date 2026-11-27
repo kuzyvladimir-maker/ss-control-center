@@ -14,9 +14,11 @@ import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
 import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 import { matchLiveRate } from "@/lib/shipping/requote-match";
+import { fetchLiveRatesWithRetry } from "@/lib/shipping/rate-requote-retry";
 import { iceExtraFromNotes } from "@/lib/shipping/temp-class/ice";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { applyBuyOverride, type BuyOverride } from "@/lib/shipping/buy-override";
+import { computeFedexWeight, isFedexOneRateService } from "@/lib/shipping/fedex-weight";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
@@ -105,11 +107,6 @@ function pickTrackingString(shipment: unknown): string | null {
   }
   return null;
 }
-
-// FedEx One Rate declared-weight multiplier. One Rate labels carry a
-// heavier weight than the catalog figure (Vladimir 2026-06-09: +20%).
-// Applied only to the weight pushed to Veeqo for FedEx One Rate labels.
-const FEDEX_ONE_RATE_WEIGHT_MULT = 1.2;
 
 // Parse the plan item's boxSize into numbers. Handles BOTH "LxWxH"
 // (e.g. "12x12x10") AND named presets ("XL", "M", …) via resolveBoxDimensions —
@@ -343,11 +340,10 @@ export async function POST(request: NextRequest) {
         // (operator confirmed Veeqo names One Rate services that way). Other
         // FedEx services (Ground/Home/Economy) and all UPS/USPS use the
         // catalog weight unchanged.
-        const isFedexOneRate =
-          String(item.service ?? "").toLowerCase().includes("one rate");
+        const isFedexOneRate = isFedexOneRateService(item.service);
         const pushWeightLbs =
           item.weight != null && isFedexOneRate
-            ? Math.round(item.weight * FEDEX_ONE_RATE_WEIGHT_MULT * 100) / 100
+            ? computeFedexWeight(item.weight)
             : item.weight;
 
         const boxDims = parseBoxSize(item.boxSize);
@@ -474,14 +470,11 @@ export async function POST(request: NextRequest) {
                 : null),
             edd: item.edd,
           };
-          const requote = async () => {
-            const liveResp = await stage(stageTotals, "veeqoRateRequote", () =>
-              getShippingRates(item.allocationId!),
+          const requote = () =>
+            stage(stageTotals, "veeqoRateRequote", () =>
+              fetchLiveRatesWithRetry(() => getShippingRates(item.allocationId!)),
             );
-            return ((liveResp?.available as Record<string, unknown>[]) ||
-              []) as Record<string, unknown>[];
-          };
-          let liveRates = await requote();
+          let { rates: liveRates, emptyDiag } = await requote();
           let m = matchLiveRate(liveRates, want);
           // The allocation pool's EDDs (and date-bound variants such as
           // "(Saturday)") are anchored to the order's Veeqo dispatch_date —
@@ -500,7 +493,7 @@ export async function POST(request: NextRequest) {
                 `${physicalShipDate}T06:59:59.000Z`,
               );
               dispatchToRestore = current;
-              liveRates = await requote();
+              ({ rates: liveRates, emptyDiag } = await requote());
               m = matchLiveRate(liveRates, want);
             }
           }
@@ -524,6 +517,7 @@ export async function POST(request: NextRequest) {
             rateDiagnostic =
               `no rate match for service=${item.service} (${item.serviceType}), ` +
               `liveRatesCount=${liveRates.length}` +
+              (liveRates.length === 0 && emptyDiag ? `, ${emptyDiag}` : "") +
               (dispatchToRestore ? `, re-anchored to ${physicalShipDate}` : "");
             console.warn(
               `[buy] no live rate match for ${item.orderNumber} (${rateDiagnostic})`

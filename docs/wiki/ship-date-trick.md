@@ -1,97 +1,60 @@
 # 📅 Ship Date Trick (Frozen Monday-shift)
 
+> **Полный канон алгоритма выбора тарифа:** [shipping-rate-selection.md](shipping-rate-selection.md).
+
 ## Суть
-Для Frozen-заказов жёсткое ограничение «3 календарных дня от отгрузки до доставки» часто оставляет в выборке только варианты с Saturday surcharge ($15-25 дороже плана). Сдвиг фактической даты отгрузки на следующий понедельник часто открывает более дешёвую обычную будничную ставку, которая по-прежнему укладывается и в 3-дневное правило (теперь от понедельника), и в дедлайн маркетплейса.
+Для холодовых Amazon-заказов (`FROZEN` и `CHILLED`) отгрузка в конце недели часто либо не даёт ни одного тарифа в разрешённом окне транзита, либо оставляет только дорогие экспресс-/субботние варианты. Сдвиг **физического дня отгрузки** (`physicalShipDate`) на следующий рабочий понедельник открывает более дешёвые (или более быстрые) будничные тарифы, при этом **дата этикетки для Amazon** (`labelDate`) остаётся сегодняшней — Late Shipment Rate не страдает.
 
-Алгоритм автоматический — оператор ничего не делает руками.
+Алгоритм автоматический и работает в **обоих** профилях (`Live` и `Summer`).
 
-> **Связь с Master Prompt:** [MASTER_PROMPT_v3.1 §7](../MASTER_PROMPT_v3.1.md) описывает этот трюк подробно для Чт и Пт (раздел "ЧЕТВЕРГ — ключевой алгоритм" / "ПЯТНИЦА — детальный алгоритм"). Мой код — упрощённая универсальная версия:
->
-> - Master Prompt §7 строго привязан к дням недели (Чт/Пт)
-> - Мой код срабатывает в **любой будний день кроме понедельника** при условии (нет рейта **ИЛИ** в лучшем рейте Saturday surcharge)
-> - Master Prompt предписывает в Чт сначала проверить субботнюю доставку, потом трюк
-> - Мой код проверяет цену лучшей ставки с Sat-surcharge против цены Monday-rate, выбирает дешевле
->
-> На практике результат тот же — если суббота дешевле понедельника, она и выбирается на шаге обычного `selectBestRate`, до того как трюк трогнет dispatch_date.
+## Когда запускается (`plan/route.ts`)
+Условия в `src/app/api/shipping/plan/route.ts`:
+- `isAmazon` (включая `Merged Orders`) и `productType === "Frozen"` (то есть `FROZEN` или `CHILLED`);
+- оператор не задал явный `shipDateOverride`;
+- сегодня не понедельник (`dayInfo.dayName !== "Mon"`) и `effectiveShipDay` не понедельник (если планируем в воскресенье на понедельник — на *следующий* понедельник через неделю не прыгаем);
+- `nextMonday = nextMondayFrom(effectiveShipDay)` (автоматически пропускает федеральные праздники США) хотя бы на 1 день раньше дедлайна (`monDeadlineDays >= 1`).
 
-## Когда триггерится
-Условия в [plan/route.ts](../../ss-control-center/src/app/api/shipping/plan/route.ts):
+## Как котируется понедельник (в `/api/shipping/plan`)
+> Старый механизм `PUT dispatch_date → sleep 800ms → GET /shipping/rates → restore` **заменён** в Master Prompt v3.5 на date-anchored Rate Shopping API без мутации заказа.
 
-```
-productType === "Frozen"
-  && dayInfo.dayName !== "Mon"     // сегодня не понедельник
-  && monDeadlineDays >= 1           // Monday хотя бы на 1 день раньше дедлайна
-  && (
-       selectedRate === null            // сегодня вообще нет ставок
-       || /saturday/i.test(rate.title)  // лучшая ставка с Sat surcharge
-     )
-```
+1. Вызывается `getRatesForLaterShipDay(order, nextMonday, effectiveShipDay, newApiParcel, baseRates)` → **`POST /shipping/api/v1/rates`** с `preferred_shipment_date = "${nextMonday}T16:00:00Z"` и габаритами из нашего каталога.
+2. **Проверка честности якоря (`anchorHonored` / `quoteAnchorDay`):**
+   - `getRatesForLaterShipDay` сравнивает `delivery_promise_date` общих сервисов между базовой датой и понедельником (с учётом `pickupGapBusinessDays`, чтобы `Sun → Mon = 0` не считалось ошибкой).
+   - Если Veeqo **проигнорировал** `preferred_shipment_date` (`anchorHonored = false`, доказанный баг Veeqo от 2026-10-06), EDD возвращаются **без изменения** с `quoteAnchorDay = effectiveBusinessDay(baseYmd)`, а **автоматический Monday-shift отменяется** (отгружаем сегодня, чтобы не получить ложный «1-дневный» транзит).
+3. **Выбор лучшего тарифа понедельника:**
+   - В **`Live`**: запрашивается погода `getRouteWeather(destZip, nextMonday)` и запускается `selectTempAwareRate` (с тем же `summerCapDays` и учётом доп. льда на понедельник).
+   - В **`Summer` / `Shadow`**: запускается `selectBestRate` от `nextMonday`.
+4. **Решение «Сегодня vs Понедельник» (`chooseTodayOrMonday` в `src/lib/shipping/rate-selection.ts`):**
+   Понедельник выигрывает, если выполнено **любое** из 3 условий:
+   1. **Сегодня нет валидного тарифа** (`!todayPick && mondayPick`);
+   2. **Понедельник быстрее в транзите** (`mondayTransit < todayTransit`) **и дороже не более чем на `$3`** (`mondayPrice <= todayPrice + $3`, `FROZEN_SPEED_TOLERANCE_USD = 3`);
+   3. **Понедельник более чем на 15% дешевле** (`mondayPrice < todayPrice * 0.85`, `MONDAY_SHIFT_MIN_SAVING_PCT = 0.15`), даже если транзит на день длиннее (оба варианта уже прошли холодовой лимит и дедлайн).
+   - Иначе остаётся отгрузка сегодня.
+5. Если победил понедельник: `physicalShipDate = nextMonday`, `labelDate` остаётся `computeLabelDate(shipBy)`, `shipDateTrickApplied = true`, в `notes` пишется `Shifted to Mon YYYY-MM-DD: <reason>`. Заказ в Veeqo на этапе плана **не мутируется**.
 
-## Алгоритм (внутри `/api/shipping/plan`)
-1. Запоминаем `originalDispatch = order.dispatch_date` (Veeqo).
-2. `PUT /orders/{id}` с `dispatch_date = nextMonday T06:59:59Z`.
-3. Ждём 800ms — Veeqo асинхронно пересчитывает кэш rates allocation'а.
-4. `GET /shipping/rates/{allocationId}` → новый набор ставок.
-5. Прогоняем тот же `selectBestRate` с `actualShipDay = nextMonday`,
-   `dayName = "Mon"`.
-6. Сравниваем цены: если `mondayPrice < todayPrice` → принимаем
-   понедельничную ставку, в `actualShipDay` записываем понедельник,
-   в `notes` — `Shifted to Mon YYYY-MM-DD: saved $X.XX`.
-7. **Всегда** в `finally` восстанавливаем `dispatch_date = originalDispatch`
-   (даже если PUT не выполнялся → блок защищён от частичного fail).
-
-Veeqo на стороне модели заказа в `plan` остаётся неизменным.
-
-## Алгоритм (внутри `/api/shipping/buy`)
-Когда оператор подтверждает покупку:
-1. Если `item.actualShipDay > today` → `PUT /orders/{id}` с
-   `dispatch_date = item.actualShipDay T06:59:59Z` (сдвигаем постоянно).
-2. Покупаем label (`buyShippingLabel`).
-3. В employee note добавляется badge `📅 SHIP ON YYYY-MM-DD`,
-   чтобы складской работник знал не отдавать посылку курьеру сегодня.
-4. PDF сохраняется в папку `Shipping Labels / MM Month / DD / Channel`
-   по `actualShipDay` (т.е. в понедельничную папку).
-
-Шаг 1 non-fatal — если PUT упадёт, Veeqo вернёт label с исходной
-датой; складской работник всё равно увидит ship-day badge в note.
-
-## Защитные ограничения
-- **dayName !== "Mon"** — если сегодня уже понедельник,
-  `getNextMonday(today)` вернёт +7 дней (через неделю). Это слишком
-  далеко; такие заказы должны выходить в `stop` и обрабатываться
-  вручную.
-- **monDeadlineDays >= 1** — если понедельник = дедлайн (или позже),
-  ни один carrier не доставит за 0 дней Frozen, trick бессмыслен.
-  Раньше было `>= 3` (слишком строго) — блокировало валидные случаи
-  типа `nextMon = Tue, deadline = Wed` где UPS Ground Saver от
-  понедельника даёт EDD = вторник (1 кал. день), укладывается в
-  Frozen 3-day rule **и** в дедлайн. См. историю в конце страницы.
-- **try/catch/finally** — любая ошибка trick'а не валит весь plan;
-  откатываемся на сегодняшнюю ставку (если она есть).
-- **CRITICAL log** — если восстановление `dispatch_date` провалится,
-  это уникальный сценарий "Veeqo в неконсистентном состоянии";
-  лог-маркер `CRITICAL: failed to restore dispatch_date` для grep.
+## Как применяется при покупке (в `/api/shipping/buy` и `/api/shipping/merge/buy`)
+Покупка идёт через Allocation Pool, который привязан к `order.dispatch_date`, поэтому при `physicalShipDate !== labelDate` выполняется **dual-date dance**:
+1. `PUT /orders/{id}` → `dispatch_date = physicalShipDate T06:59:59.000Z`.
+2. Живая перекотировка `GET /shipping/rates/{allocationId}` (с ретраем пустого пула) и сопоставление через `matchLiveRate`.
+3. **ДО покупки (`POST /shipping/shipments`)**: `PUT /orders/{id}` → `dispatch_date = labelDate T06:59:59.000Z`, чтобы этикетка напечаталась с сегодняшней датой для Amazon (LSR = 0). Если re-quote не нашёл ставку или покупка упала — исходный `dispatch_date` восстанавливается.
+4. `POST /shipping/shipments` (строго 1 POST, 0 retry).
+5. В employee note Veeqo дописывается `📅 SHIP ON YYYY-MM-DD`, а PDF кладётся в папку Google Drive по `physicalShipDate`.
 
 ## Связанные файлы
-- [plan/route.ts](../../ss-control-center/src/app/api/shipping/plan/route.ts) — основной алгоритм
-- [buy/route.ts](../../ss-control-center/src/app/api/shipping/buy/route.ts) — применение даты при покупке
-- [veeqo/client.ts](../../ss-control-center/src/lib/veeqo/client.ts) — `updateOrderDispatchDate()`
+- `ss-control-center/src/lib/shipping/rate-selection.ts` — `chooseTodayOrMonday`, `FROZEN_SPEED_TOLERANCE_USD`, `MONDAY_SHIFT_MIN_SAVING_PCT`
+- `ss-control-center/src/lib/veeqo/client.ts` — `getRatesForLaterShipDay`, `getRatesForShipDate`
+- `ss-control-center/src/lib/shipping/dates.ts` — `computeLabelDate`, `nextMondayFrom`, `pickupGapBusinessDays`
+- `ss-control-center/src/app/api/shipping/plan/route.ts` — запуск и сравнение
+- `ss-control-center/src/app/api/shipping/buy/route.ts` и `merge/buy/route.ts` — dual-date dance при покупке
 
 ## 🔗 Связи
-- **Часть:** [Shipping Labels](shipping-labels.md), [Выбор ставки](shipping-rate-selection.md)
+- **Канон:** [Выбор ставки (канон)](shipping-rate-selection.md)
+- **Часть:** [Shipping Labels](shipping-labels.md)
 - **Зависит от:** [Frozen Shipping Rules](frozen-shipping-rules.md), [Timezone правила](timezone-rules.md), [Veeqo API](veeqo-api.md)
-- **Связан с:** [Weekend распределение](weekend-distribution.md), [Frozen Analytics](frozen-analytics.md)
 
 ## История
-- 2026-05-14: Реализован полностью (раньше алгоритм лишь помечал
-  `stopReason = "Handle manually"`). Триггерится не только при
-  отсутствии ставок, но и при Saturday surcharge в лучшей ставке.
-- 2026-05-14 (вечер, commit `9b5a538`): Гард `monDeadlineDays >= 3`
-  смягчён до `>= 1`. Был слишком строгим — блокировал валидный case
-  заказа `114-8515802-0978666` (Frozen, ship 5/16, deliver 5/21):
-  16 рейтов в Veeqo, среди них UPS Ground Saver $18.23 с EDD May 20.
-  С понедельника 5/18 это 2 кал. дня → укладывается в Frozen rule
-  И в deadline, но старый гард не пускал trick (`5/20 - 5/18 = 2 < 3`).
-  Параллельно улучшен stop reason — теперь точно говорит "Frozen — X
-  on-time rates but none deliver within 3 calendar days", а не общий
-  "EDD ≤ Delivery By".
+- 2026-11-27: Документ обновлён под актуальный механизм `POST /shipping/api/v1/rates` (`getRatesForLaterShipDay` + `anchorHonored`/`quoteAnchorDay`) и правила `chooseTodayOrMonday` (нет сегодня / быстрее и ≤+$3 / >15% дешевле), а также работу в `Live` с погодой понедельника.
+- 2026-10-25: Monday-shift заработал в `Live`-режиме через погодный движок; добавлена проверка `pickupGapBusinessDays` и отказ от сдвига при `anchorHonored = false` (EDD перевозчика никогда не сдвигается вручную).
+- 2026-10-06: Доказан баг Veeqo с игнорированием `preferred_shipment_date` → добавлена проверка `anchorHonored` / `quoteAnchorDay`.
+- 2026-06-12 (Master Prompt v3.5): Переход с `PUT dispatch_date + 800ms + GET` на новый Rate Shopping API `POST /shipping/api/v1/rates` и правила `chooseTodayOrMonday` (`$3` / `>15%`).
+- 2026-05-14: Первая автоматическая реализация (тогда через временный `PUT dispatch_date → 800ms → GET` и гард `monDeadlineDays >= 1`).

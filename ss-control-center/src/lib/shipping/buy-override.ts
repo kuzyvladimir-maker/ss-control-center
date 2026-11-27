@@ -87,3 +87,20 @@ export function applyBuyOverride<T extends OverridableItem>(
     actualShipDay: ov.physicalShipDate ?? rawItem.actualShipDay,
   };
 }
+
+/** Clear manual rate picks only for orders confirmed bought in this batch. */
+export function retainFailedOverrides<T>(
+  prev: Record<string, T>,
+  boughtOrderNumbers: ReadonlySet<string>,
+  orderNumberByOrderId: ReadonlyMap<string, string>,
+): Record<string, T> {
+  if (boughtOrderNumbers.size === 0) return prev;
+  const next = { ...prev };
+  for (const orderId of Object.keys(prev)) {
+    const orderNumber = orderNumberByOrderId.get(orderId);
+    if (orderNumber !== undefined && boughtOrderNumbers.has(orderNumber)) {
+      delete next[orderId];
+    }
+  }
+  return next;
+}

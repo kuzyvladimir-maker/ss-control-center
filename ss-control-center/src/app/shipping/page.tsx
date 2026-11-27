@@ -50,6 +50,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
+import { retainFailedOverrides } from "@/lib/shipping/buy-override";
 import {
   NAN_CARRIERS,
   nanAdminOrderUrl,
@@ -3101,13 +3102,16 @@ export default function ShippingLabelsPage() {
         errors,
       });
       setSelected(new Set());
-      // Clear overrides for orders we just attempted — they're stale for
-      // any subsequent purchase.
-      setRateOverrides((prev) => {
-        const next = { ...prev };
-        for (const id of selected) delete next[id];
-        return next;
-      });
+      // Keep the operator's rate pick when a purchase fails.
+      if (bought.length > 0) {
+        const boughtOrderNumbers = new Set(bought.map((order) => order.orderNumber));
+        const orderNumberByOrderId = new Map(
+          selectedOrders.map((order) => [order.orderId, order.orderNumber]),
+        );
+        setRateOverrides((prev) =>
+          retainFailedOverrides(prev, boughtOrderNumbers, orderNumberByOrderId),
+        );
+      }
       // Optimistic local update — bought rows stay visible with their
       // tracking + Mark-as-Shipped (Walmart) / "Label already purchased"
       // (Amazon) state. Operator hits Refresh when they want them gone.

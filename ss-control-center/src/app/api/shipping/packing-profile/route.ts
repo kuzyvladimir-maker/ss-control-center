@@ -17,6 +17,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { computeFedexWeight } from "@/lib/shipping/fedex-weight";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -59,10 +60,11 @@ export async function POST(request: NextRequest) {
   }
   // weightFedex is the K-column from the SKU Shipping Database — used ONLY
   // when quoting FedEx One Rate (see MASTER_PROMPT_v3.1.md §H/K). It is
-  // ALWAYS derived as weight × 1.25 per the Master Prompt formula, so we
+  // ALWAYS derived as weight × 1.20 (+20%, the same multiplier the buy pushes
+  // for One Rate labels — see src/lib/shipping/fedex-weight.ts), so we
   // compute it server-side and ignore any value the client tries to send
   // (the manual "FedEx One Rate (lbs)" field was removed from the UI).
-  const weightFedex = weight * 1.25;
+  const weightFedex = computeFedexWeight(weight);
 
   const profile = await prisma.packingProfile.upsert({
     where: { signature },

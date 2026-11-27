@@ -17,17 +17,22 @@ import {
   getRatesForShipDate,
   getRatesForLaterShipDay,
   updateOrderDispatchDate,
+  type VeeqoNormalizedRate,
 } from "@/lib/veeqo";
+import type { VeeqoOrder } from "@/lib/veeqo/orders-procurement";
 import { prisma } from "@/lib/prisma";
 import { lookupSku } from "@/lib/sku-database";
-import { resolveOrderParcel } from "@/lib/shipping/order-parcel";
+import { resolveOrderParcel, type ResolvedParcel } from "@/lib/shipping/order-parcel";
 import { todayNY } from "@/lib/shipping/dates";
 import { mergeMissingRates } from "@/lib/shipping/rate-pool-merge";
+import { fetchLiveRatesWithRetry } from "@/lib/shipping/rate-requote-retry";
 
 // Quoting carriers is a multi-second round trip and the operator is sitting in
 // front of the dialog waiting for it; never let the platform default cut it off
 // mid-quote.
 export const maxDuration = 60;
+
+const RATE_RETRY_OPTIONS = { retryDelaysMs: [500, 1000] };
 
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get("orderId");
@@ -52,7 +57,8 @@ export async function GET(request: NextRequest) {
       ? shipDateParam
       : null;
   try {
-    const order = (await veeqoFetch(`/orders/${orderId}`)) as Record<string, any>;
+    const order: VeeqoOrder & { allocations?: { id?: string | number }[] } =
+      await veeqoFetch(`/orders/${orderId}`);
     const allocationId = order?.allocations?.[0]?.id;
     if (!allocationId) {
       return NextResponse.json(
@@ -76,7 +82,7 @@ export async function GET(request: NextRequest) {
     // cheaper FedEx 2Day One Rate disappeared from the list. See
     // src/lib/shipping/order-parcel.ts.
     if (shipDate && isAmazon) {
-      let parcel;
+      let parcel: ResolvedParcel | undefined;
       try {
         // resolveOrderParcel only ever reads the FIRST line's SKU out of this
         // list (multi-item orders resolve through PackingProfile instead), so
@@ -105,29 +111,32 @@ export async function GET(request: NextRequest) {
       // "N days" transit is honest; `estimated` tells the UI they're not quoted.
       const today = todayNY();
       if (shipDate > today) {
-        const resp = await getRatesForLaterShipDay(order, shipDate, today, parcel);
+        let anchorHonored = false;
+        const { rates } = await fetchLiveRatesWithRetry<VeeqoNormalizedRate>(async () => {
+          const quote = await getRatesForLaterShipDay(order, shipDate, today, parcel);
+          anchorHonored = quote.anchorHonored;
+          return quote;
+        }, RATE_RETRY_OPTIONS);
         return NextResponse.json({
-          rates: resp.available,
+          rates,
           shipDate,
-          estimated: !resp.anchorHonored,
+          estimated: !anchorHonored,
         });
       }
-      const resp = await getRatesForShipDate(
-        order,
-        `${shipDate}T16:00:00Z`,
-        parcel,
+      let { rates } = await fetchLiveRatesWithRetry(
+        () => getRatesForShipDate(order, `${shipDate}T16:00:00Z`, parcel),
+        RATE_RETRY_OPTIONS,
       );
       // Ship today: after 11:00 ET the quote drops FedEx entirely, while
       // Veeqo's own screen (and the buy's live re-quote) use the allocation
       // pool, which still offers it. Append the pool's missing services so
       // the operator sees every rate Veeqo shows. See rate-pool-merge.ts.
-      let rates = resp.available as Record<string, unknown>[];
       try {
-        const pool = await getShippingRates(String(allocationId));
-        rates = mergeMissingRates(
-          rates,
-          (pool?.available as Record<string, unknown>[]) || [],
+        const pool = await fetchLiveRatesWithRetry(
+          () => getShippingRates(String(allocationId)),
+          RATE_RETRY_OPTIONS,
         );
+        rates = mergeMissingRates(rates, pool.rates);
       } catch (e) {
         console.warn(
           `[rates] allocation pool fetch failed for order ${orderId}, showing the quote only:`,
@@ -149,8 +158,10 @@ export async function GET(request: NextRequest) {
         movedDispatch = true;
         await new Promise((r) => setTimeout(r, 800));
       }
-      const ratesResp = await getShippingRates(String(allocationId));
-      const rates = ratesResp?.available || [];
+      const { rates } = await fetchLiveRatesWithRetry(
+        () => getShippingRates(String(allocationId)),
+        RATE_RETRY_OPTIONS,
+      );
       return NextResponse.json({ rates, shipDate });
     } finally {
       if (movedDispatch && origDispatch) {

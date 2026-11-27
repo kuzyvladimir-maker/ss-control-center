@@ -1,80 +1,70 @@
 # 🌡️ Shipping — Frozen risk-level → calendar-day cap override
 
+> **Полный канон алгоритма выбора тарифа:** [shipping-rate-selection.md](shipping-rate-selection.md).
+
 ## Суть
-Для Frozen-Amazon заказов алгоритм выбора рейта ограничивает максимальный
-транзит в календарных днях от `physicalShipDate`. Master Prompt v3.4
-ужесточил правило: если есть pending `FrozenRiskAlert` с
-`riskLevel = "critical"` — потолок **2 дня** вместо стандартных **3**.
-Любой Ground / Saver вариант с EDD > 2 cal.day у такого заказа в pool
-не попадает.
+Для холодовых Amazon-заказов `FrozenRiskAlert` (модуль `frozen-analytics`) ограничивает летний потолок транзита с **3 календарных дней** до **2 календарных дней**, когда для заказа есть pending-алерт с уровнем риска **`high` ИЛИ `critical`** (решение Владимира 2026-06-09: оба уровня `high` и `critical` → 2 дня, не только `critical`).
 
-Зачем: critical-уровень риска ставится `frozen-analytics` rules-engine'ом
-когда:
-- destZip ожидает экстремальную жару (>30-летней нормы на много градусов)
-- multi-day high-temp в маршруте
-- комбинация origin-Tampa + destination в Аризоне/Техасе летом
+Зачем: уровни `high` / `critical` ставятся rules-engine'ом `frozen-analytics` при экстремальной жаре в пункте назначения, многодневных высоких температурах по маршруту и жарких летних коридорах, когда 3-дневный транзит несёт риск порчи даже при соблюдении дедлайна маркетплейса.
 
-В таких случаях даже on-time доставка с 3-day транзитом подвергает
-food-safety риску. Vladimir прямо сформулировал 2026-06-07:
-> "если у нас определяется статус Frozen risk critical, то мы тогда
-> выбираем рейт не 3 календарных дня, а 2 календарных дня."
+## Роль в боевом режиме `Live` vs откате `Summer`
+- **В откате `Summer` (Master Prompt v3.5, `selectBestRate`):** `frozenMaxCalDays(riskLevel)` напрямую задаёт потолок транзита — `2` дня для `high`/`critical`, иначе `3` дня.
+- **В боевом режиме `Live` (`selectTempAwareRate` / `days-table.ts`):** значение `frozenMaxCalDays(riskLevel)` передаётся как **`summerCapDays` — летний пол (floor)**.
+  - Погодная таблица (`A` / `M` + кулер) может **расширять** окно в холодную погоду (до 4–5 дней), но **никогда не сужает** его строже `summerCapDays` (`if (days < summerCapDays) { days = summerCapDays; extraIce = 0; }`).
+  - Таким образом, при `high`/`critical` пол равен `2` дням (таблица погоды может оставить 2 дня в жару), а без алерта пол равен `3` дням (таблица не сделает заказ строже, чем летом).
+  - Для класса `CHILLED` добавка `+1 день` (до 5) применяется уже поверх результата после `summerCapDays` (кроме экстремальной жары `A > 30 °C` и `M > 25 °C`).
 
 ## Связано с
-- [docs/MASTER_PROMPT_v3.4.md](../MASTER_PROMPT_v3.4.md) §5 FROZEN — спека
-- [shipping-frozen-transit-anchor](shipping-frozen-transit-anchor.md) — где меряем "N days" (must be в Pacific TZ от actualShipDay)
-- `src/app/api/shipping/plan/route.ts` — функция `frozenMaxCalDays(riskLevel)`, batch FrozenRiskAlert lookup + проброс
-- `src/lib/frozen-analytics/rules-engine.ts` — `LEVEL_ORDER` = `["ok","low","medium","high","critical"]`
-- `prisma/schema.prisma` — model `FrozenRiskAlert.riskLevel` String
+- [Выбор ставки (канон)](shipping-rate-selection.md)
+- [shipping-frozen-transit-anchor](shipping-frozen-transit-anchor.md) — измерение "N days" в Pacific TZ от фактического дня отгрузки
+- `ss-control-center/src/lib/shipping/rate-selection.ts` — `frozenMaxCalDays(riskLevel)` (`high` / `critical` → `2`, иначе `3`)
+- `ss-control-center/src/lib/shipping/temp-class/days-table.ts` — `summerCapDays` floor
+- `ss-control-center/src/app/api/shipping/plan/route.ts` и `merge/rates/route.ts` — batch `FrozenRiskAlert` lookup + проброс
+- `ss-control-center/src/lib/frozen-analytics/rules-engine.ts` — `LEVEL_ORDER = ["ok", "low", "medium", "high", "critical"]`
+- `ss-control-center/prisma/schema.prisma` — `FrozenRiskAlert.riskLevel`
 
 ---
 
 ## 🔁 Flow
 
-### 1. Один SQL up-front в `/plan`
-Перед циклом по orders:
+### 1. Один SQL up-front в `/api/shipping/plan` (и `/api/shipping/merge/rates`)
+Перед циклом по заказам:
 ```ts
 const alertRows = await prisma.frozenRiskAlert.findMany({
   where: { orderId: { in: orderNumbersForRisk }, status: "pending" },
   select: { orderId: true, riskLevel: true },
 });
 ```
-Один заказ может иметь несколько alert rows (разные ship dates) — берём
-**максимальный** riskLevel по rank `ok<low<medium<high<critical` чтобы
-cap был conservativem.
+Если у заказа (или у участников Merged Group) несколько pending-алертов — берётся **максимальный** `riskLevel` по рангу `ok < low < medium < high < critical`.
 
-### 2. Проброс в `selectBestRate`
-Сигнатура: `selectBestRate(rates, productType, deliveryBy, actualShipDay, dayName, isAfterNoon, frozenRiskLevel?: string|null)`.
-- today-pick call: `frozenRiskLevel = frozenRiskByOrderNumber.get(order.number) ?? null`
-- Monday-shift trick call: тот же riskLevel (одна и та же еда)
-
-### 3. Cap
+### 2. Функция `frozenMaxCalDays`
+Реализована в `src/lib/shipping/rate-selection.ts`:
 ```ts
-function frozenMaxCalDays(riskLevel) {
-  return (riskLevel ?? "").toLowerCase() === "critical" ? 2 : 3;
+export function frozenMaxCalDays(riskLevel: string | null | undefined): number {
+  const lvl = (riskLevel ?? "").toLowerCase();
+  return lvl === "critical" || lvl === "high" ? 2 : 3;
 }
 ```
-Внутри `selectBestRate` Frozen branch:
-```ts
-const maxCalDays = frozenMaxCalDays(frozenRiskLevel);
-let pool = enriched.filter(r => r.calDays <= maxCalDays);
-```
-Дальше всё как раньше: Wed → no Ground, Fri → no FedEx Express,
-tolerance window, sort by calDays/EDD/price.
 
-### 4. Surface в UI
-- `notes` плана содержит `[frozen-rate] ... risk=CRITICAL→max2d ...` когда правило сработало.
-- `stopReason` для no-rate case: `Frozen — none of N/M on-time rates deliver within 2 calendar days (food safety) — risk=CRITICAL tightens cap to 2 days. Monday-shift trick also didn't help.`
-- Карточка показывает FrozenRiskBadge `CRITICAL · 95` — этот же сигнал, операторcontext не пропадает.
+### 3. Применение при выборе ставки
+- **В `Live` (`selectTempAwareRate`):** передаётся `summerCapDays: frozenMaxCalDays(frozenRiskLevel)` как для сегодняшней котировки, так и для понедельника в Monday-shift.
+- **В `Summer` / `Shadow` и `merge/rates` (`selectBestRate`):** фильтрует пул `r.calDays <= maxCalDays`, затем выбирает среди валидных ставок с порогом `≤ +$3` за более быстрый транзит. *(Старые запреты «Среда без Ground» и «Пятница без FedEx Express» отменены в v3.5 и больше не применяются.)*
+
+### 4. Отображение в UI
+- На карточке показывается `FrozenRiskBadge` с уровнем риска.
+- В диагностике `notes` (`Summer`) фиксируется `risk=high→max2d` / `risk=critical→max2d`.
 
 ---
 
 ## 🤔 Что НЕ изменилось
-- Если alert.status != "pending" (applied / ignored / resolved) — он не
-  учитывается, дефолтный ≤3-day cap.
-- Если FrozenRiskAlert вообще нет (свежий заказ, frozen-analytics ещё не прогнался) — дефолтный ≤3-day cap.
-- Для не-Frozen и не-Amazon — никаких изменений. Dry-логика осталась `cheapest-meeting-deadline`.
+- Если `alert.status !== "pending"` (`applied` / `ignored` / `resolved`) — алерт не учитывается, действует стандартный пол/кап `3` дня.
+- Если `FrozenRiskAlert` отсутствует — действует стандартный пол/кап `3` дня.
+- Для `DRY` и не-Amazon (включая Walmart) правило не применяется.
 
 ---
 
 ## 📝 История
-- **2026-06-07** — Vladimir's запрос после того как UI mismatch (EDD 6/11 vs 6/12 в модалке) был починен. Новое правило `critical → 2 days` — добавление к Master Prompt без модификации существующего поведения для других risk levels.
+- **2026-11-27:** Статья приведена в соответствие с кодом: уточнено `high` **и** `critical` → `2` дня, убраны устаревшие упоминания «Wed no Ground / Fri no FedEx», описана работа `summerCapDays` как пола в `Live`-режиме, добавлена ссылка на канон [shipping-rate-selection.md](shipping-rate-selection.md).
+- **2026-10-26:** `frozenMaxCalDays` подключён в `Live` как `summerCapDays` (летний пол, чтобы погода не делала зимние заказы строже летних).
+- **2026-06-09:** Правило расширено с `critical`-only на **`high` и `critical` → 2 дня** (решение Владимира).
+- **2026-06-07:** Первичное внедрение правила `critical → 2 days`.

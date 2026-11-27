@@ -135,3 +135,15 @@ unchanged. Commit e5c108a04.
 ## 2026-10-30 — Chilled in manual classification
 
 The Set product type dialog, the AI dialog, the card chip and the save APIs accept Chilled; every pick sets the SKU's manual class; Walmart allows Dry only. See [shipping-chilled-manual-class-2026-10-30](shipping-chilled-manual-class-2026-10-30.md).
+
+## 2026-11-27 — Production reliability fixes & canonical docs
+
+Актуальная сводка всех правил и механики покупки вынесена в единый канон [shipping-rate-selection.md](shipping-rate-selection.md). В рамках ревизии Shipping Labels в прод внесены следующие фиксы:
+
+- **Ретрай пустого пула Veeqo (`HTTP 200 { available: [] }`, `liveRatesCount = 0`):** короткий backoff-ретрай GET-котировки + диагностика `unavailable`/ошибки в `buy/route.ts`, `merge/buy/route.ts`, `rates/route.ts` и `plan/route.ts` (сам `POST /shipping/shipments` по-прежнему строго 1 POST / 0 retry).
+- **Мердж FedEx на `shipDate = today` после 11:00 ET (`16:00Z`):** `plan/route.ts` (вслед за `rates/route.ts`) домердживает отсутствующие сервисы из Allocation Pool через `mergeMissingRates`.
+- **Проброс `quoteAnchorDay` в `Live`:** когда Veeqo игнорирует `preferred_shipment_date`, транзит и поджатый дедлайн считаются от `quoteAnchorDay` одинаково в `Summer` и в `Live`.
+- **Согласование веса в плане и покупке:** `plan/route.ts` перекотирует скорректированный вес при `liveIceExtra > 0` и при выборе **FedEx One Rate (`+20%` / `×1.20`)**, снимая ложные отказы ценового стража при покупке.
+- **Сохранение `rateOverrides` при ошибке `buySelected`:** неудачные строки при массовой покупке не теряют выбранный оператором тариф.
+- **Merged Orders (`merge/buy`):** переведён на ретрай пустого пула и `matchLiveRate`.
+- **Подтверждено владельцем:** `hasIncident` остаётся не подключённым в `plan/route.ts`, `budgetMax` отменён (`null`), правила `Live` (`$0` премия внутри окна, `summerCapDays`-пол, `chooseTodayOrMonday` `$3` / `>15%`) сохраняются.

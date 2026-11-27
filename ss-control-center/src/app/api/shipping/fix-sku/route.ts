@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { computeFedexWeight } from "@/lib/shipping/fedex-weight";
 import { appendSkuRow } from "@/lib/sku-database";
 
 export async function POST(request: NextRequest) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
         width: parseFloat(data.width),
         height: parseFloat(data.height),
         weight: parseFloat(data.weight),
-        weightFedex: parseFloat(data.weightFedex) || parseFloat(data.weight) * 1.25,
+        weightFedex: parseFloat(data.weightFedex) || computeFedexWeight(parseFloat(data.weight)),
       });
 
       return NextResponse.json({ success: true, method: "sheets_api" });

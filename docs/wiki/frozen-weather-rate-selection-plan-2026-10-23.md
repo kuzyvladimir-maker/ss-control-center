@@ -1,9 +1,13 @@
 # Temperature-aware rate selection: frozen / chilled / dry (plan, 2026-10-23)
 
-> **Implemented** — see [[temp-class-rate-engine-implementation-2026-10-23]] for
-> the shipped engine, the `shipping_rate_profile` flag and the go-live checklist.
+> **Исторический дизайн-документ** — реализован в [[temp-class-rate-engine-implementation-2026-10-23]].
+> **Единый актуальный канон:** [[shipping-rate-selection]].
+> **Ключевые изменения после этого дизайн-дока (подтверждены владельцем на 2026-11-27):**
+> 1. **Премия за скорость убрана (`$0` внутри окна, 2026-10-26):** в §4 описаны `$1 / $3` за более быстрый тариф, но в боевом `Live`-режиме берётся строго самый дешёвый тариф в окне (`SPEED_TOLERANCE_USD = 0`; быстрее только при равной цене).
+> 2. **`hasIncident` не подключён в `plan/route.ts`:** логика `−1 день` реализована и протестирована в `days-table.ts`, но намеренно не передаётся из `plan/route.ts`.
+> 3. **Добавлен летний пол `summerCapDays`** (2026-10-26: таблица погоды никогда не сужает окно строже летнего правила `3 дн. / 2 дн. при high|critical`), а в `days-table.ts` ячейки с доп. льдом для `XL` используют полную вместимость `+4`.
 
-Status: **design, not implemented**. Owner (Vladimir) approved the three
+Status (исторический на 2026-10-23): **design, implemented**. Owner (Vladimir) approved the three
 classes, the manual override and the chilled rules on 2026-10-23. Extra ice per size
 confirmed (XL +4). Still open: the days/ice table and the answers to questions 1–6 (cooler interior
 dimensions, the XS/S cap, upsize, packaging prices, the shadow week, and how

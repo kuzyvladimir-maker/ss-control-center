@@ -44,6 +44,8 @@ import {
   updateOrderDispatchDate,
 } from "@/lib/veeqo";
 import { todayNY } from "@/lib/shipping/dates";
+import { fetchLiveRatesWithRetry } from "@/lib/shipping/rate-requote-retry";
+import { matchLiveRate } from "@/lib/shipping/requote-match";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import {
@@ -60,8 +62,11 @@ export const maxDuration = 300;
 interface RateSelection {
   // Veeqo path
   serviceType?: string | null;
+  service?: string | null;
   subCarrierId?: string | null;
   carrier?: string | null;
+  price?: number | null;
+  edd?: string | null;
   // Walmart path
   carrierName?: string | null;
   carrierServiceType?: string | null;
@@ -230,41 +235,45 @@ export async function POST(request: NextRequest) {
 
       // Re-quote against the package we just set and buy the matching service.
       // Buying on a stale quote is what produced wrong-dimension labels before.
-      const live = await getShippingRates(primary.allocationId);
-      const rates: Record<string, unknown>[] = (live?.available as Record<string, unknown>[]) ?? [];
-      const wanted = (rate.serviceType ?? "").trim();
-      const match =
-        rates.find((r) => String(r.name) === wanted) ??
-        rates.find(
-          (r) =>
-            String(r.sub_carrier_id) === (rate.subCarrierId ?? "") &&
-            String(r.title).trim().toLowerCase() ===
-              (rate.carrier ?? "").trim().toLowerCase(),
-        );
-      // Restore dispatch_date BEFORE the purchase POST — if we left it at
-      // Monday, Veeqo would write the label with that date and Amazon would
-      // count a late shipment. The service picked against Monday's pool stays
-      // valid across the restore (verified 2026-05-15 on the single-order path).
-      if (trickApplies) {
-        try {
-          await updateOrderDispatchDate(
-            primary.orderId,
-            `${labelDate}T06:59:59.000Z`,
-          );
-        } catch (e) {
-          console.warn(
-            `[merge/buy] Could not restore dispatch_date to ${labelDate} for ${primary.orderNumber}:`,
-            e instanceof Error ? e.message : e,
-          );
+      const allocationId = primary.allocationId;
+      const { rates, emptyDiag } = await fetchLiveRatesWithRetry(
+        () => getShippingRates(allocationId),
+      ).finally(async () => {
+        // Restore dispatch_date before buying, including when quoting fails.
+        // The rate selected against Monday's pool stays valid across the
+        // restore (verified 2026-05-15 on the single-order path).
+        if (trickApplies) {
+          try {
+            await updateOrderDispatchDate(
+              primary.orderId,
+              `${labelDate}T06:59:59.000Z`,
+            );
+          } catch (e) {
+            console.warn(
+              `[merge/buy] Could not restore dispatch_date to ${labelDate} for ${primary.orderNumber}:`,
+              e instanceof Error ? e.message : e,
+            );
+          }
         }
-      }
+      });
+      const m = matchLiveRate(rates, {
+        serviceType: rate.serviceType?.trim() || null,
+        // Existing MergeGroupCard payloads put the Veeqo service title here.
+        service: rate.service?.trim() || rate.carrier?.trim() || null,
+        subCarrierId: rate.subCarrierId ?? null,
+        price: rate.price ?? null,
+        edd: rate.edd ?? null,
+      });
+      const match = m.rate;
 
       if (!match) {
         return NextResponse.json(
           {
             error:
               "Could not re-quote the chosen service at the combined package size — " +
-              "label NOT bought. Refresh the rates and try again.",
+              "label NOT bought. Refresh the rates and try again." +
+              (m.reason ? ` ${m.reason}` : "") +
+              (emptyDiag ? ` DIAG: ${emptyDiag}` : ""),
           },
           { status: 409 },
         );
