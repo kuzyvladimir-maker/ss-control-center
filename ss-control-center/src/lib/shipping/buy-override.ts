@@ -31,6 +31,11 @@ export interface BuyOverride {
   // When present it becomes the dispatch date the label is bought against
   // (the dispatch-date dance in the route keys off item.physicalShipDate).
   physicalShipDate?: string | null;
+  // Label date the operator forced (what Amazon sees on the printed label,
+  // i.e. the date Late Shipment Rate is measured against). Independent of
+  // physicalShipDate: the label can be bought "today" while the parcel is
+  // handed to the carrier on a later business day.
+  labelDate?: string | null;
 }
 
 export interface OverridableItem {
@@ -47,6 +52,7 @@ export interface OverridableItem {
   edd: string | null;
   physicalShipDate: string | null;
   actualShipDay: string | null;
+  labelDate: string | null;
 }
 
 /**
@@ -85,7 +91,54 @@ export function applyBuyOverride<T extends OverridableItem>(
     // warehouse note reflects it.
     physicalShipDate: ov.physicalShipDate ?? rawItem.physicalShipDate,
     actualShipDay: ov.physicalShipDate ?? rawItem.actualShipDay,
+    // The label date moves independently of the physical ship day.
+    labelDate: ov.labelDate ?? rawItem.labelDate,
   };
+}
+
+const nonEmpty = (v: string | null | undefined): string | null =>
+  typeof v === "string" && v.trim() !== "" ? v.trim() : null;
+
+/**
+ * Merge the operator's manually picked Label / Ship dates (inline card pickers)
+ * on top of an optional manual rate pick. Explicit dates win over the dates
+ * already stored on the rate override. Returns undefined when there is
+ * nothing to override, so the route falls back to the plan untouched.
+ */
+export function buildBuyOverrideWithDates(
+  rateOverride: BuyOverride | null | undefined,
+  dates: { labelDate?: string | null; physicalShipDate?: string | null },
+): BuyOverride | undefined {
+  const labelDate = nonEmpty(dates.labelDate) ?? nonEmpty(rateOverride?.labelDate);
+  const physicalShipDate =
+    nonEmpty(dates.physicalShipDate) ?? nonEmpty(rateOverride?.physicalShipDate);
+  if (!rateOverride && !labelDate && !physicalShipDate) return undefined;
+  const merged: BuyOverride = { ...(rateOverride ?? {}) };
+  if (labelDate) merged.labelDate = labelDate;
+  if (physicalShipDate) merged.physicalShipDate = physicalShipDate;
+  return merged;
+}
+
+/** True when the override carries an actual rate pick (not just dates). */
+export function hasRateFields(ov: BuyOverride | null | undefined): boolean {
+  if (!ov) return false;
+  return Boolean(ov.serviceType || ov.carrier || ov.service || ov.totalNetCharge);
+}
+
+/**
+ * Clear per-order state keyed by orderNumber (manual Label / Ship dates) only
+ * for orders confirmed bought in this batch; failed buys keep their picks.
+ */
+export function retainFailedOrderKeys<T>(
+  prev: Record<string, T>,
+  boughtOrderNumbers: ReadonlySet<string>,
+): Record<string, T> {
+  if (boughtOrderNumbers.size === 0) return prev;
+  const next = { ...prev };
+  for (const orderNumber of Object.keys(prev)) {
+    if (boughtOrderNumbers.has(orderNumber)) delete next[orderNumber];
+  }
+  return next;
 }
 
 /** Clear manual rate picks only for orders confirmed bought in this batch. */

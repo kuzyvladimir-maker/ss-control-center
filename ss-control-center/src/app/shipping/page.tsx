@@ -50,7 +50,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { ChannelToggle } from "@/lib/channel-brands";
 import { groupBuyTargets } from "@/lib/shipping/buy-targets";
-import { retainFailedOverrides } from "@/lib/shipping/buy-override";
+import {
+  buildBuyOverrideWithDates,
+  hasRateFields,
+  retainFailedOrderKeys,
+  retainFailedOverrides,
+  type BuyOverride,
+} from "@/lib/shipping/buy-override";
 import {
   NAN_CARRIERS,
   nanAdminOrderUrl,
@@ -330,6 +336,9 @@ interface RateOverride {
   // Physical ship day the operator forced when picking this rate (inline
   // picker / rate modal). Drives the buy's dispatch-date dance.
   physicalShipDate?: string | null;
+  // Label date the operator forced (what Amazon sees on the printed label —
+  // Late Shipment Rate). Independent of physicalShipDate.
+  labelDate?: string | null;
 }
 
 // One group of same-address orders the operator could merge, as returned by
@@ -436,6 +445,8 @@ interface BuyReportSuccess {
   // won't have them, and the toggle silently skips printing in that case.
   pdfBase64?: string | null;
   driveFileId?: string | null;
+  labelDate?: string | null;
+  physicalShipDate?: string | null;
 }
 interface BuyReportError {
   orderNumber: string;
@@ -706,6 +717,12 @@ export default function ShippingLabelsPage() {
     nextWarehouseShipDay(),
   );
   const [shipDateByOrder, setShipDateByOrder] = useState<
+    Record<string, string>
+  >({});
+  // Per-order manual LABEL date (what Amazon sees on the printed label),
+  // keyed by orderNumber. Independent of the physical ship date above:
+  // changing it never re-quotes rates (rates follow the physical day).
+  const [labelDateByOrder, setLabelDateByOrder] = useState<
     Record<string, string>
   >({});
   // Orders currently being re-quoted (after a ship-date change) — drives a
@@ -1562,6 +1579,7 @@ export default function ShippingLabelsPage() {
         // ship-date overrides and re-quote everything at the page-level date
         // (read via the ref so this []-dep callback need not depend on it).
         setShipDateByOrder({});
+        setLabelDateByOrder({});
         setWalmartRates({});
         setWalmartBuyInfo({});
         setWalmartStatus({});
@@ -1925,6 +1943,21 @@ export default function ShippingLabelsPage() {
     setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: safe }));
     if (o.isWalmart) quoteWalmartOrder(o, safe);
     else void requoteAmazonOrder(o, safe);
+  }
+
+  // Change one order's LABEL date (Amazon/Veeqo only) — the date the label
+  // is purchased for, i.e. what Amazon measures Late Shipment Rate against.
+  // Any YYYY-MM-DD is accepted as-is (no business-day shift): a label can
+  // legitimately be dated today even on a weekend for an overdue order.
+  // Rates are NOT re-quoted — they depend on the physical ship day only.
+  function changeOrderLabelDate(o: DashboardOrder, date: string) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    setLabelDateByOrder((p) => ({ ...p, [o.orderNumber]: date }));
+    setRateOverrides((prev) => {
+      const cur = prev[o.orderId];
+      if (!cur) return prev;
+      return { ...prev, [o.orderId]: { ...cur, labelDate: date } };
+    });
   }
 
   // Orders narrowed to the selected channel. Every count and the list below
@@ -2774,6 +2807,28 @@ export default function ShippingLabelsPage() {
         };
       });
 
+      // Mirror the exact bought Label / Ship dates onto the local plan item so
+      // the bought card's static chip immediately shows what was purchased
+      // without waiting for a full Refresh.
+      setPlan((prev) => {
+        if (!prev) return prev;
+        let touched = false;
+        const nextOrders = prev.orders.map((p) => {
+          const b = boughtByNumber.get(p.orderNumber);
+          if (!b) return p;
+          if (!b.labelDate && !b.physicalShipDate) return p;
+          touched = true;
+          return {
+            ...p,
+            status: "bought",
+            labelDate: b.labelDate ?? p.labelDate,
+            physicalShipDate: b.physicalShipDate ?? p.physicalShipDate,
+            actualShipDay: b.physicalShipDate ?? p.actualShipDay,
+          };
+        });
+        return touched ? { ...prev, orders: nextOrders } : prev;
+      });
+
       // Find which boughts are for Walmart orders (by matching against the
       // current data) and populate walmartStatus for them. Walmart-direct
       // buys don't flip Veeqo status, so without this the row would lose
@@ -3017,9 +3072,11 @@ export default function ShippingLabelsPage() {
         const isBuyable = (p: { orderNumber: string; status: string }) => {
           const oid = orderIdByNumber.get(p.orderNumber);
           if (!oid) return false;
+          // A stopped row is rescued only by a real rate pick — a date-only
+          // override carries no rate to buy.
           return (
             p.status === "pending" ||
-            (!!rateOverrides[oid] && p.status === "stop")
+            (hasRateFields(rateOverrides[oid]) && p.status === "stop")
           );
         };
 
@@ -3048,11 +3105,18 @@ export default function ShippingLabelsPage() {
         if (totalItems > 0) setBuyMsg(`Buying ${totalItems} Amazon label(s)…`);
         for (const group of groups) {
           const itemIds: string[] = group.items.map((p) => p.id);
-          // Map plan item → the row's manual rate override, if any.
-          const overridesByItemId: Record<string, RateOverride> = {};
+          // Map plan item → the row's manual rate override and/or manual
+          // Label / Ship dates, if any.
+          const overridesByItemId: Record<string, BuyOverride> = {};
           for (const planOrder of group.items) {
             const oid = orderIdByNumber.get(planOrder.orderNumber);
-            const ov = oid ? rateOverrides[oid] : undefined;
+            const ov = buildBuyOverrideWithDates(
+              oid ? rateOverrides[oid] : undefined,
+              {
+                labelDate: labelDateByOrder[planOrder.orderNumber],
+                physicalShipDate: shipDateByOrder[planOrder.orderNumber],
+              },
+            );
             if (ov) overridesByItemId[planOrder.id] = ov;
           }
           const buyRes = await fetch("/api/shipping/buy", {
@@ -3110,6 +3174,14 @@ export default function ShippingLabelsPage() {
         );
         setRateOverrides((prev) =>
           retainFailedOverrides(prev, boughtOrderNumbers, orderNumberByOrderId),
+        );
+        // Manual Label / Ship dates are keyed by orderNumber — drop them only
+        // for the orders actually bought; failed rows keep their picks.
+        setLabelDateByOrder((prev) =>
+          retainFailedOrderKeys(prev, boughtOrderNumbers),
+        );
+        setShipDateByOrder((prev) =>
+          retainFailedOrderKeys(prev, boughtOrderNumbers),
         );
       }
       // Optimistic local update — bought rows stay visible with their
@@ -3472,10 +3544,17 @@ export default function ShippingLabelsPage() {
       // accept the order's plan item regardless of its "stop" status — the
       // buy API rescues a stopped-but-overridden item, and the override
       // carries every rate identifier the purchase needs.
-      const ov = rateOverrides[o.orderId];
+      const rateOv = rateOverrides[o.orderId];
+      // Rate pick merged with the card's manual Label / Ship dates.
+      const ov = buildBuyOverrideWithDates(rateOv, {
+        labelDate: labelDateByOrder[o.orderNumber],
+        physicalShipDate: shipDateByOrder[o.orderNumber],
+      });
+      // A stopped row is rescued only by a real rate pick — a date-only
+      // override carries no rate to buy.
       const buyable = (p: { orderNumber: string; status: string }) =>
         p.orderNumber === o.orderNumber &&
-        (p.status === "pending" || (!!ov && p.status === "stop"));
+        (p.status === "pending" || (hasRateFields(rateOv) && p.status === "stop"));
       // The item's OWN plan when it came from a per-order re-quote (after a
       // package Save or ship-date change) — sending the batch planId with
       // that item's id made the buy find nothing and come back with zeros.
@@ -3494,7 +3573,7 @@ export default function ShippingLabelsPage() {
         const item = (j.orders ?? []).find(buyable);
         if (!item)
           throw new Error(
-            ov
+            rateOv
               ? "Override is missing rate details — re-pick the rate and try again"
               : "No buyable rate found for this order",
           );
@@ -3539,6 +3618,9 @@ export default function ShippingLabelsPage() {
         delete next[o.orderId];
         return next;
       });
+      const boughtNum = new Set([o.orderNumber]);
+      setLabelDateByOrder((prev) => retainFailedOrderKeys(prev, boughtNum));
+      setShipDateByOrder((prev) => retainFailedOrderKeys(prev, boughtNum));
       // Optimistic local update — row stays visible until manual refresh
       // so the operator can see what they just bought.
       applyBoughtLocally(bought);
@@ -3598,6 +3680,8 @@ export default function ShippingLabelsPage() {
       shipDateOverridden={o.orderNumber in shipDateByOrder}
       requoting={!!requoting[o.orderNumber]}
       onShipDateChange={(d) => changeOrderShipDate(o, d)}
+      labelDateOverride={labelDateByOrder[o.orderNumber] ?? null}
+      onLabelDateChange={(d) => changeOrderLabelDate(o, d)}
       frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
       onToggleSelected={() => toggleOne(o.orderId)}
       onClassify={() => setClassifyModal(o)}
@@ -3667,6 +3751,14 @@ export default function ShippingLabelsPage() {
         setRateOverrides((prev) => {
           const next = { ...prev };
           delete next[o.orderId];
+          return next;
+        });
+        // Clearing the override also drops the manual Label date (no
+        // re-quote needed — rates don't depend on the label date).
+        setLabelDateByOrder((prev) => {
+          if (!(o.orderNumber in prev)) return prev;
+          const next = { ...prev };
+          delete next[o.orderNumber];
           return next;
         });
         if (hadForcedShipDate) {
@@ -4694,11 +4786,18 @@ export default function ShippingLabelsPage() {
           modalPlan?.actualShipDay ??
           modalPlan?.physicalShipDate ??
           shipDateGlobal;
+        const modalLabelDate =
+          labelDateByOrder[pickRateModal.orderNumber] ??
+          rateOverrides[pickRateModal.orderId]?.labelDate ??
+          modalPlan?.labelDate ??
+          todayInET();
         return (
           <PickRateDialog
             order={pickRateModal}
             plan={modalPlan}
             initialShipDate={modalShipDate}
+            initialLabelDate={modalLabelDate}
+            onLabelDateChange={(d) => changeOrderLabelDate(pickRateModal, d)}
           onShipDateChange={(d) =>
             setShipDateByOrder((p) => ({
               ...p,
@@ -4716,6 +4815,17 @@ export default function ShippingLabelsPage() {
               setShipDateByOrder((p) => ({
                 ...p,
                 [pickRateModal.orderNumber]: override.physicalShipDate as string,
+              }));
+            }
+            // Only a label date the operator actually changed counts as a
+            // manual pick (blue) — the dialog's default stays a plan default.
+            if (
+              override.labelDate &&
+              override.labelDate !== modalLabelDate
+            ) {
+              setLabelDateByOrder((p) => ({
+                ...p,
+                [pickRateModal.orderNumber]: override.labelDate as string,
               }));
             }
             setPickRateModal(null);
@@ -5623,6 +5733,8 @@ function OrderRow({
   shipDateOverridden,
   requoting,
   onShipDateChange,
+  labelDateOverride,
+  onLabelDateChange,
 }: {
   order: DashboardOrder;
   /** Set when this row is a member of a merged group. The row then shows all
@@ -5693,6 +5805,11 @@ function OrderRow({
   shipDateOverridden: boolean;
   requoting: boolean;
   onShipDateChange: (date: string) => void;
+  // Label-date control (Amazon/Veeqo only). labelDateOverride = the
+  // operator's manual label date for this order (null = use plan default);
+  // onLabelDateChange stores it without re-quoting.
+  labelDateOverride: string | null;
+  onLabelDateChange: (date: string) => void;
 }) {
   const isReady = order.state === "ready_to_buy";
   const isAttn = order.state === "need_attention";
@@ -6016,26 +6133,90 @@ function OrderRow({
                 )}
               </span>
             )}
-            {/* Editable ship date (ready-to-buy rows) — the day the operator
-                plans to hand the package to the carrier. Walmart re-quotes its
-                rates from that day (drives display AND Buy). Amazon does NOT
-                re-quote (Veeqo returns a fixed quote regardless of date) — the
-                date only re-derives the "N days" transit shown by the EDD. A
-                per-order date highlights in blue. */}
-            {isReady &&
-              !inGroup &&
-              (order.isWalmart ? !wmBought && !wmShipped : true) && (
+            {/* Editable dual dates (ready-to-buy Amazon/Veeqo rows).
+                  Label — the date the label is purchased for: what Amazon
+                          sees (Late Shipment Rate). Changing it never
+                          re-quotes; the buy pushes it to Veeqo.
+                  Ship  — the physical carrier handoff day: re-quotes rates /
+                          transit and decides the Google Drive PDF folder and
+                          the warehouse note.
+                A manual pick highlights in blue; a plan-shifted Ship day
+                (Frozen Ship Date Trick) is tinted amber. */}
+            {isReady && !inGroup && !order.isWalmart && (() => {
+              const effectiveLabelDate =
+                labelDateOverride ??
+                rateOverride?.labelDate ??
+                plan?.labelDate ??
+                todayInET();
+              const effectivePhysicalShipDate = shipDateOverridden
+                ? shipDate
+                : (rateOverride?.physicalShipDate ??
+                  plan?.actualShipDay ??
+                  plan?.physicalShipDate ??
+                  shipDate);
+              const labelOverridden = Boolean(labelDateOverride);
+              const shifted = effectivePhysicalShipDate !== effectiveLabelDate;
+              // Why the engine moved it — straight from the plan note
+              // ("Shifted to Mon YYYY-MM-DD: <reason>").
+              const why = shifted
+                ? /Shifted to Mon \S+: ([^|]+)/.exec(plan?.notes ?? "")?.[1]
+                : undefined;
+              const pickerBase =
+                "rounded border px-1.5 py-0.5 text-[length:var(--ship-date)] font-medium leading-none focus:border-[#0071dc] focus:outline-none";
+              return (
+                <span className="inline-flex flex-wrap items-center gap-1 text-[length:var(--ship-meta)] text-ink-3">
+                  · Label
+                  <input
+                    type="date"
+                    value={effectiveLabelDate}
+                    onChange={(e) => onLabelDateChange(e.target.value)}
+                    title="Label date — what Amazon sees on the printed label (Late Shipment Rate)"
+                    className={cn(
+                      pickerBase,
+                      "bg-surface",
+                      labelOverridden
+                        ? "border-[#0071dc] text-[#0071dc]"
+                        : "border-rule text-ink",
+                    )}
+                  />
+                  · Ship
+                  <input
+                    type="date"
+                    value={effectivePhysicalShipDate}
+                    onChange={(e) => onShipDateChange(e.target.value)}
+                    title="Physical ship date — warehouse handoff, carrier transit & Google Drive folder"
+                    className={cn(
+                      pickerBase,
+                      shipDateOverridden
+                        ? "border-[#0071dc] bg-surface text-[#0071dc]"
+                        : shifted
+                          ? "border-warn-strong/50 bg-warn-tint/40 text-warn-strong"
+                          : "border-rule bg-surface text-ink",
+                    )}
+                  />
+                  {requoting && (
+                    <Loader2 size={12} className="animate-spin text-ink-3" />
+                  )}
+                  {why && (
+                    <span className="text-[length:var(--ship-date)] text-warn-strong">
+                      ({why.trim()})
+                    </span>
+                  )}
+                </span>
+              );
+            })()}
+            {/* Editable ship date (ready-to-buy Walmart rows) — the day the
+                operator plans to hand the package to the carrier. Walmart
+                re-quotes its rates from that day (drives display AND Buy).
+                A per-order date highlights in blue. */}
+            {isReady && !inGroup && order.isWalmart && !wmBought && !wmShipped && (
                 <span className="inline-flex items-center gap-1 text-[length:var(--ship-meta)] text-ink-3">
                   · Ship
                   <input
                     type="date"
                     value={shipDate}
                     onChange={(e) => onShipDateChange(e.target.value)}
-                    title={
-                      order.isWalmart
-                        ? "Ship date for this order — re-quotes Walmart rates from this day. Defaults to the page-level Ship date."
-                        : "Ship date — re-derives the transit estimate (the 'N days' next to EDD). Veeqo's price/EDD are a fixed quote that doesn't change by date; Amazon buys on its ship-by date."
-                    }
+                    title="Ship date for this order — re-quotes Walmart rates from this day. Defaults to the page-level Ship date."
                     className={cn(
                       // Ship date is the thing the operator scans for on every
                       // row — keep it a notch bigger and bolder than the rest
@@ -6051,7 +6232,9 @@ function OrderRow({
                   )}
                 </span>
               )}
-            {plan && (() => {
+            {/* Static dual-date chip — bought / non-editable rows only. Ready
+                Amazon rows show the editable Label + Ship pickers above. */}
+            {plan && !(isReady && !inGroup && !order.isWalmart) && (() => {
               // v3.3 §0.1 dual-date display.
               //
               //   Same dates  → single neutral "Ship X" chip.
@@ -8793,6 +8976,8 @@ function PickRateDialog({
   plan,
   initialShipDate,
   onShipDateChange,
+  initialLabelDate,
+  onLabelDateChange,
   onClose,
   onPick,
 }: {
@@ -8800,6 +8985,10 @@ function PickRateDialog({
   plan: PlanItem | null;
   initialShipDate: string;
   onShipDateChange: (d: string) => void;
+  // Label date (what Amazon sees on the label). Independent of the ship
+  // date: changing it does NOT re-fetch rates.
+  initialLabelDate: string;
+  onLabelDateChange: (d: string) => void;
   onClose: () => void;
   onPick: (override: RateOverride) => void;
 }) {
@@ -8810,6 +8999,7 @@ function PickRateDialog({
   // weekend surcharge) from the dispatch day. Changing it re-fetches the list
   // for the new day so the rates recalculate, exactly like the card.
   const [shipDate, setShipDate] = useState<string>(initialShipDate);
+  const [labelDate, setLabelDate] = useState<string>(initialLabelDate);
 
   useEffect(() => {
     let cancelled = false;
@@ -8874,6 +9064,8 @@ function PickRateDialog({
       price,
       // Buy dispatches on the day the rates were quoted against.
       physicalShipDate: shipDate,
+      // The label is dated independently (Amazon LSR).
+      labelDate,
     });
   }
 
@@ -8888,8 +9080,28 @@ function PickRateDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Ship date — rates re-quote for the chosen dispatch day. */}
-        <div className="flex items-center gap-2 rounded border border-rule bg-bg-elev px-3 py-2">
+        {/* Label date (Amazon LSR) + Ship date (rates re-quote for the
+            chosen dispatch day; also the Drive folder). */}
+        <div className="flex flex-wrap items-center gap-2 rounded border border-rule bg-bg-elev px-3 py-2">
+          <label
+            htmlFor="pickrate-labeldate"
+            className="text-[12px] font-medium text-ink-2"
+          >
+            Label date
+          </label>
+          <input
+            id="pickrate-labeldate"
+            type="date"
+            value={labelDate}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) return;
+              setLabelDate(v); // no re-fetch — rates follow the ship date
+              onLabelDateChange(v); // keep the card's label date in sync
+            }}
+            title="Label date — what Amazon sees on the printed label (Late Shipment Rate)"
+            className="rounded border border-rule bg-surface px-2 py-1 text-[12px] text-ink"
+          />
           <label
             htmlFor="pickrate-shipdate"
             className="text-[12px] font-medium text-ink-2"
@@ -8907,10 +9119,11 @@ function PickRateDialog({
               setShipDate(safe); // re-fetches the rate list for the new day
               onShipDateChange(safe); // keep the card's date in sync
             }}
+            title="Physical ship date — warehouse handoff, carrier transit & Google Drive folder"
             className="rounded border border-rule bg-surface px-2 py-1 text-[12px] text-ink"
           />
-          <span className="text-[11px] text-ink-3">
-            rates recalculate for this dispatch day
+          <span className="basis-full text-[11px] text-ink-3">
+            Label date → Amazon LSR · Ship date → rates &amp; Drive folder
           </span>
         </div>
 

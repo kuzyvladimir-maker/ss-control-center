@@ -28,17 +28,17 @@
 - **Фильтр заказов:** `status !== "shipped"` (доверие статусу Veeqo, а не append-only заметке `"Label Purchased"`), `isProcurementPlaced(order)` (тег `Placed` или все строки закуплены в notes; для `shopify` пропускается — товар лежит на нашем складе), `dispatch_date` = целевой день отгрузки (в полном проходе).
 - **Каналы:**
   - `amazon` (и Veeqo-бакет `"Merged Orders"` — всегда Amazon) → Veeqo + Amazon Buy Shipping V2.
-  - `walmart` → отдельный контур **Ship with Walmart (SWW)** (`/api/shipping/walmart/*`). В выходные (`Sat`/`Sun`) Walmart-заказы в план не попадают (Veeqo/SWW отправляет Mark as Shipped). Покупка Walmart через Veeqo заблокирована на сервере, пока оператор явно не переключит `allowWalmartViaVeeqo`.
+  - `walmart` → отдельный контур **Ship with Walmart (SWW)** (`/api/shipping/walmart/*`). В выходные (`Sat`/`Sun`) Walmart-заказы в план не попадают. Покупка Walmart через Veeqo заблокирована на сервере, пока оператор явно не переключит `allowWalmartViaVeeqo`.
   - `shopify` (NAN Health) → котировка и покупка по умолчанию через Shopify (снапшоты `NanRateSnapshot` / `/api/shipping/nan-rates` + `/api/shipping/nan-buy`), покупка через Veeqo заблокирована без `Setting.nan_buy_via_veeqo = "true"`.
   - Прочие (`ebay`, `tiktok`, `etsy`, `direct`) → Veeqo allocation rates, дефолтный тип `Dry` (упаковка берётся из Veeqo `allocation_package`, если нет в нашей БД).
 
 ### 3.2. Даты, таймзоны и 15:00 ET cutoff (`dates.ts`, `delivery-by.ts`)
 - **Две таймзоны:**
   - **Pacific (`America/Los_Angeles`)** — все входящие дедлайны маркетплейсов и Veeqo (`dispatch_date`, `due_date`, `delivery_promise_date` / EDD). Используются `veeqoDateToLocal` / `utcToPacificYMD` / `todayPacific()`.
-  - **Eastern (`America/New_York`)** — локальное «сегодня» оператора (`todayNY()`), cutoff 15:00 ET, папки Drive.
-- **Двухдатная модель на каждый заказ:**
-  - `labelDate` (`computeLabelDate(shipBy)`) — дата, которую видит Amazon на этикетке (влияет на LSR). Если `shipBy <= today`, всегда `today`; если `shipBy > today` и сейчас `>= 15:00 ET` (`CUTOFF_HOUR_NY = 15`), переносится на `nextBusinessDay` (с учётом выходных и федеральных праздников США `public`/`bank`).
-  - `physicalShipDate` — день, когда коробка реально уходит со склада. Совпадает с `labelDate`, кроме случаев автоматического Monday-shift или ручного выбора даты оператором (`shipDateTrickApplied = true`).
+  - **Eastern (`America/New_York`)** — локальное «сегодня» оператора (`todayNY()`) и cutoff 15:00 ET.
+- **Две независимые даты для заказов Amazon через Veeqo:**
+  - **`Label` (`labelDate`)** — дата покупки/печати этикетки для Amazon Late Shipment Rate (LSR). Автоматически `computeLabelDate(shipBy)` выбирает `today`. При `shipBy > today` начиная с 15:00 ET (`CUTOFF_HOUR_NY = 15`) выбирается `nextBusinessDay` с учётом выходных и праздников США `public`/`bank`. Оператор может переопределить `Label` без перекотировки.
+  - **`Ship` (`physicalShipDate`)** — день фактической передачи посылки перевозчику. В автоматическом плане совпадает с `labelDate` или переносится на понедельник по правилам Monday-shift. Ручная правка `Ship` запускает перекотировку на выбранную дату и задаёт дату отгрузки для расчёта транзита (`N days`) на карточке и для папки PDF в Google Drive.
 - **Дедлайн доставки (`resolveDeliveryBy`):**
   - Для Amazon и Walmart (`enforcedDeadline = true`) — строго `due_date` из Veeqo в Pacific TZ.
   - Для прочих каналов (Shopify, eBay, TikTok и т. п.) — если `due_date` отсутствует или `<= shipDay` (Shopify пишет туда ship-by), берётся окно `max(dispatch_date, shipDay) + 10 дней` (`NO_PROMISE_WINDOW_DAYS = 10`).
@@ -132,7 +132,7 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
 2. **Проверка `anchorHonored` / `quoteAnchorDay`:** `getRatesForLaterShipDay` сравнивает EDD общих сервисов между `baseYmd` и `laterYmd` (учитывая `pickupGapBusinessDays`, чтобы Sun→Mon = 0 не давало ложной тревоги).
    - Если Veeqo **проигнорировал** `preferred_shipment_date` (`anchorHonored = false`), EDD возвращаются **без сдвига** (правило владельца: дату перевозчика не двигаем), с полем `quoteAnchorDay = effectiveBusinessDay(baseYmd)`.
    - Для **автоматического Monday-shift** при `anchorHonored = false` сдвиг **запрещён** (отгружаем сегодня, чтобы не получить ложный «1-дневный» транзит).
-   - Если `quoteAnchorDay` возник на основном шаге (выходной/ручная дата), транзит измеряется от `quoteAnchorDay`, а дедлайн поджимается на разницу дней — с 2026-11-27 это единообразно проброшено и в `Summer`, и в `Live`.
+   - Если `quoteAnchorDay` возник на основном шаге (выходной/ручная дата), движок расчёта плана измеряет транзит от `quoteAnchorDay` и поджимает дедлайн на разницу дней. С 2026-11-27 это правило применяется и в `Summer`, и в `Live`.
 3. **Сравнение «Сегодня vs Понедельник» (`chooseTodayOrMonday`):** берём понедельник, если выполняется **любое** из 3 условий:
    - сегодня нет ни одного валидного тарифа (`!todayPick`), **ИЛИ**
    - понедельник **быстрее** в транзите (`mondayTransit < todayTransit`) **и** дороже не более чем на `$3` (`mondayPrice <= todayPrice + $3`), **ИЛИ**
@@ -141,6 +141,7 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
 
 ### 5.5. Walmart (Ship with Walmart — `walmart-rate-selection.ts`)
 - Только `DRY`. Котировка через Walmart API (`estimateShippingRates`), дата отгрузки сдвигается на `effectiveBusinessDay`.
+- В интерфейсе доступна одна дата `Ship`. Этикетка покупается напрямую через SWW API, отметка `Shipped` выполняется отдельным действием.
 - `selectBestWalmartRate`: из тарифов с `amount > 0` сначала фильтруются те, у кого `deliveryPromiseFulfilled === true`; если таких нет — берётся весь прайс-пул (лучше доставить с опозданием, чем не отправить, оператор может сменить вручную). Из пула берётся **самый дешёвый**.
 
 ### 5.6. NAN Health (Shopify — `nan-rates.ts`, `nan-shopify-buy.ts`)
@@ -173,11 +174,12 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
 
 **Решение (2026-11-20 / 2026-11-27):** для `shipDate = today` и `/api/shipping/rates`, и `/api/shipping/plan` дозагружают Allocation Pool и добавляют отсутствующие сервисы (FedEx) через `mergeMissingRates` (ключ `carrier + normalized title`; при совпадении выигрывает строка из date-anchored котировки).
 
-### 7.2. Ручной выбор (`buy-override.ts`) и сохранение override при ошибке
-- Когда оператор выбирает тариф или дату в `PickRateDialog` / inline-пикере, клиент передаёт `overrides[itemId]` в `/api/shipping/buy`.
-- `applyBuyOverride()` подменяет не только идентификаторы сервиса, но и **`price`** (`ov.price ?? parseFloat(ov.totalNetCharge) ?? item.price`), **`edd`** (`ov.edd ?? item.edd`) и **`physicalShipDate` / `actualShipDay`**. Благодаря этому ценовой порог перекотировки сравнивает живую цену с ценой *выбранного оператором* тарифа, а не алгоритма.
+### 7.2. Ручной выбор (`buy-override.ts`) и сохранение правок при ошибке
+- На `/shipping` оператор редактирует `Label` и `Ship` независимо в шапке карточки заказа и в `PickRateDialog`. `Label` меняет дату этикетки без запроса тарифов. `Ship` обновляет тарифы и транзит на карточке.
+- Для покупки одной строки и для массовой покупки `buildBuyOverrideWithDates` собирает `BuyOverride` с обеими датами (`labelDate` и `physicalShipDate`) и передаёт его как `overrides[itemId]` в `/api/shipping/buy`. Это работает и при правке только дат на карточке с сохранением выбранного планом тарифа.
+- `applyBuyOverride()` применяет даты и параметры выбранного тарифа, включая `price` (`ov.price ?? parseFloat(ov.totalNetCharge) ?? item.price`) и `edd` (`ov.edd ?? item.edd`). Ценовой порог перекотировки сравнивает живую цену с ценой тарифа, выбранного оператором.
 - Ручной override позволяет купить даже заказ со статусом `stop` (оператор осознанно берёт ответственность за опоздание/альтернативу).
-- **Сохранение override при ошибке (2026-11-27):** при массовой покупке (`buySelected`) если строка завершилась ошибкой, её `rateOverrides` **сохраняется** (а не сбрасывается), чтобы оператор мог повторить покупку без повторного выбора тарифа.
+- При частичном сбое `buySelected` сохраняет `rateOverrides`, `labelDateByOrder` и `shipDateByOrder` для некупленных заказов (`retainFailedOrderKeys`). Ручные значения очищаются только для заказов с успешной покупкой. Кнопка `clear` сбрасывает ручные даты и тариф и пересчитывает автоматический план.
 
 ### 7.3. Последовательность покупки (`/api/shipping/buy`)
 Для каждой строки (пул параллельности `BUY_CONCURRENCY = 4`):
@@ -186,7 +188,7 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
 3. **Dual-date dance (если `physicalShipDate !== labelDate`):**
    - Шаг 1: `PUT dispatch_date = physicalShipDate T06:59:59Z`, чтобы Allocation Pool перегенерировался под физический день отгрузки.
    - Шаг 2: живая перекотировка `GET /shipping/rates/{allocationId}`.
-   - Шаг 3: `PUT dispatch_date = labelDate T06:59:59Z` **ДО** `POST /shipping/shipments`, чтобы Amazon получил сегодняшнюю дату на этикетке и не начислил Late Shipment.
+   - Шаг 3: восстановить `dispatch_date` на выбранную `labelDate` перед покупкой. Эта дата может быть задана вручную и отличаться от сегодняшней.
 4. **Ретрай пустого пула (2026-11-27):** Veeqo периодически возвращает `HTTP 200 { available: [] }` (`liveRatesCount = 0`). В `buy/route.ts`, `merge/buy/route.ts`, `rates/route.ts` и `plan/route.ts` выполняется автоматический **ретрай GET-котировки** с коротким backoff и диагностикой `unavailable`/ошибки. (Касается **только** чтения ставок!)
 5. **Сопоставление живой ставки (`matchLiveRate` в `requote-match.ts`):**
    - Tier 1 (`id`): точное совпадение `serviceType === live.name`.
@@ -196,8 +198,11 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
    - Если `trickApplies === false`, но ставка не найдена в пуле — делается одна попытка временно переякорить `dispatch_date` на `physicalShipDate` и перекотировать (с обязательным восстановлением при отмене).
    - **Никогда не матчить по `remote_shipment_id`** — он одинаковый для всех тарифов внутри одной allocation.
 6. **Извлечение VAS (`extractVasFromRate`):** читается строго из `freshRate.shipping_service_options` (`null` → не слать VAS-поля вообще; массив → `NO_*` если есть, иначе самый дешёвый, например `DELIVERY_CONFIRMATION` для USPS Ground Advantage).
-7. **Покупка — СТРОГО 1 POST, 0 RETRY:** один вызов `POST /shipping/shipments` (`buyShippingLabel`). При таймауте, 429 или неизвестном исходе **никогда не повторять** — только читать состояние через GET.
-8. **После покупки:** извлечение трека (`pickTrackingString`), скачивание PDF по `shipment.id` (с проверкой magic bytes `%PDF-`), 3-слойное сохранение PDF (Google Drive → локальный диск в dev → proxy `/api/shipping/label-pdf`), запись employee note (`Label Purchased`, `📅 SHIP ON YYYY-MM-DD` при сдвиге, `ADD N EXTRA ICE` при доп. льде), аудит в `logs/shipping-buy.jsonl`, отчёт в `BuyReportDialog`.
+7. **Покупка — СТРОГО 1 POST, 0 RETRY.** До единственного вызова `POST /shipping/shipments` (`buyShippingLabel`) сервер применяет выбранную `labelDate` к `dispatch_date` в Veeqo (если она отличается от текущей в Veeqo), в том числе когда обе даты совпадают. При таймауте, 429 или неизвестном исходе проверяем результат через GET.
+8. **После покупки:**
+   - Извлекается трек (`pickTrackingString`) и скачивается PDF по `shipment.id` с проверкой `%PDF-`. Папка Google Drive `Shipping Labels / MM Month / DD / Channel` определяется по `physicalShipDate`. Резервные варианты — локальный диск в dev и proxy `/api/shipping/label-pdf`. См. [Формат имени и путь PDF](label-filename-format.md).
+   - В employee note Veeqo к `Label Purchased` добавляется `Label: <labelDate> · 📅 SHIP ON <physicalShipDate>` при разных датах или `Ship: <physicalShipDate>` при совпадении. При доп. льде также добавляется `ADD N EXTRA ICE`.
+   - В `ShippingPlanItem` в Turso записываются применённые при покупке `labelDate`, `physicalShipDate` и `actualShipDay`. Результат попадает в `logs/shipping-buy.jsonl` и `BuyReportDialog`.
 
 ---
 
@@ -248,3 +253,4 @@ Dry-пресеты: `5×5×5`, `6×6×6`, `7×7×6`, `10×8×6`, `12×12×6`, `1
 - 2026-06-09 / 2026-06-12: Master Prompt v3.5 (убраны запреты по дням/перевозчикам, `high`+`critical` → 2 дн., FedEx One Rate +20%, `$3` / `>15%` для Monday-shift).
 - 2026-10-23 / 2026-10-26: Внедрён температурно-погодный движок `FROZEN/CHILLED/DRY`, переключатель `Summer/Shadow/Live` (прод в `live`), премия за скорость в `Live` обнулена (`$0`), добавлен летний пол `summerCapDays`.
 - 2026-11-27: Полная унификация документации в единый канон; закреплены решения владельца (FedEx One Rate `+20%`, отмена `budgetMax`, сохранение текущих правил `Live`, `hasIncident` не подключён в `plan`) и фиксы надёжности (ретрай пустого пула Veeqo, мердж FedEx после 11:00 ET в `plan` и `rates`, `quoteAnchorDay` в `Live`, перекотировка веса льда/One Rate в плане, сохранение `rateOverrides` при ошибке `buySelected`, `matchLiveRate` + ретрай в `merge/buy`).
+- 2026-11-27: Документированы независимые ручные даты `Label` и `Ship` на карточке и в `PickRateDialog`, передача обеих дат через `BuyOverride`, сохранение PDF по дате `Ship`, запись дат в Veeqo и Turso и сохранение правок при частичном сбое покупки.

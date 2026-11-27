@@ -17,7 +17,7 @@ import { matchLiveRate } from "@/lib/shipping/requote-match";
 import { fetchLiveRatesWithRetry } from "@/lib/shipping/rate-requote-retry";
 import { iceExtraFromNotes } from "@/lib/shipping/temp-class/ice";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
-import { applyBuyOverride, type BuyOverride } from "@/lib/shipping/buy-override";
+import { applyBuyOverride, hasRateFields, type BuyOverride } from "@/lib/shipping/buy-override";
 import { computeFedexWeight, isFedexOneRateService } from "@/lib/shipping/fedex-weight";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
     // incomplete override, so including stopped-but-overridden items here is
     // safe — they fail the required-fields check if the override is partial.
     let itemsToBuy = plan.items.filter(
-      (i) => i.status === "pending" || !!overrides[i.id],
+      (i) => i.status === "pending" || (i.status === "stop" && hasRateFields(overrides[i.id])),
     );
     if (itemIds && itemIds.length > 0) {
       itemsToBuy = itemsToBuy.filter((i) => itemIds.includes(i.id));
@@ -234,6 +234,8 @@ export async function POST(request: NextRequest) {
         // Drive file into the Printed/ subfolder.
         pdfBase64: string | null;
         driveFileId: string | null;
+        labelDate: string;
+        physicalShipDate: string;
       }[],
       errors: [] as { orderNumber: string; error: string; itemId: string }[],
       total: itemsToBuy.length + missingIds.length,
@@ -557,6 +559,38 @@ export async function POST(request: NextRequest) {
             );
           }
         }
+        // Operator manually picked a Label date (or confirmed one in PickRateDialog)
+        // that equals the physical ship day (no Ship Date Trick). The trick path
+        // above never ran, so Veeqo's dispatch_date may still sit on a different
+        // marketplace ship-by (e.g. Monday after 15:00 ET when operator forces
+        // Label = today) — push the chosen label date if Veeqo differs so the
+        // printed label carries it. Best-effort: a failed PUT never blocks the
+        // (single) buy, and if nothing gets bought restoreDispatch() puts the
+        // original back.
+        // (When the re-anchor above already moved dispatch_date to the
+        // physical ship day — which equals labelDate here — it is a no-op.)
+        if (!trickApplies && ov?.labelDate) {
+          try {
+            if (!dispatchToRestore) {
+              const ord = (await veeqoFetch(`/orders/${item.orderId}`)) as {
+                dispatch_date?: string | null;
+              };
+              const current = ord?.dispatch_date ?? null;
+              if (!current || utcToPacificYMD(current) !== labelDate) {
+                await updateOrderDispatchDate(
+                  item.orderId,
+                  `${labelDate}T06:59:59.000Z`,
+                );
+                dispatchToRestore = current;
+              }
+            }
+          } catch (labelErr) {
+            console.warn(
+              `[buy] Could not set dispatch_date to manual labelDate ${labelDate} for ${item.orderId}:`,
+              labelErr instanceof Error ? labelErr.message : labelErr,
+            );
+          }
+        }
 
         // Refuse to buy if we couldn't re-quote the chosen service against
         // the package we just set. Buying with the plan-time identifiers
@@ -708,7 +742,13 @@ export async function POST(request: NextRequest) {
                 );
               } else {
               const filename = buildPdfFilename(item);
-              const folderPath = buildFolderPath(item);
+              // The Drive folder ALWAYS follows the physical ship day (the
+              // day the warehouse hands the parcel over), never the label
+              // date — even if the legacy actualShipDay column disagrees.
+              const folderPath = buildFolderPath({
+                ...item,
+                actualShipDay: physicalShipDate,
+              });
               // Hold the PDF bytes for the auto-print path. The same
               // buffer also feeds the Drive upload below.
               pdfBase64 = pdfBuf.toString("base64");
@@ -779,7 +819,7 @@ export async function POST(request: NextRequest) {
         // ship-out date.
         const shipDayNote = trickApplies
           ? ` | Label: ${labelDate} · 📅 SHIP ON ${physicalShipDate}`
-          : ` | Ship: ${labelDate}`;
+          : ` | Ship: ${physicalShipDate}`;
         // Written AFTER the response goes out. The label is already bought by
         // this point, so making the operator wait on a warehouse note is pure
         // dead time — and worse, a Veeqo hiccup here used to fall into the
@@ -818,6 +858,11 @@ export async function POST(request: NextRequest) {
           labelPdfUrl: labelPath,
           service: boughtService,
           price: boughtPrice,
+          // Keep the exact dates the label was bought with (manual Label /
+          // Ship picks included) so the bought card shows what was used.
+          labelDate,
+          physicalShipDate,
+          actualShipDay: physicalShipDate,
         };
         try {
           await prisma.shippingPlanItem.update({
@@ -861,6 +906,8 @@ export async function POST(request: NextRequest) {
           price: boughtPrice,
           pdfBase64,
           driveFileId,
+          labelDate,
+          physicalShipDate,
         });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);

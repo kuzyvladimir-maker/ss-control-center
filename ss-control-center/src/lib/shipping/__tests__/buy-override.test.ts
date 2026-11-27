@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyBuyOverride, retainFailedOverrides, type OverridableItem } from "../buy-override";
+import {
+  applyBuyOverride,
+  buildBuyOverrideWithDates,
+  hasRateFields,
+  retainFailedOrderKeys,
+  retainFailedOverrides,
+  type OverridableItem,
+} from "../buy-override";
 import { matchLiveRate, type LiveRate } from "../requote-match";
 
 // Veeqo encodes an EDD as end-of-day Pacific = next day 06:59:59Z.
@@ -26,6 +33,7 @@ const planItem = (): OverridableItem & { id: string } => ({
   edd: "2026-11-26",
   physicalShipDate: "2026-11-21",
   actualShipDay: "2026-11-21",
+  labelDate: "2026-11-21",
 });
 
 // Operator picked UPS 2nd Day Air® at $11.40 in PickRateDialog.
@@ -135,4 +143,127 @@ test("overrides outside the selection and without a known order number stay inta
     retainFailedOverrides(overrides, new Set(["unrelated-order"]), orderNumbers),
     overrides,
   );
+});
+
+// ── Dual dates: Label date vs Physical ship date ─────────────────────────
+
+test("labelDate overrides independently of physicalShipDate", () => {
+  const item = applyBuyOverride(planItem(), { labelDate: "2026-11-20" });
+  assert.equal(item.labelDate, "2026-11-20");
+  // Ship day untouched → still the plan's, and the legacy alias follows it.
+  assert.equal(item.physicalShipDate, "2026-11-21");
+  assert.equal(item.actualShipDay, "2026-11-21");
+});
+
+test("both dates overridden: actualShipDay always mirrors physicalShipDate", () => {
+  const item = applyBuyOverride(planItem(), {
+    labelDate: "2026-11-21",
+    physicalShipDate: "2026-11-24",
+  });
+  assert.equal(item.labelDate, "2026-11-21");
+  assert.equal(item.physicalShipDate, "2026-11-24");
+  assert.equal(item.actualShipDay, "2026-11-24");
+});
+
+test("a date-only override keeps every planned carrier/service/price field", () => {
+  const raw = planItem();
+  const item = applyBuyOverride(raw, {
+    labelDate: "2026-11-20",
+    physicalShipDate: "2026-11-23",
+  });
+  for (const k of [
+    "carrierId",
+    "remoteShipmentId",
+    "serviceType",
+    "subCarrierId",
+    "serviceCarrier",
+    "totalNetCharge",
+    "baseRate",
+    "carrier",
+    "service",
+    "price",
+    "edd",
+  ] as const) {
+    assert.equal(item[k], raw[k], `${k} must stay the plan's`);
+  }
+});
+
+test("no labelDate in the override keeps the plan's labelDate", () => {
+  const item = applyBuyOverride(planItem(), override);
+  assert.equal(item.labelDate, "2026-11-21");
+});
+
+test("buildBuyOverrideWithDates: nothing to override → undefined", () => {
+  assert.equal(buildBuyOverrideWithDates(undefined, {}), undefined);
+  assert.equal(buildBuyOverrideWithDates(null, { labelDate: "", physicalShipDate: null }), undefined);
+  assert.equal(buildBuyOverrideWithDates(undefined, { labelDate: "  " }), undefined);
+});
+
+test("buildBuyOverrideWithDates: rate override alone passes through unchanged", () => {
+  const merged = buildBuyOverrideWithDates(override, {});
+  assert.deepEqual(merged, override);
+  // Never mutates the stored override.
+  assert.equal("labelDate" in override, false);
+});
+
+test("buildBuyOverrideWithDates: dates without a rate pick → date-only override", () => {
+  assert.deepEqual(
+    buildBuyOverrideWithDates(undefined, { labelDate: "2026-11-20" }),
+    { labelDate: "2026-11-20" },
+  );
+  assert.deepEqual(
+    buildBuyOverrideWithDates(undefined, { physicalShipDate: "2026-11-24" }),
+    { physicalShipDate: "2026-11-24" },
+  );
+  const ov = buildBuyOverrideWithDates(undefined, {
+    labelDate: "2026-11-20",
+    physicalShipDate: "2026-11-24",
+  });
+  assert.equal(hasRateFields(ov), false);
+  const item = applyBuyOverride(planItem(), ov);
+  assert.equal(item.service, "UPS® Ground");
+  assert.equal(item.labelDate, "2026-11-20");
+  assert.equal(item.actualShipDay, "2026-11-24");
+});
+
+test("buildBuyOverrideWithDates: explicit manual dates win over the rate override's", () => {
+  const rateOv = { ...override, labelDate: "2026-11-21", physicalShipDate: "2026-11-21" };
+  const merged = buildBuyOverrideWithDates(rateOv, {
+    labelDate: "2026-11-20",
+    physicalShipDate: "2026-11-24",
+  });
+  assert.equal(merged?.labelDate, "2026-11-20");
+  assert.equal(merged?.physicalShipDate, "2026-11-24");
+  assert.equal(merged?.service, "UPS 2nd Day Air®");
+  assert.equal(merged?.price, 11.4);
+  assert.equal(hasRateFields(merged), true);
+});
+
+test("buildBuyOverrideWithDates: falls back to the rate override's dates", () => {
+  const rateOv = { ...override, labelDate: "2026-11-21", physicalShipDate: "2026-11-24" };
+  const merged = buildBuyOverrideWithDates(rateOv, { labelDate: undefined, physicalShipDate: "" });
+  assert.equal(merged?.labelDate, "2026-11-21");
+  assert.equal(merged?.physicalShipDate, "2026-11-24");
+});
+
+test("hasRateFields: only a real rate pick counts", () => {
+  assert.equal(hasRateFields(undefined), false);
+  assert.equal(hasRateFields(null), false);
+  assert.equal(hasRateFields({ labelDate: "2026-11-20", physicalShipDate: "2026-11-24" }), false);
+  assert.equal(hasRateFields(override), true);
+});
+
+test("retainFailedOrderKeys clears only the bought order numbers", () => {
+  const dates = { "order-a": "2026-11-20", "order-b": "2026-11-24", "order-c": "2026-11-25" };
+  assert.deepEqual(retainFailedOrderKeys(dates, new Set(["order-a", "order-c"])), {
+    "order-b": "2026-11-24",
+  });
+  // Input untouched.
+  assert.deepEqual(dates, { "order-a": "2026-11-20", "order-b": "2026-11-24", "order-c": "2026-11-25" });
+});
+
+test("retainFailedOrderKeys: nothing bought → same object; unrelated numbers → no change", () => {
+  const dates = { "order-a": "2026-11-20" };
+  assert.equal(retainFailedOrderKeys(dates, new Set()), dates);
+  assert.deepEqual(retainFailedOrderKeys(dates, new Set(["order-z"])), dates);
 });
