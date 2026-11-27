@@ -38,3 +38,73 @@ test("Fri 10/23 → Mon 10/26 with identical EDDs: flagged, EDDs NOT moved, anch
     [EDD, "2026-11-01T06:59:59Z"],
   );
 });
+
+test("Fri afternoon: empty today quote, Mon vs Tue EDDs shift → anchorHonored=true", async () => {
+  const prevFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      const date = String(body.preferred_shipment_date ?? "").slice(0, 10);
+      if (date === "2026-11-27") {
+        // Past 16:00Z today: empty v1 quote
+        return new Response(JSON.stringify({ quotes: [] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (date === "2026-11-30") {
+        return new Response(
+          JSON.stringify({
+            quotes: [
+              { rate_id: "m1", service_name: "UPS Ground Saver", total_charge: "9.89", delivery_estimate: "2026-12-04T06:59:59Z", carrier_id: "ups" },
+            ],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      // Probe Tue 2026-12-01 → shifts to 12/04 Pacific (2026-12-05T06:59:59Z)
+      return new Response(
+        JSON.stringify({
+          quotes: [
+            { rate_id: "t1", service_name: "UPS Ground Saver", total_charge: "9.89", delivery_estimate: "2026-12-05T06:59:59Z", carrier_id: "ups" },
+          ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const { getRatesForLaterShipDay } = await import("../../veeqo/client");
+    const r = await getRatesForLaterShipDay(order, "2026-11-30", "2026-11-27", undefined, []);
+    assert.equal(r.anchorHonored, true);
+    assert.equal(r.quoteAnchorYmd, "2026-11-30");
+    assert.equal(r.available.length, 1);
+  } finally {
+    globalThis.fetch = prevFetch;
+  }
+});
+
+test("Fri afternoon: today already rolled to Mon (Fri==Mon EDDs), Tue shifts → anchorHonored=true", async () => {
+  const prevFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      const date = String(body.preferred_shipment_date ?? "").slice(0, 10);
+      const edd = date === "2026-12-01" ? "2026-12-04T06:59:59Z" : "2026-12-03T06:59:59Z";
+      return new Response(
+        JSON.stringify({
+          quotes: [
+            { rate_id: `r-${date}`, service_name: "UPS® Ground", total_charge: "11.86", delivery_estimate: edd, carrier_id: "ups" },
+          ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const { getRatesForLaterShipDay } = await import("../../veeqo/client");
+    const r = await getRatesForLaterShipDay(order, "2026-11-30", "2026-11-27");
+    assert.equal(r.anchorHonored, true);
+    assert.equal(r.quoteAnchorYmd, "2026-11-30");
+  } finally {
+    globalThis.fetch = prevFetch;
+  }
+});

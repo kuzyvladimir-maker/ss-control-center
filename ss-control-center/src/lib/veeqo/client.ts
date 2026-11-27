@@ -1,9 +1,11 @@
 import {
+  addBusinessDaysYmd,
   effectiveBusinessDay,
   pickupGapBusinessDays,
   todayNY,
   utcToPacificYMD,
 } from "@/lib/shipping/dates";
+import { normTitle } from "@/lib/shipping/requote-match";
 import { withoutHiddenOrders } from "./hidden-orders";
 import { normalizeVeeqoResponse, repairMalformedOrders } from "./normalize";
 
@@ -462,6 +464,26 @@ export async function getRatesForShipDate(
  * `quoteAnchorYmd` = the pickup day they really count from, so callers measure
  * transit from there and flag the quote instead of shifting it.
  */
+function countMovedEdd(
+  a: VeeqoNormalizedRate[],
+  b: VeeqoNormalizedRate[],
+): { common: number; moved: number } {
+  const eddA = new Map(
+    a.map((r) => [normTitle(r.title), r.delivery_promise_date]),
+  );
+  let common = 0;
+  let moved = 0;
+  for (const r of b) {
+    const prev = eddA.get(normTitle(r.title));
+    if (prev == null) continue;
+    common++;
+    if (utcToPacificYMD(prev) !== utcToPacificYMD(r.delivery_promise_date)) {
+      moved++;
+    }
+  }
+  return { common, moved };
+}
+
 export async function getRatesForLaterShipDay(
   order: Record<string, any>,
   laterYmd: string,
@@ -476,6 +498,13 @@ export async function getRatesForLaterShipDay(
   quoteAnchorYmd: string;
 }> {
   const later = await getRatesForShipDate(order, `${laterYmd}T16:00:00Z`, parcel);
+  if (later.available.length === 0) {
+    return {
+      available: [],
+      anchorHonored: false,
+      quoteAnchorYmd: effectiveBusinessDay(baseYmd),
+    };
+  }
   // Gap in carrier PICKUP days, not calendar days: a Sunday/holiday "today"
   // quote already counts from the next business day, so identical EDDs for
   // Sun vs Mon are correct (topic 135, 2026-10-25).
@@ -484,22 +513,35 @@ export async function getRatesForLaterShipDay(
     return { available: later.available, anchorHonored: true, quoteAnchorYmd: laterYmd };
   }
 
+  // An empty cached array is NOT usable evidence — re-fetch baseYmd if empty.
   const base =
-    baseRates ??
-    (await getRatesForShipDate(order, `${baseYmd}T16:00:00Z`, parcel)).available;
-  const baseEdd = new Map(base.map((r) => [r.title, r.delivery_promise_date]));
-  let common = 0;
-  let moved = 0;
-  for (const r of later.available) {
-    const b = baseEdd.get(r.title);
-    if (b == null) continue;
-    common++;
-    if (utcToPacificYMD(b) !== utcToPacificYMD(r.delivery_promise_date)) moved++;
+    baseRates && baseRates.length > 0
+      ? baseRates
+      : (await getRatesForShipDate(order, `${baseYmd}T16:00:00Z`, parcel)).available;
+  const vsBase = countMovedEdd(base, later.available);
+  if (vsBase.common > 0 && vsBase.moved > 0) {
+    return { available: later.available, anchorHonored: true, quoteAnchorYmd: laterYmd };
   }
-  // Nothing to compare against → can't prove the anchor worked; treat as ignored.
-  const anchorHonored = common > 0 && moved > 0;
-  if (anchorHonored) {
-    return { available: later.available, anchorHonored, quoteAnchorYmd: laterYmd };
+
+  // Late-day Friday trap (2026-11-27): once today's 16:00Z (11:00 ET) anchor or
+  // carrier pickup cutoff has passed, the `baseYmd` quote can come back empty
+  // OR already rolled forward to Monday pickup (so Fri vs Mon EDDs match even
+  // though Veeqo DOES honour preferred_shipment_date). Before refusing the
+  // Monday shift, probe `laterYmd + 1 business day` (e.g. Mon vs Tue): if EDDs
+  // shift between two future business days, the anchor is genuinely honoured;
+  // if they still don't move, Veeqo really is ignoring the date (2026-10-06).
+  const probeYmd = addBusinessDaysYmd(laterYmd, 1);
+  try {
+    const probe = await getRatesForShipDate(order, `${probeYmd}T16:00:00Z`, parcel);
+    const vsProbe = countMovedEdd(later.available, probe.available);
+    if (vsProbe.common > 0 && vsProbe.moved > 0) {
+      return { available: later.available, anchorHonored: true, quoteAnchorYmd: laterYmd };
+    }
+  } catch (e) {
+    console.warn(
+      `[veeqo] later-day probe ${probeYmd} failed for order ${order.number}:`,
+      e instanceof Error ? e.message : e,
+    );
   }
 
   // Owner rule (2026-10-25): the carrier's EDD is NEVER moved. The quote is

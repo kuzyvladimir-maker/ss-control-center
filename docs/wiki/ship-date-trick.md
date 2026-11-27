@@ -53,6 +53,7 @@
 - **Зависит от:** [Frozen Shipping Rules](frozen-shipping-rules.md), [Timezone правила](timezone-rules.md), [Veeqo API](veeqo-api.md)
 
 ## История
+- 2026-11-27 (вечер): Починен срыв Monday-shift во второй половине пятницы: `getRatesForLaterShipDay` при пустой `today`-котировке или уже перекатившемся на понедельник пятничном cutoff дополнительно проверяет сдвиг EDD на `laterYmd + 1 рабочий день` (Пн vs Вт); в `plan/route.ts` добавлен `retryIfEmptyRates` на понедельничную котировку и выровнен `baseShipDay` после 15:00 ET cutoff; `PickRateDialog` теперь открывается на `physicalShipDate` заказа, а кнопка `clear` сбрасывает и принудительную дату, пересчитывая автоматический Monday-shift.
 - 2026-11-27: Документ обновлён под актуальный механизм `POST /shipping/api/v1/rates` (`getRatesForLaterShipDay` + `anchorHonored`/`quoteAnchorDay`) и правила `chooseTodayOrMonday` (нет сегодня / быстрее и ≤+$3 / >15% дешевле), а также работу в `Live` с погодой понедельника.
 - 2026-10-25: Monday-shift заработал в `Live`-режиме через погодный движок; добавлена проверка `pickupGapBusinessDays` и отказ от сдвига при `anchorHonored = false` (EDD перевозчика никогда не сдвигается вручную).
 - 2026-10-06: Доказан баг Veeqo с игнорированием `preferred_shipment_date` → добавлена проверка `anchorHonored` / `quoteAnchorDay`.

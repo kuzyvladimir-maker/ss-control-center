@@ -3663,11 +3663,23 @@ export default function ShippingLabelsPage() {
       onPickRate={() => setPickRateModal(o)}
       rateOverride={rateOverrides[o.orderId] ?? null}
       onClearOverride={() => {
+        const hadForcedShipDate = Boolean(shipDateByOrder[o.orderNumber]);
         setRateOverrides((prev) => {
           const next = { ...prev };
           delete next[o.orderId];
           return next;
         });
+        if (hadForcedShipDate) {
+          setShipDateByOrder((prev) => {
+            const next = { ...prev };
+            delete next[o.orderNumber];
+            return next;
+          });
+          // Re-run the automatic plan (incl. Monday-shift) without the forced
+          // shipDate override so the card truly reverts to the algorithm's pick.
+          if (o.isWalmart) quoteWalmartOrder(o, shipDateGlobal);
+          else void requoteAmazonOrder(o);
+        }
       }}
       onBuy={() => {
         // NAN in Shopify mode: bought through Shopify's label API when the
@@ -4674,11 +4686,19 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
-      {pickRateModal && !pickRateModal.isWalmart && (
-        <PickRateDialog
-          order={pickRateModal}
-          plan={planByOrderNumber.get(pickRateModal.orderNumber) ?? null}
-          initialShipDate={effectiveShipDate(pickRateModal.orderNumber)}
+      {pickRateModal && !pickRateModal.isWalmart && (() => {
+        const modalPlan = planByOrderNumber.get(pickRateModal.orderNumber) ?? null;
+        const modalShipDate =
+          shipDateByOrder[pickRateModal.orderNumber] ??
+          rateOverrides[pickRateModal.orderId]?.physicalShipDate ??
+          modalPlan?.actualShipDay ??
+          modalPlan?.physicalShipDate ??
+          shipDateGlobal;
+        return (
+          <PickRateDialog
+            order={pickRateModal}
+            plan={modalPlan}
+            initialShipDate={modalShipDate}
           onShipDateChange={(d) =>
             setShipDateByOrder((p) => ({
               ...p,
@@ -4701,7 +4721,8 @@ export default function ShippingLabelsPage() {
             setPickRateModal(null);
           }}
         />
-      )}
+        );
+      })()}
 
       {archiveDiscard && (
         <ArchiveDiscardDialog

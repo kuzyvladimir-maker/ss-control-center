@@ -961,6 +961,13 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // v3.3 §0.1 — derive labelDate per-order from shipBy + cutoff UP FRONT so
+      // post-cutoff orders with slack (shipBy > today after 15:00 ET) quote on
+      // their real next-business-day ship date instead of quoting Friday and
+      // stamping Monday onto the result (2026-11-27).
+      const labelDate = computeLabelDate(shipBy);
+      const baseShipDay = labelDate > actualShipDay ? labelDate : actualShipDay;
+
       // For a shipDate override on the OLD path we move dispatch_date and
       // restore it in the finally below; the new Rate Shopping API needs no
       // such mutation.
@@ -975,11 +982,10 @@ export async function GET(request: NextRequest) {
           const frozenRiskLevel =
             frozenRiskByOrderNumber.get(String(order.number)) ?? null;
           // Ship day driving the rate math: operator's forced date when present,
-          // else today's computed dispatch day.
-          const effectiveShipDay = shipDateOverride || actualShipDay;
-          const effectiveDayName = shipDateOverride
-            ? getDayInfo(shipDateOverride).dayName
-            : dayInfo.dayName;
+          // else the order's computed base ship day (today, or next business day
+          // on weekends / post-cutoff orders with slack).
+          const effectiveShipDay = shipDateOverride || baseShipDay;
+          const effectiveDayName = getDayInfo(effectiveShipDay).dayName;
 
           // Frozen Amazon quotes through the NEW Rate Shopping API
           // (getRatesForShipDate → POST /shipping/api/v1/rates) so EDDs are
@@ -1310,13 +1316,24 @@ export async function GET(request: NextRequest) {
               // the "Monday" EDDs are really "shipped today" and transit from
               // Monday comes out absurdly short (Ground Saver FL→WA "1 day").
               // Never auto-shift on a projected quote — ship today instead.
-              const mondayResp = await timed("veeqo_rates_monday", getRatesForLaterShipDay(
-                order,
-                nextMonday,
-                effectiveShipDay,
-                newApiParcel,
-                shipDayProjected ? undefined : (v1QuotedRates as never),
-              ));
+              // Retry empty responses (same Veeqo 200-empty flicker) and never
+              // pass an empty `v1QuotedRates` array as base evidence.
+              const mondayResp = await timed(
+                "veeqo_rates_monday",
+                retryIfEmptyRates(
+                  () =>
+                    getRatesForLaterShipDay(
+                      order,
+                      nextMonday,
+                      effectiveShipDay,
+                      newApiParcel,
+                      shipDayProjected || v1QuotedRates.length === 0
+                        ? undefined
+                        : (v1QuotedRates as never),
+                    ),
+                  { onRetry: onEmptyRetry },
+                ),
+              );
               if (!mondayResp.anchorHonored) {
                 throw new Error(
                   "Veeqo ignored the Monday ship date — no honest Monday EDDs, shipping today",
@@ -1370,7 +1387,7 @@ export async function GET(request: NextRequest) {
               const { takeMonday, reason: switchReason } = chooseTodayOrMonday({
                 todayPick: selectedRate,
                 mondayPick,
-                todayShipDay: actualShipDay,
+                todayShipDay: effectiveShipDay,
                 mondayShipDay: nextMonday,
               });
 
@@ -1544,12 +1561,11 @@ export async function GET(request: NextRequest) {
           0
         ) || 1;
 
-      // v3.3 §0.1 — derive labelDate per-order from shipBy + cutoff.
+      // v3.3 §0.1 — labelDate was computed up front from shipBy + cutoff.
       // For now we keep the legacy actualShipDay calculation in
       // parallel for the storage column; physicalShipDate is the
       // truth for new readers. shipDateTrickApplied tells the UI to
       // flag the card and the buy flow to do the dispatch-date dance.
-      const labelDate = computeLabelDate(shipBy);
       const autoTrick = Boolean(shipDateNote); // auto Monday-shift fired
       // A manual ship-date override sets the physical ship day directly; the
       // label date stays the Amazon-facing date so LSR isn't affected.
@@ -1561,8 +1577,8 @@ export async function GET(request: NextRequest) {
       const legacyActualShipDay = shipDateOverride
         ? shipDateOverride
         : autoTrick
-          ? nextMondayFrom(today)
-          : actualShipDay;
+          ? nextMondayFrom(baseShipDay)
+          : baseShipDay;
       // Drive the dual-date UI chip + the buy-time dispatch dance whenever the
       // physical day differs from the label date — auto-shift OR manual override.
       const trickFired = autoTrick || physicalShipDate !== labelDate;
