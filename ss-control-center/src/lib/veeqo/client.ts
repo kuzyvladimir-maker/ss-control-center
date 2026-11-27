@@ -285,10 +285,19 @@ export async function getProduct(productId: number) {
 
 // Get shipping rates for an allocation (OLD endpoint — no ship-date parameter,
 // EDDs are a fixed "ship now" estimate). Kept for Dry + as a fallback.
-export async function getShippingRates(allocationId: string) {
-  return veeqoFetch(
-    `/shipping/rates/${allocationId}?from_allocation_package=true`
-  );
+export async function getShippingRates(
+  allocationId: string,
+  opts?: { fromAllocationPackage?: boolean; includeUnavailable?: boolean },
+) {
+  const params = new URLSearchParams();
+  if (opts?.fromAllocationPackage !== false) {
+    params.set("from_allocation_package", "true");
+  }
+  if (opts?.includeUnavailable) {
+    params.set("format_with_unavailable_rates", "true");
+  }
+  const qs = params.toString();
+  return veeqoFetch(`/shipping/rates/${allocationId}${qs ? `?${qs}` : ""}`);
 }
 
 // ── NEW Rate Shopping API — re-quotes EDDs by ship date ─────────────────────

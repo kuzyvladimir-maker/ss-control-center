@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fetchLiveRatesWithRetry } from "../rate-requote-retry";
+import {
+  describeUnavailableRates,
+  fetchLiveRatesWithRetry,
+} from "../rate-requote-retry";
 
 const rate = { name: "ups-ground" };
 
@@ -73,4 +76,22 @@ test("propagates a thrown HTTP error without retrying it", async () => {
     ),
     (thrown) => thrown === error,
   );
+});
+
+test("describeUnavailableRates summarizes carrier rejection reasons and fallback keys", () => {
+  assert.equal(
+    describeUnavailableRates({
+      available: [],
+      unavailable: [
+        { title: "UPS Ground", reason: "Weight must be > 0" },
+        { service_name: "FedEx 2Day", error_messages: ["Invalid postal code"] },
+      ],
+    }),
+    "unavail=2 (UPS Ground: Weight must be > 0; FedEx 2Day: Invalid postal code)",
+  );
+  assert.equal(
+    describeUnavailableRates({ available: [], status: "empty" }),
+    "keys=[available,status]",
+  );
+  assert.equal(describeUnavailableRates(null), "emptyResponse");
 });

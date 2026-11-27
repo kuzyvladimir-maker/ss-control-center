@@ -34,6 +34,47 @@ function describeEmptyPool(
   return details.join(", ");
 }
 
+export function describeUnavailableRates(
+  response: Record<string, unknown> | null | undefined,
+): string {
+  if (!response || typeof response !== "object") return "emptyResponse";
+  const parts: string[] = [];
+  if (Array.isArray(response.unavailable)) {
+    const reasons = response.unavailable
+      .flatMap((entry: unknown) => {
+        if (!entry || typeof entry !== "object") return messages(entry);
+        const rate = entry as Record<string, unknown>;
+        const label =
+          typeof rate.title === "string"
+            ? rate.title
+            : typeof rate.service_name === "string"
+              ? rate.service_name
+              : typeof rate.sub_carrier_id === "string"
+                ? rate.sub_carrier_id
+                : "";
+        const msgs = messages(
+          rate.reason ?? rate.message ?? rate.errors ?? rate.error_messages ?? rate.warnings,
+        );
+        if (msgs.length === 0) return [];
+        return [label ? `${label}: ${msgs[0]}` : msgs[0]];
+      })
+      .slice(0, 4);
+    parts.push(
+      `unavail=${response.unavailable.length}` +
+        (reasons.length > 0 ? ` (${reasons.join("; ")})` : ""),
+    );
+  }
+  for (const field of ["errors", "error_messages", "warnings", "message"] as const) {
+    const summary = messages(response[field]).slice(0, 2).join("; ");
+    if (summary) parts.push(`${field}=${summary}`);
+  }
+  if (parts.length === 0) {
+    const keys = Object.keys(response).slice(0, 8).join(",");
+    parts.push(`keys=[${keys}]`);
+  }
+  return parts.join(", ");
+}
+
 /** Retry a read-only quote when Veeqo returns an empty pool. HTTP errors propagate. */
 export async function fetchLiveRatesWithRetry<R = Record<string, unknown>>(
   fetchFn: () => Promise<Record<string, unknown> | null | undefined>,

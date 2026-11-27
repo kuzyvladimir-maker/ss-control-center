@@ -14,7 +14,10 @@ import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
 import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 import { matchLiveRate } from "@/lib/shipping/requote-match";
-import { fetchLiveRatesWithRetry } from "@/lib/shipping/rate-requote-retry";
+import {
+  describeUnavailableRates,
+  fetchLiveRatesWithRetry,
+} from "@/lib/shipping/rate-requote-retry";
 import { iceExtraFromNotes } from "@/lib/shipping/temp-class/ice";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { applyBuyOverride, hasRateFields, type BuyOverride } from "@/lib/shipping/buy-override";
@@ -71,6 +74,9 @@ async function mapPool<T>(
 // before the operator screenshots it. Non-fatal on write error — the
 // API response and Telegram message are still authoritative.
 function appendBuyLog(entry: Record<string, unknown>) {
+  // Vercel serverless filesystem (/var/task) is read-only — skip local file
+  // writes there so every buy doesn't emit a noisy ENOENT error in Vercel logs.
+  if (process.env.VERCEL) return;
   try {
     const dir = join(process.cwd(), "logs");
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -499,6 +505,81 @@ export async function POST(request: NextRequest) {
               m = matchLiveRate(liveRates, want);
             }
           }
+          // When the legacy allocation pool came back empty across all retries,
+          // Veeqo omits carrier rejection reasons unless
+          // `format_with_unavailable_rates=true` is passed. Do one read-only
+          // diagnostic fetch (if Veeqo now returns available rates, use them;
+          // otherwise capture the exact rejection reasons + order/allocation
+          // state so we know WHY Veeqo rejected the quote).
+          let emptyOrderDiag = "";
+          if (liveRates.length === 0) {
+            try {
+              const diagResp = (await getShippingRates(item.allocationId!, {
+                includeUnavailable: true,
+              })) as Record<string, unknown> | null | undefined;
+              if (Array.isArray(diagResp?.available) && diagResp.available.length > 0) {
+                liveRates = diagResp.available as Record<string, unknown>[];
+                emptyDiag = null;
+                m = matchLiveRate(liveRates, want);
+              } else {
+                const unavailDesc = describeUnavailableRates(diagResp);
+                const [ordRes, noPkgRes] = await Promise.allSettled([
+                  veeqoFetch(`/orders/${item.orderId}`),
+                  getShippingRates(item.allocationId!, {
+                    fromAllocationPackage: false,
+                    includeUnavailable: true,
+                  }),
+                ]);
+                const diagParts = [unavailDesc];
+                if (ordRes.status === "fulfilled" && ordRes.value) {
+                  const o = ordRes.value as {
+                    status?: string;
+                    dispatch_date?: string | null;
+                    deliver_to?: { country?: string; state?: string; zip?: string; phone?: string };
+                    allocations?: {
+                      id?: number | string;
+                      total_weight?: number | null;
+                      allocation_package?: {
+                        weight?: number | null;
+                        weight_unit?: string | null;
+                        depth?: number | null;
+                        width?: number | null;
+                        height?: number | null;
+                        package_selection_source?: string | null;
+                      } | null;
+                    }[];
+                    line_items?: { sellable?: { weight?: number | null; weight_unit?: string | null } }[];
+                  };
+                  const alloc =
+                    o.allocations?.find((a) => String(a.id) === String(item.allocationId)) ??
+                    o.allocations?.[0];
+                  const pkg = alloc?.allocation_package;
+                  const itemW = o.line_items?.[0]?.sellable?.weight ?? null;
+                  diagParts.push(
+                    `orderStatus=${o.status ?? "?"}`,
+                    `allocW=${alloc?.total_weight ?? "null"}`,
+                    `pkg=${pkg ? `${pkg.weight ?? "?"}${pkg.weight_unit ?? ""}/${pkg.depth ?? "?"}x${pkg.width ?? "?"}x${pkg.height ?? "?"}` : "null"}`,
+                    `itemW=${itemW ?? "null"}`,
+                    `to=${o.deliver_to?.state ?? "?"}/${o.deliver_to?.zip ?? "?"}/${o.deliver_to?.country ?? "?"}`,
+                  );
+                }
+                if (noPkgRes.status === "fulfilled" && noPkgRes.value) {
+                  const np = noPkgRes.value as Record<string, unknown>;
+                  const npAvail = Array.isArray(np.available) ? np.available.length : 0;
+                  diagParts.push(
+                    `noPkgAvail=${npAvail}`,
+                    ...(npAvail === 0 ? [`noPkg=${describeUnavailableRates(np)}`] : []),
+                  );
+                }
+                emptyOrderDiag = diagParts.join(", ");
+                console.warn(
+                  `[buy-empty-diag] ${item.orderNumber} (order=${item.orderId}, alloc=${item.allocationId}): ${emptyOrderDiag}`,
+                );
+              }
+            } catch (diagErr) {
+              emptyOrderDiag = `diagErr=${diagErr instanceof Error ? diagErr.message : String(diagErr)}`;
+            }
+          }
           if (m.rate) {
             freshRate = m.rate;
             liveVas = extractVasFromRate(m.rate);
@@ -520,6 +601,7 @@ export async function POST(request: NextRequest) {
               `no rate match for service=${item.service} (${item.serviceType}), ` +
               `liveRatesCount=${liveRates.length}` +
               (liveRates.length === 0 && emptyDiag ? `, ${emptyDiag}` : "") +
+              (liveRates.length === 0 && emptyOrderDiag ? `, ${emptyOrderDiag}` : "") +
               (dispatchToRestore ? `, re-anchored to ${physicalShipDate}` : "");
             console.warn(
               `[buy] no live rate match for ${item.orderNumber} (${rateDiagnostic})`
